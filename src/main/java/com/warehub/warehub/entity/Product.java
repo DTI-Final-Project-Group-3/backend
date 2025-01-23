@@ -64,6 +64,24 @@ public class Product {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @PrePersist
+    public void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now();
+        }
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreRemove
+    protected void onRemove() {
+        deletedAt = OffsetDateTime.now();
+    }
+
     @OneToMany(mappedBy = "product")
     private Set<ProductImage> productImages = new LinkedHashSet<>();
 
@@ -71,6 +89,6 @@ public class Product {
     private Set<ProductMutationItem> productMutationItems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "product")
-    private Set<com.warehub.warehub.entity.WarehouseInventory> warehouseInventories = new LinkedHashSet<>();
+    private Set<WarehouseInventory> warehouseInventories = new LinkedHashSet<>();
 
 }

@@ -21,11 +21,11 @@ public class CustomerOrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_order_id")
-    private com.warehub.warehub.entity.User customerOrder;
+    private User customerOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
-    private com.warehub.warehub.entity.Warehouse product;
+    private Warehouse product;
 
     @Column(name = "quantity", length = Integer.MAX_VALUE)
     private String quantity;
@@ -43,5 +43,23 @@ public class CustomerOrderItem {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+    @PrePersist
+    public void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now();
+        }
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreRemove
+    protected void onRemove() {
+        deletedAt = OffsetDateTime.now();
+    }
 
 }

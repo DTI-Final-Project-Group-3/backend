@@ -22,15 +22,15 @@ public class CustomerOrder {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private com.warehub.warehub.entity.User user;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id")
-    private com.warehub.warehub.entity.Warehouse warehouse;
+    private Warehouse warehouse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_method_id")
-    private com.warehub.warehub.entity.PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
     @Column(name = "payment_proof_image_url", length = Integer.MAX_VALUE)
     private String paymentProofImageUrl;
@@ -62,5 +62,23 @@ public class CustomerOrder {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+    @PrePersist
+    public void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now();
+        }
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreRemove
+    protected void onRemove() {
+        deletedAt = OffsetDateTime.now();
+    }
 
 }
