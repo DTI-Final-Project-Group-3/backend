@@ -59,5 +59,4 @@ public class Province {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

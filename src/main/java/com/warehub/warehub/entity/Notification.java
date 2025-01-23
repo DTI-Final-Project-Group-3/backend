@@ -68,5 +68,4 @@ public class Notification {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

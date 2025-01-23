@@ -69,5 +69,4 @@ public class UserAddress {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

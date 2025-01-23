@@ -59,5 +59,4 @@ public class CustomerOrderStatus {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

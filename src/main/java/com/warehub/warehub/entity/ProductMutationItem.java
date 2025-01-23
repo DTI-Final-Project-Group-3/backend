@@ -57,5 +57,4 @@ public class ProductMutationItem {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

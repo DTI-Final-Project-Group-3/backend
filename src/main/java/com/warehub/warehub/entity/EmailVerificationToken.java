@@ -63,5 +63,4 @@ public class EmailVerificationToken {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

@@ -62,5 +62,4 @@ public class ProductCategory {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

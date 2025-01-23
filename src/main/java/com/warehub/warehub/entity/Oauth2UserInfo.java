@@ -74,5 +74,4 @@ public class Oauth2UserInfo {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

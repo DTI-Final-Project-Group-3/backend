@@ -91,5 +91,4 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private Set<WarehouseInventory> warehouseInventories = new LinkedHashSet<>();
 
-
 }

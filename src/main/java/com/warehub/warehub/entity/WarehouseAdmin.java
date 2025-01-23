@@ -63,5 +63,4 @@ public class WarehouseAdmin {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

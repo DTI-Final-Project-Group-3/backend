@@ -120,5 +120,4 @@ public class User {
     @OneToMany(mappedBy = "userAssigner")
     private Set<WarehouseAdmin> warehouseAdmins = new LinkedHashSet<>();
 
-
 }

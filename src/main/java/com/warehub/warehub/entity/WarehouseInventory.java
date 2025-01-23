@@ -61,5 +61,4 @@ public class WarehouseInventory {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

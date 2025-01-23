@@ -67,5 +67,4 @@ public class City {
     @OneToMany(mappedBy = "city")
     private Set<Warehouse> warehouses = new LinkedHashSet<>();
 
-
 }

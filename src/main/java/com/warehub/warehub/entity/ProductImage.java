@@ -57,5 +57,4 @@ public class ProductImage {
         deletedAt = OffsetDateTime.now();
     }
 
-
 }

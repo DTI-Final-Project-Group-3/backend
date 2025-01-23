@@ -88,5 +88,4 @@ public class ProductMutation {
     @OneToMany(mappedBy = "productMutation")
     private Set<ProductMutationItem> productMutationItems = new LinkedHashSet<>();
 
-
 }
