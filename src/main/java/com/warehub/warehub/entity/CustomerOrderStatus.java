@@ -41,4 +41,22 @@ public class CustomerOrderStatus {
     @OneToMany(mappedBy = "orderStatus")
     private Set<com.warehub.warehub.entity.CustomerOrder> customerOrders = new LinkedHashSet<>();
 
+    @PrePersist
+    public void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now();
+        }
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreRemove
+    protected void onRemove() {
+        deletedAt = OffsetDateTime.now();
+    }
+
 }
