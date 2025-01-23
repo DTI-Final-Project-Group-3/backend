@@ -57,6 +57,7 @@ public class Role {
     }
 
     @OneToMany(mappedBy = "role")
-    private Set<com.warehub.warehub.entity.User> users = new LinkedHashSet<>();
+    private Set<User> users = new LinkedHashSet<>();
+
 
 }

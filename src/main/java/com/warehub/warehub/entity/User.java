@@ -118,6 +118,7 @@ public class User {
     private Set<UserAddress> userAddresses = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "userAssigner")
-    private Set<com.warehub.warehub.entity.WarehouseAdmin> warehouseAdmins = new LinkedHashSet<>();
+    private Set<WarehouseAdmin> warehouseAdmins = new LinkedHashSet<>();
+
 
 }

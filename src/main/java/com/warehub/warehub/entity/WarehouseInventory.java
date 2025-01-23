@@ -27,7 +27,7 @@ public class WarehouseInventory {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "warehouse_id", nullable = false)
-    private com.warehub.warehub.entity.Warehouse warehouse;
+    private Warehouse warehouse;
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -60,5 +60,6 @@ public class WarehouseInventory {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }

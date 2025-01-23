@@ -39,7 +39,7 @@ public class CustomerOrderStatus {
     private OffsetDateTime deletedAt;
 
     @OneToMany(mappedBy = "orderStatus")
-    private Set<com.warehub.warehub.entity.CustomerOrder> customerOrders = new LinkedHashSet<>();
+    private Set<CustomerOrder> customerOrders = new LinkedHashSet<>();
 
     @PrePersist
     public void onCreate() {
@@ -58,5 +58,6 @@ public class CustomerOrderStatus {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }

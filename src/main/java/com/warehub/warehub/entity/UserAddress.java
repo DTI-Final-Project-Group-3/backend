@@ -23,7 +23,7 @@ public class UserAddress {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private com.warehub.warehub.entity.User user;
+    private User user;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -68,5 +68,6 @@ public class UserAddress {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }

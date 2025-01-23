@@ -31,11 +31,19 @@ public class ProductMutation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")
-    private com.warehub.warehub.entity.User requester;
+    private User requester;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approver_id")
+    private User approver;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_warehouse_id")
-    private com.warehub.warehub.entity.Warehouse originWarehouse;
+    private Warehouse originWarehouse;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "designated_warehouse_id")
+    private Warehouse designatedWarehouse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mutation_status_id")
@@ -79,5 +87,6 @@ public class ProductMutation {
 
     @OneToMany(mappedBy = "productMutation")
     private Set<ProductMutationItem> productMutationItems = new LinkedHashSet<>();
+
 
 }

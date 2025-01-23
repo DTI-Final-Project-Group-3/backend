@@ -23,7 +23,7 @@ public class Oauth2UserInfo {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private com.warehub.warehub.entity.User user;
+    private User user;
 
     @Size(max = 100)
     @NotNull
@@ -73,5 +73,6 @@ public class Oauth2UserInfo {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }

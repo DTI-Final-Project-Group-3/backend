@@ -30,7 +30,7 @@ public class City {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "province_id", nullable = false)
-    private com.warehub.warehub.entity.Province province;
+    private Province province;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
@@ -62,9 +62,10 @@ public class City {
     }
 
     @OneToMany(mappedBy = "city")
-    private Set<com.warehub.warehub.entity.UserAddress> userAddresses = new LinkedHashSet<>();
+    private Set<UserAddress> userAddresses = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "city")
-    private Set<com.warehub.warehub.entity.Warehouse> warehouses = new LinkedHashSet<>();
+    private Set<Warehouse> warehouses = new LinkedHashSet<>();
+
 
 }

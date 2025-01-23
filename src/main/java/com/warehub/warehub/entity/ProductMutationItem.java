@@ -22,11 +22,11 @@ public class ProductMutationItem {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
-    private com.warehub.warehub.entity.Product product;
+    private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_mutation_id")
-    private com.warehub.warehub.entity.ProductMutation productMutation;
+    private ProductMutation productMutation;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
@@ -56,5 +56,6 @@ public class ProductMutationItem {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }

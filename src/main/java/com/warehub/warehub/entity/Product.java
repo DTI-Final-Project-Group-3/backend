@@ -89,6 +89,7 @@ public class Product {
     private Set<ProductMutationItem> productMutationItems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "product")
-    private Set<com.warehub.warehub.entity.WarehouseInventory> warehouseInventories = new LinkedHashSet<>();
+    private Set<WarehouseInventory> warehouseInventories = new LinkedHashSet<>();
+
 
 }

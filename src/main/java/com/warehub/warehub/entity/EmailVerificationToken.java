@@ -23,7 +23,7 @@ public class EmailVerificationToken {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private com.warehub.warehub.entity.User user;
+    private User user;
 
     @Size(max = 255)
     @NotNull
@@ -62,5 +62,6 @@ public class EmailVerificationToken {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }

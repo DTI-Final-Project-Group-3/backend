@@ -23,7 +23,7 @@ public class Notification {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private com.warehub.warehub.entity.User user;
+    private User user;
 
     @Size(max = 200)
     @Column(name = "title", length = 200)
@@ -67,5 +67,6 @@ public class Notification {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
+
 
 }
