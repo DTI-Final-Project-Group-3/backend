@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "warehouse_inventory")
+@Table(name = "warehouse_inventories")
 public class WarehouseInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "warehouse_inventory_id_gen")
