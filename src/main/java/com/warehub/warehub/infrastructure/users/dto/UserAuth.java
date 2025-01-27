@@ -31,7 +31,7 @@ public class UserAuth implements UserDetails {
         // Map roles to their permissions
         Map<RoleType, List<RolePermissions>> rolePermissionsMap = Map.of(
                 RoleType.NOT_VERIFIED, List.of(RolePermissions.LOGGED_IN),
-                RoleType.CUSTOMER, List.of(RolePermissions.LOGGED_IN, RolePermissions.VERIFIED, RolePermissions.CUSTOMER),
+                RoleType.CUSTOMER_VERIFIED, List.of(RolePermissions.LOGGED_IN, RolePermissions.VERIFIED, RolePermissions.CUSTOMER),
                 RoleType.ADMIN_WAREHOUSE, List.of(RolePermissions.LOGGED_IN, RolePermissions.VERIFIED, RolePermissions.ADMIN_WAREHOUSE),
                 RoleType.ADMIN_SUPER, List.of(RolePermissions.LOGGED_IN, RolePermissions.VERIFIED, RolePermissions.ADMIN_WAREHOUSE, RolePermissions.ADMIN_SUPER)
         );

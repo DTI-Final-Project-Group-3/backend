@@ -20,7 +20,7 @@ public class SignupController {
 
     @PostMapping
     public ResponseEntity<?> createUserCustomer(@RequestBody CreateUserRequestDTO req,
-                                                @RequestParam String role) {
+                                                @RequestParam(defaultValue = "NOT_VERIFIED") String role) {
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
         var result = createUserUsecase.createUser(req, roleType);
         return ApiResponse.successfulResponse("Create new user "
