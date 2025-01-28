@@ -52,7 +52,7 @@ public class RoleTestController {
         return ApiResponse.successfulResponse("admin warehouse access granted");
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN_SUPER')")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN_SUPER')")
     @GetMapping("/admin-super")
     public ResponseEntity<?> roleTestAdminSuper() {
         return ApiResponse.successfulResponse("admin super access granted");
