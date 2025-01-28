@@ -3,6 +3,7 @@ package com.warehub.warehub.infrastructure.users.controller;
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.users.dto.CreateUserRequestDTO;
+import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
 import com.warehub.warehub.usecase.user.CreateUserUsecase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +22,13 @@ public class SignupController {
     @PostMapping
     public ResponseEntity<?> createUserCustomer(@RequestBody CreateUserRequestDTO req,
                                                 @RequestParam(defaultValue = "NOT_VERIFIED") String role) {
+        UserDetailResponseDTO result;
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
-        var result = createUserUsecase.createUser(req, roleType);
+        try {
+            result = createUserUsecase.createUser(req, roleType);
+        } catch (Exception e) {
+            return ApiResponse.failedResponse("Failed to create user or this email already exist");
+        }
         return ApiResponse.successfulResponse("Create new user "
                 + roleType.toString() + " success", result);
     }
