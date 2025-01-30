@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.users.dto;
 
 import com.warehub.warehub.entity.Role;
+import com.warehub.warehub.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,11 +19,29 @@ public class UserDetailResponseDTO implements Serializable {
     private String email;
     private Boolean isEmailVerified = false;
     private String passwordHash;
-    private Long role_id;
+    private String role;
     private String fullname;
     private String gender;
     private String biodata;
     private LocalDate birthdate;
     private String phoneNumber;
     private String profileImageUrl;
+    private OffsetDateTime createdAt;
+
+    public UserDetailResponseDTO copyFromUser(User user) {
+        id = user.getId();
+        username = user.getUsername();
+        email = user.getEmail();
+        isEmailVerified = user.getIsEmailVerified();
+        passwordHash = "";
+        role = user.getRole().getName();
+        fullname = user.getFullname();
+        gender = user.getGender();
+        biodata = user.getBiodata();
+        birthdate = user.getBirthdate();
+        phoneNumber = user.getPhoneNumber();
+        profileImageUrl = user.getProfileImageUrl();
+        createdAt = user.getCreatedAt();
+        return this;
+    }
 }
