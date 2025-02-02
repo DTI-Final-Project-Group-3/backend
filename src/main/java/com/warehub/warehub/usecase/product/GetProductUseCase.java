@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface GetProductUseCase {
     ProductResponseDTO getProductById(Long productId);
-    PaginationInfo<ProductResponseDTO> getPaginatedProducts(int page, int limit, Long productCategoryId, List<Integer> sortedWarehouse);
+    List<ProductResponseDTO> getAllProduct();
+    PaginationInfo<ProductResponseDTO> getPaginatedProducts(int page, int limit, double lng, double lat, Long cat, String search);
 }

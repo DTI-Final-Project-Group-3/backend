@@ -41,14 +41,35 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     }
 
     @Override
-    public PaginationInfo<ProductResponseDTO> getPaginatedProducts(int page, int limit, Long productCategoryId, List<Integer> sortedWarehouse) {
+    public List<ProductResponseDTO> getAllProduct() {
+        List<Product> products = productRepository.findAll();
+
+        List<ProductResponseDTO> productResponseDTOS = products.stream().map(product -> {
+            List<ProductImageResponseDTO> productImages = productImageRepository.findByProductId(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
+            return new ProductResponseDTO(product, productImages);
+        }).toList();
+
+        return productResponseDTOS;
+    }
+
+    @Override
+    public PaginationInfo<ProductResponseDTO> getPaginatedProducts(int page, int limit, double lng, double lat, Long cat, String search) {
         PageRequest pageRequest = PageRequest.of(page, limit);
 
         Specification<Product> spec = Specification.where(null);
-        if (productCategoryId != null) {
+        if (cat != null) {
             spec = spec.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("productCategory").get("id"), productCategoryId));
+                    criteriaBuilder.equal(root.get("productCategory").get("id"), cat));
         }
+
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) -> {
+                String likePattern = "%" + search.toLowerCase() + "%";
+                return criteriaBuilder.or( criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), likePattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), likePattern) );
+            });
+        }
+
         Page<Product> productsPage = productRepository.findAll(spec, pageRequest);
 
         List<ProductResponseDTO> productResponseDTOS = productsPage.getContent().stream()

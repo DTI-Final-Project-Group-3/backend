@@ -53,7 +53,9 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
         productImageRepository.saveAll(productImages);
 
         List<ProductImageResponseDTO> productImageResponseDTO = productImages.stream().map(ProductImageResponseDTO::new).toList();
+        ProductResponseDTO productResponseDTOS = new ProductResponseDTO(product);
+        productResponseDTOS.setProductImages(productImageResponseDTO);
 
-        return new ProductResponseDTO(product, productImageResponseDTO);
+        return productResponseDTOS;
     }
 }

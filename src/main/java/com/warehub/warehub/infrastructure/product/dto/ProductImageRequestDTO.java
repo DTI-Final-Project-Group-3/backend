@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 public class ProductImageRequestDTO {
-    private Long productId;
     private String imageUrl;
     private Integer orderNumber;
 
