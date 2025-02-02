@@ -4,7 +4,6 @@ import com.warehub.warehub.entity.Warehouse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.locationtech.jts.geom.Point;
 
 @Data
 @NoArgsConstructor

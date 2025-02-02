@@ -20,7 +20,7 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
 
     @Override
     public List<WarehouseResponseDTO> getAllWarehouse() {
-        List<Warehouse> warehouses = warehouseRepository.findAll();
+        List<Warehouse> warehouses = warehouseRepository.findAllActive();
         return warehouses.stream().map(WarehouseResponseDTO::new).toList();
     }
 
