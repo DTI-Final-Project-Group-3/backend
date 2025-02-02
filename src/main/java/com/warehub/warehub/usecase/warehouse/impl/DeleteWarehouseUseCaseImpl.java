@@ -18,13 +18,11 @@ public class DeleteWarehouseUseCaseImpl implements DeleteWarehouseUseCase {
     }
 
     @Override
-    public WarehouseResponseDTO deleteWarehouseById(Long warehouseId) {
+    public void deleteWarehouseById(Long warehouseId) {
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ warehouseId + " not found !"));
 
         warehouse.setDeletedAt(OffsetDateTime.now());
         warehouseRepository.save(warehouse);
-
-        return new WarehouseResponseDTO(warehouse);
     }
 }

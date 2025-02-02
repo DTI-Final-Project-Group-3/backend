@@ -55,6 +55,7 @@ public class WarehouseController {
 
     @DeleteMapping("/{warehouseId}")
     public ResponseEntity<?> deleteWarehouseById(@PathVariable Long warehouseId){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Delete warehouse successful",deleteWarehouseUseCase.deleteWarehouseById(warehouseId));
+        deleteWarehouseUseCase.deleteWarehouseById(warehouseId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Delete warehouse successful");
     }
 }
