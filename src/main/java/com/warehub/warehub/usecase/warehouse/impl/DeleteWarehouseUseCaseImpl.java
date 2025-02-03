@@ -2,7 +2,6 @@ package com.warehub.warehub.usecase.warehouse.impl;
 
 import com.warehub.warehub.common.exceptions.WarehouseNotFoundException;
 import com.warehub.warehub.entity.Warehouse;
-import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
 import com.warehub.warehub.usecase.warehouse.DeleteWarehouseUseCase;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,7 @@ public class DeleteWarehouseUseCaseImpl implements DeleteWarehouseUseCase {
 
     @Override
     public void deleteWarehouseById(Long warehouseId) {
-        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+        Warehouse warehouse = warehouseRepository.findActiveById(warehouseId)
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ warehouseId + " not found !"));
 
         warehouse.setDeletedAt(OffsetDateTime.now());

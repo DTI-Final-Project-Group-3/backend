@@ -33,17 +33,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProductCategoryNotFoundException.class)
     public ResponseEntity<?>handleProductCategoryNotFoundException(ProductCategoryNotFoundException ex){
-        return ApiResponse.failedResponse(HttpStatus.NO_CONTENT.value(), ex.getMessage());
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<?>handleProductNotFoundException(ProductNotFoundException ex){
-        return ApiResponse.failedResponse(HttpStatus.NO_CONTENT.value(), ex.getMessage());
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
     @ExceptionHandler(WarehouseNotFoundException.class)
     public ResponseEntity<?>handleWarehouseNotFoundException(WarehouseNotFoundException ex){
-        return ApiResponse.failedResponse(HttpStatus.NO_CONTENT.value(), ex.getMessage());
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
 }

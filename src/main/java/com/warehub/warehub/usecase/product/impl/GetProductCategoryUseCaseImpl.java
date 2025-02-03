@@ -21,14 +21,14 @@ public class GetProductCategoryUseCaseImpl implements GetProductCategoryUseCase 
     @Override
     public List<ProductCategoryResponseDTO> getAllProductCategory() {
 
-        List<ProductCategory> productCategories = productCategoryRepository.findAll();
+        List<ProductCategory> productCategories = productCategoryRepository.findActiveAll();
 
         return productCategories.stream().map(ProductCategoryResponseDTO::new).toList();
     }
 
     @Override
     public ProductCategoryResponseDTO getProductCategoryById(Long productCategoryId) {
-        ProductCategory productCategory = productCategoryRepository.findById(productCategoryId)
+        ProductCategory productCategory = productCategoryRepository.findActiveById(productCategoryId)
                 .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID " + productCategoryId + " not found !"));
 
         return new ProductCategoryResponseDTO(productCategory);

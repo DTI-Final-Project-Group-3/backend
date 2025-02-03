@@ -19,7 +19,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     List<Warehouse> findActiveAll();
 
     @Query("SELECT w FROM Warehouse w WHERE LOWER(w.name) = LOWER(:name) AND w.deletedAt IS NULL")
-    Optional<Warehouse> findActiveByNameIgnoreCase(String name);
+    Optional<Warehouse> findActiveByNameIgnoreCase(@Param("name") String name);
 
     @Query("SELECT w FROM Warehouse w WHERE w.id = :id AND w.deletedAt IS NULL")
     Optional<Warehouse> findActiveById(@Param("id") Long id);

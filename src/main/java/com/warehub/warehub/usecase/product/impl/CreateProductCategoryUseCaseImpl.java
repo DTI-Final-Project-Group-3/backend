@@ -20,10 +20,10 @@ public class CreateProductCategoryUseCaseImpl implements CreateProductCategoryUs
 
     @Override
     public ProductCategoryResponseDTO createProductCategory(ProductCategoryRequestDTO req) {
-        Optional<ProductCategory> productCategory = productCategoryRepository.findByNameIgnoreCase(req.getName());
+        Optional<ProductCategory> productCategory = productCategoryRepository.findActiveByNameIgnoreCase(req.getName());
 
         if (productCategory.isPresent()){
-            throw new DuplicateProductCategoryException("Product category with ID " + req.getName() + " already exist !");
+            throw new DuplicateProductCategoryException("Product category with name " + req.getName() + " already exist !");
         }
         return new ProductCategoryResponseDTO(productCategoryRepository.save(req.toEntity()));
     }

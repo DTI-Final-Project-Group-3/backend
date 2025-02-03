@@ -10,7 +10,6 @@ import java.time.OffsetDateTime;
 
 @Data
 public class WarehouseRequestDTO {
-    private Long id;
 
     @NotNull
     private String name;
@@ -25,8 +24,6 @@ public class WarehouseRequestDTO {
     private double latitude;
 
     private String description;
-
-    private OffsetDateTime deletedAt;
 
     private static final GeometryFactory geometryFactory = new GeometryFactory();
 

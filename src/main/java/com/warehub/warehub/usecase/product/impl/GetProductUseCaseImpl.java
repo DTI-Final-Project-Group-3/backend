@@ -29,10 +29,10 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     @Override
     public ProductResponseDTO getProductById(Long productId) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findActiveById(productId)
                 .orElseThrow(()-> new ProductNotFoundException("Product with Id " + productId + " not found !"));
 
-        List<ProductImage> productImages = productImageRepository.findByProductId(productId)
+        List<ProductImage> productImages = productImageRepository.findActiveByProductId(productId)
                 .stream().toList();
 
         List<ProductImageResponseDTO> productImageResponseDTOS = productImages.stream().map(ProductImageResponseDTO::new).toList();
@@ -42,14 +42,12 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     @Override
     public List<ProductResponseDTO> getAllProduct() {
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findActiveAll();
 
-        List<ProductResponseDTO> productResponseDTOS = products.stream().map(product -> {
-            List<ProductImageResponseDTO> productImages = productImageRepository.findByProductId(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
+        return products.stream().map(product -> {
+            List<ProductImageResponseDTO> productImages = productImageRepository.findActiveByProductId(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
             return new ProductResponseDTO(product, productImages);
         }).toList();
-
-        return productResponseDTOS;
     }
 
     @Override
@@ -74,7 +72,7 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
         List<ProductResponseDTO> productResponseDTOS = productsPage.getContent().stream()
                 .map(product -> {
-                    List<ProductImageResponseDTO> productImageResponseDTOS = productImageRepository.findByProductId(product.getId()).stream()
+                    List<ProductImageResponseDTO> productImageResponseDTOS = productImageRepository.findActiveByProductId(product.getId()).stream()
                             .map(ProductImageResponseDTO::new)
                             .toList();
                     return new ProductResponseDTO(product, productImageResponseDTOS);

@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/warehouse")
+@RequestMapping("/api/v1/warehouses")
 public class WarehouseController {
 
     private final CreateWarehouseUseCase createWarehouseUseCase;
@@ -26,9 +26,9 @@ public class WarehouseController {
         this.deleteWarehouseUseCase = deleteWarehouseUseCase;
     }
 
-    @GetMapping("/{warehouseId}")
-    public ResponseEntity<?> getWarehouseById(@PathVariable Long warehouseId){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse by ID success", getWarehouseUseCase.getWarehouseById(warehouseId));
+    @PostMapping
+    public ResponseEntity<?> createWarehouse(@RequestBody WarehouseRequestDTO req){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create warehouse success", createWarehouseUseCase.createWarehouse(req));
     }
 
     @GetMapping("/all")
@@ -43,14 +43,13 @@ public class WarehouseController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby warehouse success", getWarehouseUseCase.getNearbyWarehouses(lng, lat, max));
     }
 
-    @PostMapping
-    public ResponseEntity<?> createWarehouse(@RequestBody WarehouseRequestDTO req){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create warehouse success", createWarehouseUseCase.createWarehouse(req));
+    @GetMapping("/{warehouseId}")
+    public ResponseEntity<?> getWarehouseById(@PathVariable Long warehouseId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse by ID success", getWarehouseUseCase.getWarehouseById(warehouseId));
     }
-
-    @PutMapping
-    public ResponseEntity<?> updateWarehouse(@RequestBody WarehouseRequestDTO req){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update warehouse successful", updateWarehouseUseCase.updateWarehouse(req));
+    @PutMapping("/{warehouseId}")
+    public ResponseEntity<?> updateWarehouse(@PathVariable Long warehouseId, @RequestBody WarehouseRequestDTO req){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update warehouse successful", updateWarehouseUseCase.updateWarehouse(warehouseId, req));
     }
 
     @DeleteMapping("/{warehouseId}")
@@ -58,4 +57,5 @@ public class WarehouseController {
         deleteWarehouseUseCase.deleteWarehouseById(warehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Delete warehouse successful");
     }
+
 }
