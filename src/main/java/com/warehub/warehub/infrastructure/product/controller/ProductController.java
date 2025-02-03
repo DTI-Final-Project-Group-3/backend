@@ -19,14 +19,18 @@ public class ProductController {
 
     private final CreateProductUseCase createProductUseCase;
     private final GetProductUseCase getProductUseCase;
+    private final UpdateProductUseCase updateProductUseCase;
+    private final DeleteProductUseCase deleteProductUseCase;
 
-    public ProductController(CreateProductCategoryUseCase createProductCategoryUseCase, GetProductCategoryUseCase getProductCategoryUseCase, UpdateProductCategoryUseCase updateProductCategoryUseCase, DeleteProductCategoryUseCase deleteProductCategoryUseCase, GetProductUseCase getProductUseCase, CreateProductUseCase createProductUseCase) {
+    public ProductController(CreateProductCategoryUseCase createProductCategoryUseCase, GetProductCategoryUseCase getProductCategoryUseCase, UpdateProductCategoryUseCase updateProductCategoryUseCase, DeleteProductCategoryUseCase deleteProductCategoryUseCase, GetProductUseCase getProductUseCase, CreateProductUseCase createProductUseCase, UpdateProductUseCase updateProductUseCase, DeleteProductUseCase deleteProductUseCase) {
         this.createProductCategoryUseCase = createProductCategoryUseCase;
         this.getProductCategoryUseCase = getProductCategoryUseCase;
         this.updateProductCategoryUseCase = updateProductCategoryUseCase;
         this.deleteProductCategoryUseCase = deleteProductCategoryUseCase;
         this.createProductUseCase = createProductUseCase;
         this.getProductUseCase = getProductUseCase;
+        this.updateProductUseCase = updateProductUseCase;
+        this.deleteProductUseCase = deleteProductUseCase;
     }
 
     @PostMapping
@@ -54,6 +58,18 @@ public class ProductController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by ID success", getProductUseCase.getProductById(productId));
     }
 
+    @PutMapping("/{productId}")
+    public ResponseEntity<?> updateProductById(@PathVariable Long productId,
+                                               @RequestBody ProductRequestDTO req){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update product success", updateProductUseCase.updateProductById(productId, req));
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> deleteProductById(@PathVariable Long productId){
+        deleteProductUseCase.deleteProductById(productId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Delete product success");
+    }
+
     @PostMapping("/categories")
     public ResponseEntity<?> createProductCategory(@RequestBody ProductCategoryRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create new product category success !", createProductCategoryUseCase.createProductCategory(req));
@@ -70,7 +86,8 @@ public class ProductController {
     }
 
     @PutMapping("/categories/{productCategoryId}")
-    public ResponseEntity<?> updateProductCategoryById(@PathVariable Long productCategoryId, @RequestBody ProductCategoryRequestDTO req){
+    public ResponseEntity<?> updateProductCategoryById(@PathVariable Long productCategoryId,
+                                                       @RequestBody ProductCategoryRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update product success", updateProductCategoryUseCase.updateProductCategoryById(productCategoryId, req));
     }
 

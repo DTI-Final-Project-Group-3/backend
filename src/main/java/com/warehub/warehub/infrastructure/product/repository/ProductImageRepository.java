@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
 
-    @Query("SELECT p FROM ProductImage p WHERE p.id = :productId AND p.deletedAt IS NULL")
+    @Query("SELECT p FROM ProductImage p WHERE p.product.id = :productId AND p.deletedAt IS NULL")
     List<ProductImage> findActiveByProductId(@Param("productId") Long productId);
 }
