@@ -29,10 +29,10 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     @Override
     public ProductResponseDTO getProductById(Long productId) {
-        Product product = productRepository.findActiveById(productId)
+        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(()-> new ProductNotFoundException("Product with Id " + productId + " not found !"));
 
-        List<ProductImage> productImages = productImageRepository.findActiveByProductId(productId)
+        List<ProductImage> productImages = productImageRepository.findByProductIdAndDeletedAtIsNull(productId)
                 .stream().toList();
 
         List<ProductImageResponseDTO> productImageResponseDTOS = productImages.stream().map(ProductImageResponseDTO::new).toList();
@@ -42,10 +42,10 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     @Override
     public List<ProductResponseDTO> getAllProduct() {
-        List<Product> products = productRepository.findActiveAll();
+        List<Product> products = productRepository.findAllByDeletedAtIsNull();
 
         return products.stream().map(product -> {
-            List<ProductImageResponseDTO> productImages = productImageRepository.findActiveByProductId(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
+            List<ProductImageResponseDTO> productImages = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
             return new ProductResponseDTO(product, productImages);
         }).toList();
     }
@@ -72,7 +72,7 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
         List<ProductResponseDTO> productResponseDTOS = productsPage.getContent().stream()
                 .map(product -> {
-                    List<ProductImageResponseDTO> productImageResponseDTOS = productImageRepository.findActiveByProductId(product.getId()).stream()
+                    List<ProductImageResponseDTO> productImageResponseDTOS = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId()).stream()
                             .map(ProductImageResponseDTO::new)
                             .toList();
                     return new ProductResponseDTO(product, productImageResponseDTOS);

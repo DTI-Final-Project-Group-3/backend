@@ -18,7 +18,7 @@ public class DeleteWarehouseUseCaseImpl implements DeleteWarehouseUseCase {
 
     @Override
     public void deleteWarehouseById(Long warehouseId) {
-        Warehouse warehouse = warehouseRepository.findActiveById(warehouseId)
+        Warehouse warehouse = warehouseRepository.findByIdAndDeletedAtIsNull(warehouseId)
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ warehouseId + " not found !"));
 
         warehouse.setDeletedAt(OffsetDateTime.now());

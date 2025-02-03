@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login/**").permitAll()
                         .requestMatchers("/api/v1/signup/**").permitAll()
                         .requestMatchers("/api/v1/warehouses/**").permitAll()
+                        .requestMatchers("/api/v1/warehouse-inventories/**").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()

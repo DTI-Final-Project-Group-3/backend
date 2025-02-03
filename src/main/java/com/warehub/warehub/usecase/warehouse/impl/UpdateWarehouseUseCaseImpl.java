@@ -19,7 +19,7 @@ public class UpdateWarehouseUseCaseImpl implements UpdateWarehouseUseCase {
 
     @Override
     public WarehouseResponseDTO updateWarehouse(Long warehouseId, WarehouseRequestDTO req) {
-        Warehouse warehouse = warehouseRepository.findActiveById(warehouseId)
+        Warehouse warehouse = warehouseRepository.findByIdAndDeletedAtIsNull(warehouseId)
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ warehouseId + " not found !"));
 
         Warehouse updatedWarehouse = req.toEntity();

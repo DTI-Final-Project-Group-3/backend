@@ -20,13 +20,13 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
 
     @Override
     public List<WarehouseResponseDTO> getAllWarehouse() {
-        List<Warehouse> warehouses = warehouseRepository.findActiveAll();
+        List<Warehouse> warehouses = warehouseRepository.findAllByDeletedAtIsNull();
         return warehouses.stream().map(WarehouseResponseDTO::new).toList();
     }
 
     @Override
     public WarehouseResponseDTO getWarehouseById(Long warehouseId) {
-        Warehouse warehouse = warehouseRepository.findActiveById(warehouseId)
+        Warehouse warehouse = warehouseRepository.findByIdAndDeletedAtIsNull(warehouseId)
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID " + warehouseId + " not found !"));
 
         return new WarehouseResponseDTO(warehouse);
@@ -34,7 +34,7 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
 
     @Override
     public List<WarehouseResponseDTO> getNearbyWarehouses(double longitude, double latitude, double maxDistanceInMeters) {
-        List<Warehouse> nearbyWarehouses = warehouseRepository.findActiveNearbyWarehouses(longitude, latitude, maxDistanceInMeters);
+        List<Warehouse> nearbyWarehouses = warehouseRepository.findNearbyWarehouses(longitude, latitude, maxDistanceInMeters);
         return nearbyWarehouses.stream().map(WarehouseResponseDTO::new).toList();
     }
 }

@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.product.impl;
 
+import com.warehub.warehub.common.exceptions.DuplicateProductException;
 import com.warehub.warehub.common.exceptions.MaxListSizeExceededException;
 import com.warehub.warehub.common.exceptions.ProductCategoryNotFoundException;
 import com.warehub.warehub.entity.Product;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CreateProductUseCaseImpl implements CreateProductUseCase {
@@ -36,6 +38,11 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
     @Override
     public ProductResponseDTO createProduct(ProductRequestDTO req) {
 
+        Optional<Product> duplicateProduct = productRepository.findByNameIgnoreCaseAndDeletedAtIsNull(req.getName());
+        if (duplicateProduct.isPresent()){
+            throw new DuplicateProductException("Product with name "+ req.getName() + " already exist !");
+        }
+        
         ProductCategory productCategory = productCategoryRepository.findById(req.getProductCategoryId())
                 .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID "+ req.getProductCategoryId() + " not found !"));
 

@@ -21,7 +21,7 @@ public class CreateWarehouseUseCaseImpl implements CreateWarehouseUseCase {
 
     @Override
     public WarehouseResponseDTO createWarehouse(WarehouseRequestDTO req) {
-        Optional<Warehouse> warehouse = warehouseRepository.findActiveByNameIgnoreCase(req.getName());
+        Optional<Warehouse> warehouse = warehouseRepository.findByNameIgnoreCaseAndDeletedAtIsNull(req.getName());
 
         if (warehouse.isPresent()){
             throw new DuplicateWarehouseException("Warehouse with name " + req.getName() + " already exist !");

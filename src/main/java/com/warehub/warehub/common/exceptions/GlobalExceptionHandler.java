@@ -16,19 +16,14 @@ public class GlobalExceptionHandler {
         return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
-    @ExceptionHandler(DuplicateProductCategoryException.class)
-    public ResponseEntity<?>handleDuplicateProductCategoryException(DuplicateProductCategoryException ex){
-        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
-    }
-
-    @ExceptionHandler(DuplicateWarehouseException.class)
-    public ResponseEntity<?>handleDuplicateWarehouseException(DuplicateWarehouseException ex){
-        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
-    }
-
     @ExceptionHandler(MaxListSizeExceededException.class)
     public ResponseEntity<?>handleMaxListSizeExceededException(MaxListSizeExceededException ex){
         return ApiResponse.failedResponse(HttpStatus.PAYLOAD_TOO_LARGE.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateProductCategoryException.class)
+    public ResponseEntity<?>handleDuplicateProductCategoryException(DuplicateProductCategoryException ex){
+        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
     }
 
     @ExceptionHandler(ProductCategoryNotFoundException.class)
@@ -36,13 +31,33 @@ public class GlobalExceptionHandler {
         return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(DuplicateProductException.class)
+    public ResponseEntity<?>handleDuplicateProductException(DuplicateProductException ex){
+        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+    }
+
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<?>handleProductNotFoundException(ProductNotFoundException ex){
         return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(DuplicateWarehouseException.class)
+    public ResponseEntity<?>handleDuplicateWarehouseException(DuplicateWarehouseException ex){
+        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+    }
+
     @ExceptionHandler(WarehouseNotFoundException.class)
     public ResponseEntity<?>handleWarehouseNotFoundException(WarehouseNotFoundException ex){
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateWarehouseInventoryException.class)
+    public ResponseEntity<?>handleDuplicateWarehouseInventoryException(DuplicateWarehouseInventoryException ex){
+        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(WarehouseInventoryNotFoundException.class)
+    public ResponseEntity<?>handleWarehouseInventoryNotFoundException(WarehouseInventoryNotFoundException ex){
         return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 

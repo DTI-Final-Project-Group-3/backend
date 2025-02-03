@@ -27,12 +27,12 @@ public class DeleteProductCategoryUseCaseImpl implements DeleteProductCategoryUs
     @Transactional
     public void deleteProductCategoryById(Long productCategoryId) {
 
-        ProductCategory productCategory = productCategoryRepository.findActiveById(productCategoryId)
+        ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(productCategoryId)
                 .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID "+ productCategoryId + " not found !"));
 
         productCategory.setDeletedAt(OffsetDateTime.now());
 
-        List<Product> products = productRepository.findActiveByProductCategoryId(productCategoryId);
+        List<Product> products = productRepository.findByProductCategoryIdAndDeletedAtIsNull(productCategoryId);
 
         products.forEach(product -> {
             product.setDeletedAt(OffsetDateTime.now());

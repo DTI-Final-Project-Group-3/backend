@@ -19,7 +19,7 @@ public class UpdateProductCategoryUseCaseImpl implements UpdateProductCategoryUs
 
     @Override
     public ProductCategoryResponseDTO updateProductCategoryById(Long productCategoryId, ProductCategoryRequestDTO req) {
-        ProductCategory productCategory = productCategoryRepository.findActiveById(productCategoryId)
+        ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(productCategoryId)
                 .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID "+ productCategoryId + " not found !"));
 
         ProductCategory updatedProductCategory = req.toEntity();

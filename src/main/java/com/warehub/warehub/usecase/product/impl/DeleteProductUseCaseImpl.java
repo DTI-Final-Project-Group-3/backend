@@ -18,7 +18,7 @@ public class DeleteProductUseCaseImpl implements DeleteProductUseCase {
 
     @Override
     public void deleteProductById(Long productId) {
-        Product product = productRepository.findActiveById(productId)
+        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(()-> new ProductNotFoundException("Product with ID " + productId + " not found !"));
 
         product.setDeletedAt(OffsetDateTime.now());

@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
@@ -37,10 +36,10 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
     @Override
     @Transactional
     public ProductResponseDTO updateProductById(Long productId, ProductRequestDTO req) {
-        Product product = productRepository.findActiveById(productId)
+        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found!"));
 
-        ProductCategory productCategory = productCategoryRepository.findActiveById(req.getProductCategoryId())
+        ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(req.getProductCategoryId())
                 .orElseThrow(() -> new ProductCategoryNotFoundException("Product category with ID " + req.getProductCategoryId() + " not found!"));
 
         Product requestProduct = req.toEntity(productCategory);
@@ -51,14 +50,14 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
             throw new MaxListSizeExceededException("Maximum number of images reached");
         }
 
-        List<ProductImage> existingProductImages = productImageRepository.findActiveByProductId(productId).stream().toList();
+        List<ProductImage> existingProductImages = productImageRepository.findByProductIdAndDeletedAtIsNull(productId).stream().toList();
         List<ProductImage> requestProductImages = req.getProductImages().stream()
                 .map(productImageRequestDTO -> productImageRequestDTO.toEntity(requestProduct)).toList();
         List<ProductImage> updatedProductImages = new ArrayList<>();
         List<ProductImageResponseDTO> productImageResponseDTOS = new ArrayList<>();
 
         if (requestProductImages.isEmpty()) {
-            productImageRepository.findActiveByProductId(productId).forEach(productImage -> {
+            productImageRepository.findByProductIdAndDeletedAtIsNull(productId).forEach(productImage -> {
                 productImage.setDeletedAt(OffsetDateTime.now());
                 productImageRepository.save(productImage);
             });
