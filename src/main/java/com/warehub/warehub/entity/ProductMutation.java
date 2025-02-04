@@ -23,6 +23,11 @@ public class ProductMutation {
     private Long id;
 
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @NotNull
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
@@ -42,19 +47,19 @@ public class ProductMutation {
     private Warehouse originWarehouse;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "designated_warehouse_id")
-    private Warehouse designatedWarehouse;
+    @JoinColumn(name = "destination_warehouse_id")
+    private Warehouse destinationWarehouse;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mutation_status_id")
-    private MutationStatus mutationStatus;
+    @JoinColumn(name = "product_mutation_type_id")
+    private ProductMutationType productMutationType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_mutation_status_id")
+    private ProductMutationStatus productMutationStatus;
 
     @Column(name = "accepted_at")
     private OffsetDateTime acceptedAt;
-
-    @Size(max = 255)
-    @Column(name = "invoice_code")
-    private String invoiceCode;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
@@ -84,8 +89,5 @@ public class ProductMutation {
     protected void onRemove() {
         deletedAt = OffsetDateTime.now();
     }
-
-    @OneToMany(mappedBy = "productMutation")
-    private Set<ProductMutationItem> productMutationItems = new LinkedHashSet<>();
 
 }

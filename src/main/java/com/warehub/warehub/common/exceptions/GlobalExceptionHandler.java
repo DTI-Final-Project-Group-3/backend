@@ -61,4 +61,19 @@ public class GlobalExceptionHandler {
         return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(ProductMutationTypeNotFoundException.class)
+    public ResponseEntity<?>handleProductMutationTypeNotFoundException(ProductMutationTypeNotFoundException ex){
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(ProductMutationStatusNotFoundException.class)
+    public ResponseEntity<?>handleProductMutationStatusNotFoundException(ProductMutationStatusNotFoundException ex){
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(ProductMutationNotFoundException.class)
+    public ResponseEntity<?>handleProductMutationNotFoundException(ProductMutationNotFoundException ex){
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+
 }
