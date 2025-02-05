@@ -27,27 +27,30 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
                 SELECT DISTINCT ON (wi.product_id) wi.* 
                 FROM warehouse_inventories wi 
                 JOIN products p ON wi.product_id = p.id 
-                WHERE wi.warehouse_id IN (:nearbyWarehouseIds) 
-                AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
-                AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
-                ORDER BY wi.product_id, wi.created_at DESC
-                """,
+                WHERE 
+                  wi.warehouse_id = ANY(CAST(:nearbyWarehouseIds AS bigint[])) 
+                  AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
+                  AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
+                ORDER BY 
+                  wi.product_id, 
+                  array_position(CAST(:nearbyWarehouseIds AS bigint[]), wi.warehouse_id)
+            """,
             countQuery = """
-                SELECT COUNT(*) FROM (
-                SELECT DISTINCT ON (wi.product_id) wi.id 
+                SELECT COUNT(DISTINCT wi.product_id) 
                 FROM warehouse_inventories wi 
                 JOIN products p ON wi.product_id = p.id 
-                WHERE wi.warehouse_id IN (:nearbyWarehouseIds) 
-                AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
-                AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
-                ) subquery
-                """,
+                WHERE 
+                  wi.warehouse_id = ANY(CAST(:nearbyWarehouseIds AS bigint[])) 
+                  AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
+                  AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
+            """,
             nativeQuery = true)
     Page<WarehouseInventory> findDistinctByProduct(
-            @Param("nearbyWarehouseIds") List<Long> nearbyWarehouseIds,
+            @Param("nearbyWarehouseIds") String nearbyWarehouseIds, // Pass as "{5,4}"
             @Param("productCategoryId") Long productCategoryId,
             @Param("searchQuery") String searchQuery,
-            Pageable pageable);
+            Pageable pageable
+    );
 }
 
 

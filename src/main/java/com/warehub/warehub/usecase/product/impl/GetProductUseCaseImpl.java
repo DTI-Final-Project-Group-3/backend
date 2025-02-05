@@ -22,7 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GetProductUseCaseImpl implements GetProductUseCase {
@@ -67,7 +69,17 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
-        List<Long> nearbyWarehouseIds = warehouseRepository.findNearbyWarehouses(location.getLongitude(), location.getLatitude(), LocationConstants.MAX_DISTANCE_IN_METERS.getValue()).stream().map(Warehouse::getId).toList();
+        String nearbyWarehouseIds = warehouseRepository
+                .findNearbyWarehouses(
+                        location.getLongitude(),
+                        location.getLatitude(),
+                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue()
+                )
+                .stream()
+                .map(Warehouse::getId) // Extract IDs as Long
+                .map(String::valueOf)  // Convert Long to String
+                .collect(Collectors.joining(",", "{", "}")); // Format as "{id1,id2,id3}"
+
 
 //        Specification<WarehouseInventory> spec = Specification.where(WarehouseInventorySpecification.warehouseIn(nearbyWarehouseIds))
 //                .and(WarehouseInventorySpecification.notDeleted())
