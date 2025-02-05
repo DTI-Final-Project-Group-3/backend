@@ -3,6 +3,7 @@ package com.warehub.warehub.infrastructure.warehouse_inventories.dto;
 import com.warehub.warehub.entity.WarehouseInventory;
 import lombok.Data;
 
+
 @Data
 public class WarehouseInventoryResponseDTO {
     private Long id;

@@ -33,7 +33,7 @@ public class WarehouseInventoryController {
 
     @GetMapping("/{warehouseInventoryId}")
     public ResponseEntity<?> getWarehouseInventoryById(@PathVariable Long warehouseInventoryId){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse inventory success", getWarehouseInventoryUseCase.getWarehouseInventoryById(warehouseInventoryId));
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse inventory success", getWarehouseInventoryUseCase.getDetailWarehouseInventoryById(warehouseInventoryId));
     }
 
     @GetMapping("/warehouses/{warehouseId}")
