@@ -56,46 +56,40 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
         List<ProductImage> updatedProductImages = new ArrayList<>();
         List<ProductImageResponseDTO> productImageResponseDTOS = new ArrayList<>();
 
-        if (requestProductImages.isEmpty()) {
-            productImageRepository.findByProductIdAndDeletedAtIsNull(productId).forEach(productImage -> {
-                productImage.setDeletedAt(OffsetDateTime.now());
-                productImageRepository.save(productImage);
-            });
-        } else {
-            List<Integer> requestImageOrderNumbers = requestProductImages.stream()
-                    .map(ProductImage::getOrderNumber)
-                    .toList();
+
+        List<Integer> requestImageOrderNumbers = requestProductImages.stream()
+                .map(ProductImage::getOrderNumber)
+                .toList();
+        existingProductImages.stream()
+                .filter(existingImage -> !requestImageOrderNumbers.contains(existingImage.getOrderNumber()))
+                .forEach(imageToDelete -> {
+                    imageToDelete.setDeletedAt(OffsetDateTime.now());
+                    productImageRepository.save(imageToDelete);
+                });
+
+        for (ProductImage requestProductImage : requestProductImages) {
+            ProductImage newProductImage = new ProductImage();
             existingProductImages.stream()
-                    .filter(existingImage -> !requestImageOrderNumbers.contains(existingImage.getOrderNumber()))
-                    .forEach(imageToDelete -> {
-                        imageToDelete.setDeletedAt(OffsetDateTime.now());
-                        productImageRepository.save(imageToDelete);
+                    .filter(existingProductImage -> existingProductImage.getOrderNumber().equals(requestProductImage.getOrderNumber()))
+                    .findFirst()
+                    .ifPresent(existingProductImage -> {
+                        newProductImage.setId(existingProductImage.getId());
+                        newProductImage.setCreatedAt(existingProductImage.getCreatedAt());
                     });
 
-            for (ProductImage requestProductImage : requestProductImages) {
-                ProductImage newProductImage = new ProductImage();
-                existingProductImages.stream()
-                        .filter(existingProductImage -> existingProductImage.getOrderNumber().equals(requestProductImage.getOrderNumber()))
-                        .findFirst()
-                        .ifPresent(existingProductImage -> {
-                            newProductImage.setId(existingProductImage.getId());
-                            newProductImage.setCreatedAt(existingProductImage.getCreatedAt());
-                        });
+            newProductImage.setProduct(requestProduct);
+            newProductImage.setImageUrl(requestProductImage.getImageUrl());
+            newProductImage.setOrderNumber(requestProductImage.getOrderNumber());
+            newProductImage.setUpdatedAt(OffsetDateTime.now());
 
-                newProductImage.setProduct(requestProduct);
-                newProductImage.setImageUrl(requestProductImage.getImageUrl());
-                newProductImage.setOrderNumber(requestProductImage.getOrderNumber());
-                newProductImage.setUpdatedAt(OffsetDateTime.now());
-
-                if(newProductImage.getId() == null){
-                    newProductImage.setCreatedAt(OffsetDateTime.now());
-                }
-
-                updatedProductImages.add(newProductImage);
+            if(newProductImage.getId() == null){
+                newProductImage.setCreatedAt(OffsetDateTime.now());
             }
-            productImageRepository.saveAll(updatedProductImages);
-            updatedProductImages.forEach(updatedProductImage -> productImageResponseDTOS.add(new ProductImageResponseDTO(updatedProductImage)));
+
+            updatedProductImages.add(newProductImage);
         }
+        productImageRepository.saveAll(updatedProductImages);
+        updatedProductImages.forEach(updatedProductImage -> productImageResponseDTOS.add(new ProductImageResponseDTO(updatedProductImage)));
 
         return new ProductResponseDTO(requestProduct, productImageResponseDTOS);
     }

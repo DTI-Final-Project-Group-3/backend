@@ -43,7 +43,7 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
             throw new DuplicateProductException("Product with name "+ req.getName() + " already exist !");
         }
         
-        ProductCategory productCategory = productCategoryRepository.findById(req.getProductCategoryId())
+        ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(req.getProductCategoryId())
                 .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID "+ req.getProductCategoryId() + " not found !"));
 
         if (req.getProductImages().size() > 5){

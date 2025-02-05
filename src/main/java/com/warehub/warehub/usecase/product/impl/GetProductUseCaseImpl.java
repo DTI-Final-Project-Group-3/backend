@@ -4,14 +4,19 @@ import com.warehub.warehub.common.exceptions.ProductNotFoundException;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductImage;
+import com.warehub.warehub.entity.Warehouse;
+import com.warehub.warehub.entity.WarehouseInventory;
+import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
+import com.warehub.warehub.infrastructure.product.dto.PaginatedProductResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
+import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
+import com.warehub.warehub.infrastructure.warehouse_inventories.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.product.GetProductUseCase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,10 +26,14 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
+    private final WarehouseRepository warehouseRepository;
+    private final WarehouseInventoryRepository warehouseInventoryRepository;
 
-    public GetProductUseCaseImpl(ProductRepository productRepository, ProductImageRepository productImageRepository) {
+    public GetProductUseCaseImpl(ProductRepository productRepository, ProductImageRepository productImageRepository, WarehouseRepository warehouseRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
+        this.warehouseRepository = warehouseRepository;
+        this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
     @Override
@@ -51,36 +60,28 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     }
 
     @Override
-    public PaginationInfo<ProductResponseDTO> getPaginatedProducts(int page, int limit, double lng, double lat, Long cat, String search) {
-        PageRequest pageRequest = PageRequest.of(page, limit);
+    public PaginationInfo<PaginatedProductResponseDTO> getPaginatedProducts(PaginatedProductRequestDTO req) {
+        PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
-        Specification<Product> spec = Specification.where(null);
-        if (cat != null) {
-            spec = spec.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("productCategory").get("id"), cat));
-        }
+        double maxDistanceInMeters = 50000;
+        List<Long> nearbyWarehouseIds = warehouseRepository.findNearbyWarehouses(req.getLongitude(), req.getLatitude(), maxDistanceInMeters).stream().map(Warehouse::getId).toList();
 
-        if (search != null && !search.isEmpty()) {
-            spec = spec.and((root, query, criteriaBuilder) -> {
-                String likePattern = "%" + search.toLowerCase() + "%";
-                return criteriaBuilder.or( criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), likePattern),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), likePattern) );
-            });
-        }
+//        Specification<WarehouseInventory> spec = Specification.where(WarehouseInventorySpecification.warehouseIn(nearbyWarehouseIds))
+//                .and(WarehouseInventorySpecification.notDeleted())
+//                .and(WarehouseInventorySpecification.distinct());
+//
+//        Page<WarehouseInventory> warehouseInventoryPage = warehouseInventoryRepository.findAll(spec, pageRequest);
 
-        Page<Product> productsPage = productRepository.findAll(spec, pageRequest);
+        Page<WarehouseInventory> warehouseInventoryPage = warehouseInventoryRepository.findDistinctByProduct(nearbyWarehouseIds, req.getProductCategoryId(), req.getSearchQuery(), pageRequest);
 
-        List<ProductResponseDTO> productResponseDTOS = productsPage.getContent().stream()
-                .map(product -> {
-                    List<ProductImageResponseDTO> productImageResponseDTOS = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId()).stream()
-                            .map(ProductImageResponseDTO::new)
-                            .toList();
-                    return new ProductResponseDTO(product, productImageResponseDTOS);
-                })
-                .toList();
+        List<PaginatedProductResponseDTO> productResponseDTOS = warehouseInventoryPage.stream().map(warehouseInventory -> {
+            String imageUrl = productImageRepository.findByProductIdAndDeletedAtIsNull(warehouseInventory.getProduct().getId())
+                    .stream()
+                    .filter(productImage -> productImage.getOrderNumber().equals(1))
+                    .findFirst().get().getImageUrl();
+            return new PaginatedProductResponseDTO(warehouseInventory, imageUrl);
+        }).toList();
 
-        return new PaginationInfo<>(productsPage, productResponseDTOS);
+      return new PaginationInfo<>(warehouseInventoryPage, productResponseDTOS);
     }
-
-
 }
