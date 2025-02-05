@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 public class PaginatedProductRequestDTO {
     private int page;
     private int limit;
-    private double longitude;
-    private double latitude;
+    private Double longitude;
+    private Double latitude;
     private Long productCategoryId;
     private String searchQuery;
 }

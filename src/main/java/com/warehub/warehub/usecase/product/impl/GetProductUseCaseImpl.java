@@ -1,6 +1,9 @@
 package com.warehub.warehub.usecase.product.impl;
 
+import com.warehub.warehub.common.enums.LocationConstants;
 import com.warehub.warehub.common.exceptions.ProductNotFoundException;
+import com.warehub.warehub.common.utils.Location;
+import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductImage;
@@ -63,8 +66,8 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     public PaginationInfo<PaginatedProductResponseDTO> getPaginatedProducts(PaginatedProductRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
-        double maxDistanceInMeters = 50000;
-        List<Long> nearbyWarehouseIds = warehouseRepository.findNearbyWarehouses(req.getLongitude(), req.getLatitude(), maxDistanceInMeters).stream().map(Warehouse::getId).toList();
+        Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
+        List<Long> nearbyWarehouseIds = warehouseRepository.findNearbyWarehouses(location.getLongitude(), location.getLatitude(), LocationConstants.MAX_DISTANCE_IN_METERS.getValue()).stream().map(Warehouse::getId).toList();
 
 //        Specification<WarehouseInventory> spec = Specification.where(WarehouseInventorySpecification.warehouseIn(nearbyWarehouseIds))
 //                .and(WarehouseInventorySpecification.notDeleted())

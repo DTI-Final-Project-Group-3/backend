@@ -47,8 +47,8 @@ public class ProductController {
     @GetMapping()
     public ResponseEntity<?> getPaginatedProduct(@RequestParam int page,
                                                  @RequestParam int limit,
-                                                 @RequestParam(required = false) double lng,
-                                                 @RequestParam(required = false) double lat,
+                                                 @RequestParam(required = false) Double lng,
+                                                 @RequestParam(required = false) Double lat,
                                                  @RequestParam(required = false) Long cat,
                                                  @RequestParam(required = false) String search) {
         PaginatedProductRequestDTO requestDTO = new PaginatedProductRequestDTO(page, limit, lng, lat, cat, search);
