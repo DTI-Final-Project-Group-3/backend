@@ -46,7 +46,7 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
             """,
             nativeQuery = true)
     Page<WarehouseInventory> findDistinctByProduct(
-            @Param("nearbyWarehouseIds") String nearbyWarehouseIds, // Pass as "{5,4}"
+            @Param("nearbyWarehouseIds") String nearbyWarehouseIds,
             @Param("productCategoryId") Long productCategoryId,
             @Param("searchQuery") String searchQuery,
             Pageable pageable

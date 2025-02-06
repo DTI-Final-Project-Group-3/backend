@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.warehouse.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
+import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseRequestDTO;
 import com.warehub.warehub.usecase.warehouse.CreateWarehouseUseCase;
 import com.warehub.warehub.usecase.warehouse.DeleteWarehouseUseCase;
@@ -37,10 +38,11 @@ public class WarehouseController {
     }
 
     @GetMapping("/nearby")
-    public ResponseEntity<?> getNearbyWarehouses(@RequestParam double lng,
-                                                 @RequestParam double lat,
-                                                 @RequestParam double max){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby warehouse success", getWarehouseUseCase.getNearbyWarehouses(lng, lat, max));
+    public ResponseEntity<?> getNearbyWarehouses(@RequestParam Double longitude,
+                                                 @RequestParam Double latitude,
+                                                 @RequestParam(required = false) Long productId){
+        NearbyWarehouseRequestDTO nearbyWarehouseRequestDTO = new NearbyWarehouseRequestDTO(longitude, latitude,  productId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby warehouse success", getWarehouseUseCase.getNearbyWarehouses(nearbyWarehouseRequestDTO));
     }
 
     @GetMapping("/{warehouseId}")

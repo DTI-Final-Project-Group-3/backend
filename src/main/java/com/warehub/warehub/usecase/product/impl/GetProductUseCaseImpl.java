@@ -73,13 +73,11 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
                 .findNearbyWarehouses(
                         location.getLongitude(),
                         location.getLatitude(),
-                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue()
+                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue(),null
                 )
                 .stream()
-                .map(Warehouse::getId) // Extract IDs as Long
-                .map(String::valueOf)  // Convert Long to String
-                .collect(Collectors.joining(",", "{", "}")); // Format as "{id1,id2,id3}"
-
+                .map(nearbyWarehouse -> String.valueOf(nearbyWarehouse[0]))
+                .collect(Collectors.joining(",", "{", "}"));
 
 //        Specification<WarehouseInventory> spec = Specification.where(WarehouseInventorySpecification.warehouseIn(nearbyWarehouseIds))
 //                .and(WarehouseInventorySpecification.notDeleted())
