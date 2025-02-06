@@ -2,7 +2,6 @@ package com.warehub.warehub.infrastructure.product.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.PaginatedProductResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
 import com.warehub.warehub.usecase.product.*;
