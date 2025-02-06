@@ -46,6 +46,8 @@ public class TokenGenerationUsecaseImpl implements TokenGenerationUsecase {
                 .subject(email)
                 .claim("scope", scope)
                 .claim("userId", user.getId())
+                .claim("userEmail", user.getEmail())
+                .claim("userRole", user.getRole().getName())
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(() -> "RS256").build();
