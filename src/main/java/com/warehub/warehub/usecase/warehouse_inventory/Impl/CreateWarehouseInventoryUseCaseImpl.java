@@ -1,4 +1,4 @@
-package com.warehub.warehub.usecase.warehouse_inventories.Impl;
+package com.warehub.warehub.usecase.warehouse_inventory.Impl;
 
 import com.warehub.warehub.common.exceptions.DuplicateWarehouseInventoryException;
 import com.warehub.warehub.common.exceptions.ProductNotFoundException;
@@ -7,10 +7,10 @@ import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
-import com.warehub.warehub.infrastructure.warehouse_inventories.dto.WarehouseInventoryRequestDTO;
-import com.warehub.warehub.infrastructure.warehouse_inventories.dto.WarehouseInventoryResponseDTO;
-import com.warehub.warehub.infrastructure.warehouse_inventories.repository.WarehouseInventoryRepository;
-import com.warehub.warehub.usecase.warehouse_inventories.CreateWarehouseInventoryUseCase;
+import com.warehub.warehub.infrastructure.warehouse_inventory.dto.WarehouseInventoryRequestDTO;
+import com.warehub.warehub.infrastructure.warehouse_inventory.dto.WarehouseInventoryResponseDTO;
+import com.warehub.warehub.infrastructure.warehouse_inventory.repository.WarehouseInventoryRepository;
+import com.warehub.warehub.usecase.warehouse_inventory.CreateWarehouseInventoryUseCase;
 import org.springframework.stereotype.Service;
 
 @Service

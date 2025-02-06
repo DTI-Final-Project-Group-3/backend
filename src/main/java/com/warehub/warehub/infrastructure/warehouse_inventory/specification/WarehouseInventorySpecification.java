@@ -1,4 +1,4 @@
-package com.warehub.warehub.infrastructure.warehouse_inventories.specification;
+package com.warehub.warehub.infrastructure.warehouse_inventory.specification;
 
 import com.warehub.warehub.entity.WarehouseInventory;
 import org.springframework.data.jpa.domain.Specification;

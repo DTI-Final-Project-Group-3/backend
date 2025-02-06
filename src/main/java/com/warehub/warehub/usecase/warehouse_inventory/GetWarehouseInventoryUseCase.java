@@ -1,7 +1,7 @@
-package com.warehub.warehub.usecase.warehouse_inventories;
+package com.warehub.warehub.usecase.warehouse_inventory;
 
-import com.warehub.warehub.infrastructure.warehouse_inventories.dto.DetailWarehouseInventoryResponseDTO;
-import com.warehub.warehub.infrastructure.warehouse_inventories.dto.WarehouseInventoryResponseDTO;
+import com.warehub.warehub.infrastructure.warehouse_inventory.dto.DetailWarehouseInventoryResponseDTO;
+import com.warehub.warehub.infrastructure.warehouse_inventory.dto.WarehouseInventoryResponseDTO;
 
 import java.util.List;
 

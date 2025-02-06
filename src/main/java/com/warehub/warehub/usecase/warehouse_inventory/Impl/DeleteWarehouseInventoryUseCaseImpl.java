@@ -1,9 +1,9 @@
-package com.warehub.warehub.usecase.warehouse_inventories.Impl;
+package com.warehub.warehub.usecase.warehouse_inventory.Impl;
 
 import com.warehub.warehub.common.exceptions.WarehouseInventoryNotFoundException;
 import com.warehub.warehub.entity.WarehouseInventory;
-import com.warehub.warehub.infrastructure.warehouse_inventories.repository.WarehouseInventoryRepository;
-import com.warehub.warehub.usecase.warehouse_inventories.DeleteWarehouseInventoryUseCase;
+import com.warehub.warehub.infrastructure.warehouse_inventory.repository.WarehouseInventoryRepository;
+import com.warehub.warehub.usecase.warehouse_inventory.DeleteWarehouseInventoryUseCase;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;

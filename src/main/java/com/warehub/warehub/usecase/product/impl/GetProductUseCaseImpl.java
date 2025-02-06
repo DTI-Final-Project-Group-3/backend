@@ -7,7 +7,6 @@ import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductImage;
-import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.entity.WarehouseInventory;
 import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.PaginatedProductResponseDTO;
@@ -16,13 +15,12 @@ import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
-import com.warehub.warehub.infrastructure.warehouse_inventories.repository.WarehouseInventoryRepository;
+import com.warehub.warehub.infrastructure.warehouse_inventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.product.GetProductUseCase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -1,11 +1,11 @@
-package com.warehub.warehub.infrastructure.warehouse_inventories.controller;
+package com.warehub.warehub.infrastructure.warehouse_inventory.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.warehouse_inventories.dto.WarehouseInventoryRequestDTO;
-import com.warehub.warehub.usecase.warehouse_inventories.CreateWarehouseInventoryUseCase;
-import com.warehub.warehub.usecase.warehouse_inventories.DeleteWarehouseInventoryUseCase;
-import com.warehub.warehub.usecase.warehouse_inventories.GetWarehouseInventoryUseCase;
-import com.warehub.warehub.usecase.warehouse_inventories.UpdateWarehouseInventoryUseCase;
+import com.warehub.warehub.infrastructure.warehouse_inventory.dto.WarehouseInventoryRequestDTO;
+import com.warehub.warehub.usecase.warehouse_inventory.CreateWarehouseInventoryUseCase;
+import com.warehub.warehub.usecase.warehouse_inventory.DeleteWarehouseInventoryUseCase;
+import com.warehub.warehub.usecase.warehouse_inventory.GetWarehouseInventoryUseCase;
+import com.warehub.warehub.usecase.warehouse_inventory.UpdateWarehouseInventoryUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

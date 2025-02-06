@@ -1,4 +1,4 @@
-package com.warehub.warehub.infrastructure.warehouse_inventories.repository;
+package com.warehub.warehub.infrastructure.warehouse_inventory.repository;
 
 import com.warehub.warehub.entity.WarehouseInventory;
 import org.springframework.data.domain.Page;

@@ -1,4 +1,4 @@
-package com.warehub.warehub.infrastructure.warehouse_inventories.dto;
+package com.warehub.warehub.infrastructure.warehouse_inventory.dto;
 
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.Warehouse;
