@@ -10,6 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -96,11 +97,11 @@ public class User {
         deletedAt = OffsetDateTime.now();
     }
 
-    @OneToMany(mappedBy = "customerOrder")
-    private Set<CustomerOrderItem> customerOrderItems = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "user")
+    private Set<CustomerOrderItem> customerOrderItems;
 
     @OneToMany(mappedBy = "user")
-    private Set<CustomerOrder> customerOrders = new LinkedHashSet<>();
+    private List<CustomerOrder> customerOrders;
 
     @OneToMany(mappedBy = "user")
     private Set<EmailVerificationToken> emailVerificationTokens = new LinkedHashSet<>();

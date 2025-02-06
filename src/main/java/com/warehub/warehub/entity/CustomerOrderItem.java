@@ -20,12 +20,20 @@ public class CustomerOrderItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_order_id")
-    private User customerOrder;
+    private CustomerOrder customerOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
-    private Warehouse product;
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id")
+    private Warehouse warehouse;
 
     @Column(name = "quantity", length = Integer.MAX_VALUE)
     private String quantity;
@@ -43,23 +51,5 @@ public class CustomerOrderItem {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
-
-    @PrePersist
-    public void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = OffsetDateTime.now();
-        }
-        this.updatedAt = OffsetDateTime.now();
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = OffsetDateTime.now();
-    }
-
-    @PreRemove
-    protected void onRemove() {
-        deletedAt = OffsetDateTime.now();
-    }
 
 }
