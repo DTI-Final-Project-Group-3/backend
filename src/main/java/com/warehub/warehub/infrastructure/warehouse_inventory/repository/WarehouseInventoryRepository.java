@@ -24,26 +24,27 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
     List<WarehouseInventory> findByWarehouseIdAndDeletedAtIsNull(Long warehouseId);
 
     @Query(value = """
-                SELECT DISTINCT ON (wi.product_id) wi.* 
-                FROM warehouse_inventories wi 
-                JOIN products p ON wi.product_id = p.id 
-                WHERE 
-                  wi.warehouse_id = ANY(CAST(:nearbyWarehouseIds AS bigint[])) 
-                  AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
-                  AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
-                ORDER BY 
-                  wi.product_id, 
-                  array_position(CAST(:nearbyWarehouseIds AS bigint[]), wi.warehouse_id)
-            """,
+    SELECT DISTINCT ON (wi.product_id) wi.* 
+    FROM warehouse_inventories wi 
+    JOIN products p ON wi.product_id = p.id 
+    WHERE 
+      wi.warehouse_id = ANY(CAST(:nearbyWarehouseIds AS bigint[])) 
+      AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
+      AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
+    ORDER BY 
+      wi.product_id, 
+      wi.quantity DESC, 
+      array_position(CAST(:nearbyWarehouseIds AS bigint[]), wi.warehouse_id)
+""",
             countQuery = """
-                SELECT COUNT(DISTINCT wi.product_id) 
-                FROM warehouse_inventories wi 
-                JOIN products p ON wi.product_id = p.id 
-                WHERE 
-                  wi.warehouse_id = ANY(CAST(:nearbyWarehouseIds AS bigint[])) 
-                  AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
-                  AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
-            """,
+    SELECT COUNT(DISTINCT wi.product_id) 
+    FROM warehouse_inventories wi 
+    JOIN products p ON wi.product_id = p.id 
+    WHERE 
+      wi.warehouse_id = ANY(CAST(:nearbyWarehouseIds AS bigint[])) 
+      AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId) 
+      AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%')) 
+""",
             nativeQuery = true)
     Page<WarehouseInventory> findDistinctByProduct(
             @Param("nearbyWarehouseIds") String nearbyWarehouseIds,
@@ -51,6 +52,7 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
             @Param("searchQuery") String searchQuery,
             Pageable pageable
     );
+
 }
 
 
