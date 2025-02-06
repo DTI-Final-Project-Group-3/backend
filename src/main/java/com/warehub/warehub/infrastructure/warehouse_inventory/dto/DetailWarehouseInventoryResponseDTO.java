@@ -14,6 +14,8 @@ public class DetailWarehouseInventoryResponseDTO {
     private Long warehouseId;
     private String warehouseName;
     private Integer quantity;
+    private Long statusId;
+    private String statusName;
 
     public DetailWarehouseInventoryResponseDTO(WarehouseInventory warehouseInventory, List<ProductImageResponseDTO> productImageResponseDTO){
         this.id = warehouseInventory.getId();
@@ -21,5 +23,7 @@ public class DetailWarehouseInventoryResponseDTO {
         this.warehouseId = warehouseInventory.getWarehouse().getId();
         this.warehouseName = warehouseInventory.getWarehouse().getName();
         this.quantity = warehouseInventory.getQuantity();
+        this.statusId = warehouseInventory.getWarehouseInventoryStatus().getId();
+        this.statusName = warehouseInventory.getWarehouseInventoryStatus().getName();
     }
 }
