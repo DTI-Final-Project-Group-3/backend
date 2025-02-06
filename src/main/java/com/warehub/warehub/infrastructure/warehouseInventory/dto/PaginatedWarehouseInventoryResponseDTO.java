@@ -17,6 +17,7 @@ public class PaginatedWarehouseInventoryResponseDTO {
     private BigDecimal price;
     private String imageUrl;
     private Integer stock;
+    private String status;
     private Long warehouseId;
     private String warehouseName;
 
@@ -27,6 +28,7 @@ public class PaginatedWarehouseInventoryResponseDTO {
         this.price = warehouseInventory.getProduct().getPrice();;
         this.imageUrl = imageUrl;
         this.stock = warehouseInventory.getQuantity();
+        this.status = warehouseInventory.getWarehouseInventoryStatus().getName();
         this.warehouseId = warehouseInventory.getWarehouse().getId();
         this.warehouseName = warehouseInventory.getWarehouse().getName();
     }

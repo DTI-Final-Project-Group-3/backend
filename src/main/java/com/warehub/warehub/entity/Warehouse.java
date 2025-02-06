@@ -32,6 +32,7 @@ public class Warehouse {
     @Column(name = "detail_address", length = 500)
     private String detailAddress;
 
+    @NotNull
     @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
     private Point location;
 
