@@ -1,6 +1,8 @@
 package com.warehub.warehub.infrastructure.warehouse_inventory.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
+import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
+import com.warehub.warehub.infrastructure.warehouse_inventory.dto.PaginatedWarehouseInventoryRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse_inventory.dto.WarehouseInventoryRequestDTO;
 import com.warehub.warehub.usecase.warehouse_inventory.CreateWarehouseInventoryUseCase;
 import com.warehub.warehub.usecase.warehouse_inventory.DeleteWarehouseInventoryUseCase;
@@ -29,6 +31,17 @@ public class WarehouseInventoryController {
     @PostMapping
     public ResponseEntity<?> createWarehouseInventory(@RequestBody WarehouseInventoryRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create new warehouse inventory success", createWarehouseInventoryUseCase.createWarehouseInventory(req));
+    }
+
+    @GetMapping()
+    public ResponseEntity<?> getPaginatedProduct(@RequestParam int page,
+                                                 @RequestParam int limit,
+                                                 @RequestParam(required = false) Double longitude,
+                                                 @RequestParam(required = false) Double latitude,
+                                                 @RequestParam(required = false) Long category,
+                                                 @RequestParam(required = false) String search) {
+        PaginatedWarehouseInventoryRequestDTO requestDTO = new PaginatedWarehouseInventoryRequestDTO(page, limit, longitude, latitude, category, search);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all product success", getWarehouseInventoryUseCase.getPaginatedWarehouseInventory(requestDTO));
     }
 
     @GetMapping("/{warehouseInventoryId}")

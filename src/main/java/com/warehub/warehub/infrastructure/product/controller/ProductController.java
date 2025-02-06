@@ -2,6 +2,7 @@ package com.warehub.warehub.infrastructure.product.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
+import com.warehub.warehub.infrastructure.product.dto.PaginatedProductResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
 import com.warehub.warehub.usecase.product.*;
@@ -39,20 +40,18 @@ public class ProductController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create new product success !", createProductUseCase.createProduct(req));
     }
 
+    @GetMapping
+    public ResponseEntity<?> getPaginatedProduct(@RequestParam int page,
+                                                 @RequestParam int limit,
+                                                 @RequestParam(required = false) Long category,
+                                                 @RequestParam(required = false) String search){
+        PaginatedProductRequestDTO requestDTO = new PaginatedProductRequestDTO(page, limit, category, search);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get paginated product response success", getProductUseCase.getPaginatedProducts(requestDTO));
+    }
+
     @GetMapping("/all")
     public ResponseEntity<?> getAllProduct(){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProduct());
-    }
-
-    @GetMapping()
-    public ResponseEntity<?> getPaginatedProduct(@RequestParam int page,
-                                                 @RequestParam int limit,
-                                                 @RequestParam(required = false) Double longitude,
-                                                 @RequestParam(required = false) Double latitude,
-                                                 @RequestParam(required = false) Long category,
-                                                 @RequestParam(required = false) String search) {
-        PaginatedProductRequestDTO requestDTO = new PaginatedProductRequestDTO(page, limit, longitude, latitude, category, search);
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all product success", getProductUseCase.getPaginatedProducts(requestDTO));
     }
 
     @GetMapping("/{productId}")

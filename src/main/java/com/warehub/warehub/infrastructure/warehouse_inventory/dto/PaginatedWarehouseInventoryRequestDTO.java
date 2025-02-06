@@ -1,4 +1,4 @@
-package com.warehub.warehub.infrastructure.product.dto;
+package com.warehub.warehub.infrastructure.warehouse_inventory.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaginatedProductRequestDTO {
+public class PaginatedWarehouseInventoryRequestDTO {
     private int page;
     private int limit;
+    private Double longitude;
+    private Double latitude;
     private Long productCategoryId;
     private String searchQuery;
 }
