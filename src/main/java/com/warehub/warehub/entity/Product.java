@@ -82,13 +82,4 @@ public class Product {
         deletedAt = OffsetDateTime.now();
     }
 
-    @OneToMany(mappedBy = "product")
-    private Set<ProductImage> productImages = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "product")
-    private Set<ProductMutationItem> productMutationItems = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "product")
-    private Set<WarehouseInventory> warehouseInventories = new LinkedHashSet<>();
-
 }

@@ -26,11 +26,6 @@ public class UserAddress {
     private User user;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "city_id", nullable = false)
-    private City city;
-
-    @NotNull
     @Column(name = "detail_address", nullable = false, length = Integer.MAX_VALUE)
     private String detailAddress;
 
