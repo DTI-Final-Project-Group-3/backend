@@ -28,6 +28,10 @@ public class ProductImage {
     @Column(name = "image_url", nullable = false, length = Integer.MAX_VALUE)
     private String imageUrl;
 
+    @NotNull
+    @Column(name = "order_number", nullable = false, length = Integer.MAX_VALUE)
+    private Integer orderNumber;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
     private OffsetDateTime createdAt;

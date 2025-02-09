@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 public class WarehouseInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "warehouse_inventory_id_gen")
-    @SequenceGenerator(name = "warehouse_inventory_id_gen", sequenceName = "warehouse_inventory_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "warehouse_inventory_id_gen", sequenceName = "warehouse_inventories_id_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
     private Long id;
 

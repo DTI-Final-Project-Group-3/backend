@@ -43,6 +43,10 @@ public class ApiResponse<T> {
         return successfulResponse(HttpStatus.OK.value(), message, null);
     }
 
+    public static <T> ResponseEntity<ApiResponse<T>> successfulResponse(int statusCode, String message) {
+        return successfulResponse(statusCode, message, null);
+    }
+
     public static <T> ResponseEntity<ApiResponse<T>> successfulResponse(String message, T data) {
         return successfulResponse(HttpStatus.OK.value(), message, data);
     }
