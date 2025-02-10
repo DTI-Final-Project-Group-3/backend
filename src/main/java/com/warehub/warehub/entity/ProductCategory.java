@@ -27,9 +27,6 @@ public class ProductCategory {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "image_url", length = Integer.MAX_VALUE)
-    private String imageUrl;
-
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
