@@ -1,0 +1,42 @@
+package com.warehub.warehub.infrastructure.product.dto;
+
+import com.warehub.warehub.entity.Product;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+public class ProductDetailResponseDTO {
+
+    private Long id;
+    private String name;
+    private String descriptions;
+    private BigDecimal price;
+    private BigDecimal weight;
+    private BigDecimal height;
+    private BigDecimal width;
+    private BigDecimal length;
+
+    private List<ProductImageResponseDTO> images;
+
+    private ProductCategoryResponseDTO category;
+
+    public ProductDetailResponseDTO(Product product, List<ProductImageResponseDTO> productImages){
+        this.id = product.getId();
+        this.name = product.getName();
+        this.descriptions = product.getDescriptions();
+        this.price = product.getPrice();
+        this.weight = product.getWeight();
+        this.height = product.getHeight();
+        this.width = product.getWidth();
+        this.length = product.getLength();
+
+        this.images = productImages;
+
+        this.category = new ProductCategoryResponseDTO(product.getProductCategory());
+    }
+}
+

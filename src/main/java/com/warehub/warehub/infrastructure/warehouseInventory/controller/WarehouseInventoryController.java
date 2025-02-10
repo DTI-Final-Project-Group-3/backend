@@ -1,7 +1,7 @@
 package com.warehub.warehub.infrastructure.warehouseInventory.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.PaginatedWarehouseInventoryRequestDTO;
+import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryPaginationRequestDTO;
 import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryRequestDTO;
 import com.warehub.warehub.usecase.warehouseInventory.CreateWarehouseInventoryUseCase;
 import com.warehub.warehub.usecase.warehouseInventory.DeleteWarehouseInventoryUseCase;
@@ -39,7 +39,7 @@ public class WarehouseInventoryController {
                                                  @RequestParam(required = false) Double latitude,
                                                  @RequestParam(required = false) Long category,
                                                  @RequestParam(required = false) String search) {
-        PaginatedWarehouseInventoryRequestDTO requestDTO = new PaginatedWarehouseInventoryRequestDTO(page, limit, longitude, latitude, category, search);
+        WarehouseInventoryPaginationRequestDTO requestDTO = new WarehouseInventoryPaginationRequestDTO(page, limit, longitude, latitude, category, search);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all product success", getWarehouseInventoryUseCase.getPaginatedWarehouseInventory(requestDTO));
     }
 

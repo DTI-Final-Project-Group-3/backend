@@ -1,8 +1,8 @@
 package com.warehub.warehub.usecase.warehouse;
 
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseRequestDTO;
-import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
+import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseDetailResponseDTO;
 
 public interface UpdateWarehouseUseCase {
-    WarehouseResponseDTO updateWarehouse(Long warehouseId, WarehouseRequestDTO req);
+    WarehouseDetailResponseDTO updateWarehouse(Long warehouseId, WarehouseRequestDTO req);
 }

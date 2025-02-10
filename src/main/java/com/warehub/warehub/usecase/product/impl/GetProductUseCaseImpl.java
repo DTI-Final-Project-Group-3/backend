@@ -1,17 +1,13 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.enums.LocationConstants;
 import com.warehub.warehub.common.exceptions.ProductNotFoundException;
-import com.warehub.warehub.common.utils.Location;
-import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductImage;
-import com.warehub.warehub.entity.WarehouseInventory;
-import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.PaginatedProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductPaginationRequestDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductSummaryResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
 import com.warehub.warehub.infrastructure.product.specification.ProductSpecification;
@@ -35,7 +31,7 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     }
 
     @Override
-    public ProductResponseDTO getProductById(Long productId) {
+    public ProductDetailResponseDTO getProductById(Long productId) {
         Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(()-> new ProductNotFoundException("Product with Id " + productId + " not found !"));
 
@@ -44,21 +40,21 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
         List<ProductImageResponseDTO> productImageResponseDTOS = productImages.stream().map(ProductImageResponseDTO::new).toList();
 
-        return new ProductResponseDTO(product, productImageResponseDTOS);
+        return new ProductDetailResponseDTO(product, productImageResponseDTOS);
     }
 
     @Override
-    public List<ProductResponseDTO> getAllProduct() {
+    public List<ProductDetailResponseDTO> getAllProduct() {
         List<Product> products = productRepository.findAllByDeletedAtIsNull();
 
         return products.stream().map(product -> {
             List<ProductImageResponseDTO> productImages = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
-            return new ProductResponseDTO(product, productImages);
+            return new ProductDetailResponseDTO(product, productImages);
         }).toList();
     }
 
     @Override
-    public PaginationInfo<PaginatedProductResponseDTO> getPaginatedProducts(PaginatedProductRequestDTO req) {
+    public PaginationInfo<ProductSummaryResponseDTO> getPaginatedProducts(ProductPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
         Specification<Product> spec = Specification.where(ProductSpecification.productCategory(req.getProductCategoryId()))
@@ -67,12 +63,12 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
         Page<Product> productPage = productRepository.findAll(spec, pageRequest);
 
-        List<PaginatedProductResponseDTO> responseDTOS = productPage.stream().map(product -> {
+        List<ProductSummaryResponseDTO> responseDTOS = productPage.stream().map(product -> {
             ProductImage productImage = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId())
-                    .stream().filter(image -> image.getOrderNumber().equals(1))
+                    .stream().filter(image -> image.getPosition().equals(1))
                     .findFirst()
                     .orElse(new ProductImage());
-            return new PaginatedProductResponseDTO(product, productImage.getImageUrl());
+            return new ProductSummaryResponseDTO(product, productImage.getUrl());
         }).toList();
 
         return new PaginationInfo<>(productPage, responseDTOS);

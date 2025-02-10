@@ -9,9 +9,9 @@ import com.warehub.warehub.entity.WarehouseInventory;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.DetailWarehouseInventoryResponseDTO;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.PaginatedWarehouseInventoryRequestDTO;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.PaginatedWarehouseInventoryResponseDTO;
+import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryDetailResponseDTO;
+import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryPaginationRequestDTO;
+import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventorySummaryResponseDTO;
 import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryResponseDTO;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.warehouseInventory.GetWarehouseInventoryUseCase;
@@ -36,14 +36,14 @@ public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUs
     }
 
     @Override
-    public DetailWarehouseInventoryResponseDTO getDetailWarehouseInventoryById(Long warehouseInventoryId) {
+    public WarehouseInventoryDetailResponseDTO getDetailWarehouseInventoryById(Long warehouseInventoryId) {
         WarehouseInventory warehouseInventory = warehouseInventoryRepository.findByIdAndDeletedAtIsNull(warehouseInventoryId)
                 .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory with ID " + warehouseInventoryId + " not found !"));
 
         List<ProductImageResponseDTO> productImageResponseDTO = productImageRepository.findByProductIdAndDeletedAtIsNull(warehouseInventory.getProduct().getId())
                 .stream().map(ProductImageResponseDTO::new).toList();
 
-        return new DetailWarehouseInventoryResponseDTO(warehouseInventory, productImageResponseDTO);
+        return new WarehouseInventoryDetailResponseDTO(warehouseInventory, productImageResponseDTO);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUs
     }
 
     @Override
-    public PaginationInfo<PaginatedWarehouseInventoryResponseDTO> getPaginatedWarehouseInventory(PaginatedWarehouseInventoryRequestDTO req) {
+    public PaginationInfo<WarehouseInventorySummaryResponseDTO> getPaginatedWarehouseInventory(WarehouseInventoryPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
@@ -70,12 +70,12 @@ public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUs
 
         Page<WarehouseInventory> warehouseInventoryPage = warehouseInventoryRepository.findDistinctByProduct(nearbyWarehouseIds, req.getProductCategoryId(), req.getSearchQuery(), pageRequest);
 
-        List<PaginatedWarehouseInventoryResponseDTO> responseDTOS = warehouseInventoryPage.stream().map(warehouseInventory -> {
+        List<WarehouseInventorySummaryResponseDTO> responseDTOS = warehouseInventoryPage.stream().map(warehouseInventory -> {
             String imageUrl = productImageRepository.findByProductIdAndDeletedAtIsNull(warehouseInventory.getProduct().getId())
                     .stream()
-                    .filter(productImage -> productImage.getOrderNumber().equals(1))
-                    .findFirst().get().getImageUrl();
-            return new PaginatedWarehouseInventoryResponseDTO(warehouseInventory, imageUrl);
+                    .filter(productImage -> productImage.getPosition().equals(1))
+                    .findFirst().get().getUrl();
+            return new WarehouseInventorySummaryResponseDTO(warehouseInventory, imageUrl);
         }).toList();
 
         return new PaginationInfo<>(warehouseInventoryPage, responseDTOS);
