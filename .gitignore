@@ -35,6 +35,7 @@ build/
 ### env file
 .env
 
+# ignore data
 data
 data/
 data/postgist
