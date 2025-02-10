@@ -34,3 +34,8 @@ build/
 
 ### env file
 .env
+
+data
+data/
+data/postgist
+data/postgres
