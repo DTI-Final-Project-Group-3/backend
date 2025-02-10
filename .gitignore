@@ -35,9 +35,8 @@ build/
 ### env file
 .env
 
-# Ignore data directories
+# ignore data
 data
 data/
 data/postgist
 data/postgres
-

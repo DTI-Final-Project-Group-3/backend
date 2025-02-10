@@ -68,8 +68,8 @@ public class Warehouse {
         deletedAt = OffsetDateTime.now();
     }
 
-    @OneToMany(mappedBy = "product")
-    private Set<CustomerOrderItem> customerOrderItems = new LinkedHashSet<>();
+//    @OneToMany(mappedBy = "product")
+//    private Set<CustomerOrderItem> customerOrderItems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "warehouse")
     private Set<CustomerOrder> customerOrders = new LinkedHashSet<>();
