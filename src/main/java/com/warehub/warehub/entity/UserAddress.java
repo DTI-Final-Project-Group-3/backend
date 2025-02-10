@@ -2,9 +2,11 @@ package com.warehub.warehub.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -20,6 +22,11 @@ public class UserAddress {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "name", nullable = false)
+    private String name;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -29,11 +36,12 @@ public class UserAddress {
     @Column(name = "detail_address", nullable = false, length = Integer.MAX_VALUE)
     private String detailAddress;
 
-    @Column(name = "latitude", precision = 9, scale = 2)
-    private BigDecimal latitude;
+    @NotNull
+    @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
+    private Point location;
 
-    @Column(name = "longitude", precision = 9, scale = 2)
-    private BigDecimal longitude;
+    @Column(name = "is_primary",nullable = true)
+    private boolean isPrimary;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
