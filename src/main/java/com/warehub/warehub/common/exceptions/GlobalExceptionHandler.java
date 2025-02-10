@@ -76,4 +76,14 @@ public class GlobalExceptionHandler {
         return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(WarehouseInventoryStatusNotFoundException.class)
+    public ResponseEntity<?>handleWarehouseInventoryStatusNotFoundException(WarehouseInventoryStatusNotFoundException ex){
+        return ApiResponse.failedResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(NegativeQuantityException.class)
+    public ResponseEntity<?>handleNegativeQuantityException(NegativeQuantityException ex){
+        return ApiResponse.failedResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+    }
+
 }

@@ -25,12 +25,12 @@ public class ProductImage {
     private Product product;
 
     @NotNull
-    @Column(name = "image_url", nullable = false, length = Integer.MAX_VALUE)
-    private String imageUrl;
+    @Column(name = "url", nullable = false, length = Integer.MAX_VALUE)
+    private String url;
 
     @NotNull
-    @Column(name = "order_number", nullable = false, length = Integer.MAX_VALUE)
-    private Integer orderNumber;
+    @Column(name = "position", nullable = false, length = Integer.MAX_VALUE)
+    private Integer position;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")

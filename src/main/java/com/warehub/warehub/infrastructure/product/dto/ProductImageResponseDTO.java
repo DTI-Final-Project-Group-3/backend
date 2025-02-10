@@ -5,11 +5,11 @@ import lombok.Data;
 
 @Data
 public class ProductImageResponseDTO {
-    private String imageUrl;
-    private Integer orderNumber;
+    private String url;
+    private Integer position;
 
     public ProductImageResponseDTO(ProductImage productImage){
-        this.imageUrl = productImage.getImageUrl();
-        this.orderNumber = productImage.getOrderNumber();
+        this.url = productImage.getUrl();
+        this.position = productImage.getPosition();
     }
 }

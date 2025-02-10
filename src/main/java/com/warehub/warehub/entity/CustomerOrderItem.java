@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -20,15 +22,16 @@ public class CustomerOrderItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "customer_order_id")
-    private User customerOrder;
+    private CustomerOrder customerOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
-    private Warehouse product;
+    private Product product;
 
-    @Column(name = "quantity", length = Integer.MAX_VALUE)
-    private String quantity;
+    @Column(name = "quantity")
+    private Integer quantity;
 
     @Column(name = "product_price", precision = 10, scale = 5)
     private BigDecimal productPrice;

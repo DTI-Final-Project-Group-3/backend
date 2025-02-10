@@ -17,8 +17,8 @@ import java.util.Set;
 @Table(name = "product_mutation_types")
 public class ProductMutationType {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_mutation_type_id_gen")
-    @SequenceGenerator(name = "product_mutation_type_id_gen", sequenceName = "product_mutation_type_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_mutation_types_id_gen")
+    @SequenceGenerator(name = "product_mutation_types_id_gen", sequenceName = "product_mutation_types_id_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
     private Long id;
 

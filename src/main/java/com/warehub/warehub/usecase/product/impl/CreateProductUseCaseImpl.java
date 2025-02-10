@@ -9,7 +9,7 @@ import com.warehub.warehub.entity.ProductImage;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductCategoryRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
@@ -36,7 +36,7 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
 
     @Transactional
     @Override
-    public ProductResponseDTO createProduct(ProductRequestDTO req) {
+    public ProductDetailResponseDTO createProduct(ProductRequestDTO req) {
 
         Optional<Product> duplicateProduct = productRepository.findByNameIgnoreCaseAndDeletedAtIsNull(req.getName());
         if (duplicateProduct.isPresent()){
@@ -60,9 +60,7 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
         productImageRepository.saveAll(productImages);
 
         List<ProductImageResponseDTO> productImageResponseDTO = productImages.stream().map(ProductImageResponseDTO::new).toList();
-        ProductResponseDTO productResponseDTOS = new ProductResponseDTO(product);
-        productResponseDTOS.setProductImages(productImageResponseDTO);
 
-        return productResponseDTOS;
+        return new ProductDetailResponseDTO(product, productImageResponseDTO);
     }
 }

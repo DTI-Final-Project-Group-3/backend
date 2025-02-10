@@ -1,8 +1,8 @@
 package com.warehub.warehub.usecase.product;
 
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 
 public interface CreateProductUseCase {
-    ProductResponseDTO createProduct(ProductRequestDTO req);
+    ProductDetailResponseDTO createProduct(ProductRequestDTO req);
 }

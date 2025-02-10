@@ -13,17 +13,15 @@ import java.util.List;
 public class PaginationInfo<T> {
     private int currentPage;
     private int totalPages;
-    private long totalElements;
-    private boolean isFirstPage;
-    private boolean isLastPage;
+    private boolean hasPrev;
+    private boolean hasNext;
     private List<T> content;
 
     public PaginationInfo(Page<?> page, List<T> content){
         this.currentPage = page.getNumber();
         this.totalPages = page.getTotalPages();
-        this.totalElements = page.getTotalElements();
-        this.isFirstPage = page.isFirst();
-        this.isLastPage = page.isLast();
+        this.hasPrev = page.hasPrevious();
+        this.hasNext = page.hasNext();
         this.content = content;
     }
 }

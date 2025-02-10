@@ -8,7 +8,7 @@ import com.warehub.warehub.entity.ProductCategory;
 import com.warehub.warehub.entity.ProductImage;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductCategoryRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
@@ -35,7 +35,7 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
 
     @Override
     @Transactional
-    public ProductResponseDTO updateProductById(Long productId, ProductRequestDTO req) {
+    public ProductDetailResponseDTO updateProductById(Long productId, ProductRequestDTO req) {
         Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found!"));
 
@@ -58,10 +58,10 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
 
 
         List<Integer> requestImageOrderNumbers = requestProductImages.stream()
-                .map(ProductImage::getOrderNumber)
+                .map(ProductImage::getPosition)
                 .toList();
         existingProductImages.stream()
-                .filter(existingImage -> !requestImageOrderNumbers.contains(existingImage.getOrderNumber()))
+                .filter(existingImage -> !requestImageOrderNumbers.contains(existingImage.getPosition()))
                 .forEach(imageToDelete -> {
                     imageToDelete.setDeletedAt(OffsetDateTime.now());
                     productImageRepository.save(imageToDelete);
@@ -70,7 +70,7 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
         for (ProductImage requestProductImage : requestProductImages) {
             ProductImage newProductImage = new ProductImage();
             existingProductImages.stream()
-                    .filter(existingProductImage -> existingProductImage.getOrderNumber().equals(requestProductImage.getOrderNumber()))
+                    .filter(existingProductImage -> existingProductImage.getPosition().equals(requestProductImage.getPosition()))
                     .findFirst()
                     .ifPresent(existingProductImage -> {
                         newProductImage.setId(existingProductImage.getId());
@@ -78,8 +78,8 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
                     });
 
             newProductImage.setProduct(requestProduct);
-            newProductImage.setImageUrl(requestProductImage.getImageUrl());
-            newProductImage.setOrderNumber(requestProductImage.getOrderNumber());
+            newProductImage.setUrl(requestProductImage.getUrl());
+            newProductImage.setPosition(requestProductImage.getPosition());
             newProductImage.setUpdatedAt(OffsetDateTime.now());
 
             if(newProductImage.getId() == null){
@@ -91,6 +91,6 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
         productImageRepository.saveAll(updatedProductImages);
         updatedProductImages.forEach(updatedProductImage -> productImageResponseDTOS.add(new ProductImageResponseDTO(updatedProductImage)));
 
-        return new ProductResponseDTO(requestProduct, productImageResponseDTOS);
+        return new ProductDetailResponseDTO(requestProduct, productImageResponseDTOS);
     }
 }
