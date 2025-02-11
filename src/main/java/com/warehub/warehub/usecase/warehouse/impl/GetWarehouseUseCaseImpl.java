@@ -9,7 +9,7 @@ import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseResponseDTO;
-import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
+import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseDetailResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
 import com.warehub.warehub.usecase.warehouse.GetWarehouseUseCase;
 import org.springframework.stereotype.Service;
@@ -28,17 +28,17 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
     }
 
     @Override
-    public List<WarehouseResponseDTO> getAllWarehouse() {
+    public List<WarehouseDetailResponseDTO> getAllWarehouse() {
         List<Warehouse> warehouses = warehouseRepository.findAllByDeletedAtIsNull();
-        return warehouses.stream().map(WarehouseResponseDTO::new).toList();
+        return warehouses.stream().map(WarehouseDetailResponseDTO::new).toList();
     }
 
     @Override
-    public WarehouseResponseDTO getWarehouseById(Long warehouseId) {
+    public WarehouseDetailResponseDTO getWarehouseById(Long warehouseId) {
         Warehouse warehouse = warehouseRepository.findByIdAndDeletedAtIsNull(warehouseId)
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID " + warehouseId + " not found !"));
 
-        return new WarehouseResponseDTO(warehouse);
+        return new WarehouseDetailResponseDTO(warehouse);
     }
 
     @Override

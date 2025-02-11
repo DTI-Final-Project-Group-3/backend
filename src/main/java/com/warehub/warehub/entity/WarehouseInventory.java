@@ -32,6 +32,11 @@ public class WarehouseInventory {
     @Column(name = "quantity")
     private Integer quantity;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "warehouse_inventory_status_id", nullable = false)
+    private WarehouseInventoryStatus warehouseInventoryStatus;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
     private OffsetDateTime createdAt;

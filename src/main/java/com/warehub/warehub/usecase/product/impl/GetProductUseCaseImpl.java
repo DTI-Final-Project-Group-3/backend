@@ -1,46 +1,37 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.enums.LocationConstants;
 import com.warehub.warehub.common.exceptions.ProductNotFoundException;
-import com.warehub.warehub.common.utils.Location;
-import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductImage;
-import com.warehub.warehub.entity.WarehouseInventory;
-import com.warehub.warehub.infrastructure.product.dto.PaginatedProductRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.PaginatedProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductPaginationRequestDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductSummaryResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
-import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
-import com.warehub.warehub.infrastructure.warehouse_inventory.repository.WarehouseInventoryRepository;
+import com.warehub.warehub.infrastructure.product.specification.ProductSpecification;
 import com.warehub.warehub.usecase.product.GetProductUseCase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GetProductUseCaseImpl implements GetProductUseCase {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
-    private final WarehouseRepository warehouseRepository;
-    private final WarehouseInventoryRepository warehouseInventoryRepository;
 
-    public GetProductUseCaseImpl(ProductRepository productRepository, ProductImageRepository productImageRepository, WarehouseRepository warehouseRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+    public GetProductUseCaseImpl(ProductRepository productRepository, ProductImageRepository productImageRepository) {
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
-        this.warehouseRepository = warehouseRepository;
-        this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
     @Override
-    public ProductResponseDTO getProductById(Long productId) {
+    public ProductDetailResponseDTO getProductById(Long productId) {
         Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(()-> new ProductNotFoundException("Product with Id " + productId + " not found !"));
 
@@ -49,50 +40,37 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
         List<ProductImageResponseDTO> productImageResponseDTOS = productImages.stream().map(ProductImageResponseDTO::new).toList();
 
-        return new ProductResponseDTO(product, productImageResponseDTOS);
+        return new ProductDetailResponseDTO(product, productImageResponseDTOS);
     }
 
     @Override
-    public List<ProductResponseDTO> getAllProduct() {
+    public List<ProductDetailResponseDTO> getAllProduct() {
         List<Product> products = productRepository.findAllByDeletedAtIsNull();
 
         return products.stream().map(product -> {
             List<ProductImageResponseDTO> productImages = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId()).stream().map(ProductImageResponseDTO::new).toList();
-            return new ProductResponseDTO(product, productImages);
+            return new ProductDetailResponseDTO(product, productImages);
         }).toList();
     }
 
     @Override
-    public PaginationInfo<PaginatedProductResponseDTO> getPaginatedProducts(PaginatedProductRequestDTO req) {
+    public PaginationInfo<ProductSummaryResponseDTO> getPaginatedProducts(ProductPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
-        Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
-        String nearbyWarehouseIds = warehouseRepository
-                .findNearbyWarehouses(
-                        location.getLongitude(),
-                        location.getLatitude(),
-                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue(),null
-                )
-                .stream()
-                .map(nearbyWarehouse -> String.valueOf(nearbyWarehouse[0]))
-                .collect(Collectors.joining(",", "{", "}"));
+        Specification<Product> spec = Specification.where(ProductSpecification.productCategory(req.getProductCategoryId()))
+                .and(ProductSpecification.notDeleted())
+                .and(ProductSpecification.searchQuery(req.getSearchQuery()));
 
-//        Specification<WarehouseInventory> spec = Specification.where(WarehouseInventorySpecification.warehouseIn(nearbyWarehouseIds))
-//                .and(WarehouseInventorySpecification.notDeleted())
-//                .and(WarehouseInventorySpecification.distinct());
-//
-//        Page<WarehouseInventory> warehouseInventoryPage = warehouseInventoryRepository.findAll(spec, pageRequest);
+        Page<Product> productPage = productRepository.findAll(spec, pageRequest);
 
-        Page<WarehouseInventory> warehouseInventoryPage = warehouseInventoryRepository.findDistinctByProduct(nearbyWarehouseIds, req.getProductCategoryId(), req.getSearchQuery(), pageRequest);
-
-        List<PaginatedProductResponseDTO> productResponseDTOS = warehouseInventoryPage.stream().map(warehouseInventory -> {
-            String imageUrl = productImageRepository.findByProductIdAndDeletedAtIsNull(warehouseInventory.getProduct().getId())
-                    .stream()
-                    .filter(productImage -> productImage.getOrderNumber().equals(1))
-                    .findFirst().get().getImageUrl();
-            return new PaginatedProductResponseDTO(warehouseInventory, imageUrl);
+        List<ProductSummaryResponseDTO> responseDTOS = productPage.stream().map(product -> {
+            ProductImage productImage = productImageRepository.findByProductIdAndDeletedAtIsNull(product.getId())
+                    .stream().filter(image -> image.getPosition().equals(1))
+                    .findFirst()
+                    .orElse(new ProductImage());
+            return new ProductSummaryResponseDTO(product, productImage.getUrl());
         }).toList();
 
-      return new PaginationInfo<>(warehouseInventoryPage, productResponseDTOS);
+        return new PaginationInfo<>(productPage, responseDTOS);
     }
 }

@@ -97,8 +97,8 @@ public class User {
         deletedAt = OffsetDateTime.now();
     }
 
-    @OneToMany(mappedBy = "user")
-    private Set<CustomerOrderItem> customerOrderItems;
+//    @OneToMany(mappedBy = "customerOrder")
+//    private Set<CustomerOrderItem> customerOrderItems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "user")
     private List<CustomerOrder> customerOrders;

@@ -9,16 +9,16 @@ import lombok.Data;
 public class ProductImageRequestDTO {
 
     @NotNull
-    private String imageUrl;
+    private String url;
 
     @NotNull
-    private Integer orderNumber;
+    private Integer position;
 
     public ProductImage toEntity(Product product){
         ProductImage productImage = new ProductImage();
         productImage.setProduct(product);
-        productImage.setImageUrl(this.imageUrl);
-        productImage.setOrderNumber(this.orderNumber);
+        productImage.setUrl(this.url);
+        productImage.setPosition(this.position);
         return productImage;
     }
 }

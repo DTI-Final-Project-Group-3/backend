@@ -13,7 +13,7 @@ public enum LocationConstants {
     MIN_LATITUDE(-90.0),
     MAX_LATITUDE(90.0),
 
-    MAX_DISTANCE_IN_METERS(50000);
+    MAX_DISTANCE_IN_METERS(500000);
 
     private final double value;
 

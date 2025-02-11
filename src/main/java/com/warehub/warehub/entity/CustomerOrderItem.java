@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -20,10 +22,7 @@ public class CustomerOrderItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "customer_order_id")
     private CustomerOrder customerOrder;
 
@@ -31,12 +30,8 @@ public class CustomerOrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id")
-    private Warehouse warehouse;
-
-    @Column(name = "quantity", length = Integer.MAX_VALUE)
-    private String quantity;
+    @Column(name = "quantity")
+    private Integer quantity;
 
     @Column(name = "product_price", precision = 10, scale = 5)
     private BigDecimal productPrice;
@@ -51,5 +46,23 @@ public class CustomerOrderItem {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+    @PrePersist
+    public void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now();
+        }
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreRemove
+    protected void onRemove() {
+        deletedAt = OffsetDateTime.now();
+    }
 
 }

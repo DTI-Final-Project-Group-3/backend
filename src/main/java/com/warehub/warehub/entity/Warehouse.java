@@ -32,6 +32,7 @@ public class Warehouse {
     @Column(name = "detail_address", length = 500)
     private String detailAddress;
 
+    @NotNull
     @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
     private Point location;
 
@@ -67,8 +68,8 @@ public class Warehouse {
         deletedAt = OffsetDateTime.now();
     }
 
-    @OneToMany(mappedBy = "warehouse")
-    private Set<CustomerOrderItem> customerOrderItems;
+//    @OneToMany(mappedBy = "product")
+//    private Set<CustomerOrderItem> customerOrderItems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "warehouse")
     private Set<CustomerOrder> customerOrders = new LinkedHashSet<>();

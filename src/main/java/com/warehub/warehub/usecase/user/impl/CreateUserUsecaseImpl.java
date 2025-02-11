@@ -32,6 +32,6 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
         newUser.setIsEmailVerified(roleType != RoleType.NOT_VERIFIED);
 
         var savedUser = usersRepository.save(newUser);
-        return new UserDetailResponseDTO();
+        return new UserDetailResponseDTO().copyFromUser(savedUser);
     }
 }
