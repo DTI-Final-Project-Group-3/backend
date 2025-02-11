@@ -35,15 +35,17 @@ public class SignupController {
     @PostMapping
     public ResponseEntity<?> createUserCustomer(@RequestBody CreateUserRequestDTO req,
                                                 @RequestParam(defaultValue = "NOT_VERIFIED") String role) {
-        UserDetailResponseDTO result;
-        RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
+        UserDetailResponseDTO result = null;
+        String errorMessage = "";
         try {
-            result = createUserUsecase.createUser(req, roleType);
+            result = createUserUsecase.createUser(req, role);
             emailVerificationUsecase.send(result.getId());
         } catch (Exception e) {
             e.printStackTrace();
-            return ApiResponse.failedResponse("Failed to create user or this email already exists");
+            errorMessage = e.getMessage();
         }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to create user or this email already exists : " + errorMessage);
         return ApiResponse.successfulResponse("User created successfully. Please check your email to verify your account.", result);
     }
 
