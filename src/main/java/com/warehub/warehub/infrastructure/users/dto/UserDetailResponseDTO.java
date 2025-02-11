@@ -1,6 +1,5 @@
 package com.warehub.warehub.infrastructure.users.dto;
 
-import com.warehub.warehub.entity.Role;
 import com.warehub.warehub.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;

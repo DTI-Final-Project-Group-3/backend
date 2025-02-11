@@ -2,7 +2,6 @@ package com.warehub.warehub.infrastructure.product.dto;
 
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductCategory;
-import com.warehub.warehub.entity.ProductImage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

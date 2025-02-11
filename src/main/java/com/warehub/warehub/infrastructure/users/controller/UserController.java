@@ -1,13 +1,10 @@
 package com.warehub.warehub.infrastructure.users.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.users.dto.LoginRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
-import com.warehub.warehub.usecase.user.CreateUserUsecase;
 import com.warehub.warehub.usecase.user.GetUserDetailUsecase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
