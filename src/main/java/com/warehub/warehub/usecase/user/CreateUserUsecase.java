@@ -5,5 +5,5 @@ import com.warehub.warehub.infrastructure.users.dto.CreateUserRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
 
 public interface CreateUserUsecase {
-    UserDetailResponseDTO createUser(CreateUserRequestDTO req, RoleType roleType);
+    UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role);
 }
