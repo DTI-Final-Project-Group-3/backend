@@ -1,7 +1,6 @@
 package com.warehub.warehub.infrastructure.users.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.entity.User;
 import com.warehub.warehub.infrastructure.users.dto.UserDetailRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
@@ -12,37 +11,45 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/user")
-public class UserController {
+@RequestMapping("/api/v1/user/detail")
+public class UserDetailController {
 
     @Autowired
     private UsersRepository usersRepository;
 
     private final UserDetailUsecase userDetailUsecase;
 
-    public UserController(UserDetailUsecase userDetailUsecase) {
+    public UserDetailController(UserDetailUsecase userDetailUsecase) {
         this.userDetailUsecase = userDetailUsecase;
     }
 
-    @GetMapping("/detail")
+    @GetMapping
     public ResponseEntity<?> getUserDetail(JwtAuthenticationToken authToken) {
-        UserDetailResponseDTO responseDTO;
+        UserDetailResponseDTO responseDTO = null;
+        String errorMessage = "";
         try {
             responseDTO = userDetailUsecase.getUserDetail(authToken);
         } catch (Exception e) {
-            return ApiResponse.failedResponse("Failed to get user detail, " + e.getMessage());
+            e.printStackTrace();
+            errorMessage = e.getMessage();
         }
+        if (responseDTO == null)
+            return ApiResponse.failedResponse("Failed to get user detail : " + errorMessage);
         return ApiResponse.successfulResponse("Get user detail successful", responseDTO);
     }
 
-    @PutMapping("/detail")
+    @PutMapping
     public ResponseEntity<?> getUserDetail(JwtAuthenticationToken authToken, @RequestBody UserDetailRequestDTO req) {
-        UserDetailResponseDTO responseDTO;
+        UserDetailResponseDTO responseDTO = null;
+        String errorMessage = "";
         try {
             responseDTO = userDetailUsecase.updateUserDetail(authToken, req);
         } catch (Exception e) {
-            return ApiResponse.failedResponse("Failed to update user detail, " + e.getMessage());
+            e.printStackTrace();
+            errorMessage = e.getMessage();
         }
+        if (responseDTO == null)
+            return ApiResponse.failedResponse("Failed to update user detail : " + errorMessage);
         return ApiResponse.successfulResponse("Update user detail successful", responseDTO);
     }
 }

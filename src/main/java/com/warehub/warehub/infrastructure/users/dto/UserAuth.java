@@ -3,17 +3,18 @@ package com.warehub.warehub.infrastructure.users.dto;
 import com.warehub.warehub.entity.User;
 import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.entity.enums.RolePermissions;
+import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.warehub.warehub.entity.enums.RoleUtil.roleEnumFromString;
 
@@ -49,6 +50,10 @@ public class UserAuth implements UserDetails {
         return this.user.getEmail();
     }
 
+    public Long getUserId() {
+        return this.user.getId();
+    }
+
     @Override
     public String getPassword() {
         return this.user.getPasswordHash();
@@ -72,5 +77,19 @@ public class UserAuth implements UserDetails {
     @Override
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
+    }
+
+    public static User getCurrentUser(UsersRepository usersRepository) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof Jwt jwt) {
+            String email = jwt.getClaim("userEmail"); // Ensure your JWT includes the 'email' claim
+
+            Optional<User> user = usersRepository.findByEmailContainsIgnoreCase(email);
+            if (!user.isEmpty()) {
+                return user.get();
+            }
+        }
+        return null; // Or throw an exception if necessary
     }
 }
