@@ -12,60 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 public class TransactionRequestDTO {
     private String orderId;
-    private String grossAmount;
+    private BigDecimal grossAmount;
 
-//    private TransactionDetails transactionDetails;
-//    private CreditCard creditCard;
-//    private List<ItemDetails> itemDetails;
-//    private CustomerDetails customerDetails;
-//    private ShippingAddress shippingAddress;
+    private Long userId;
+    private Long warehouseId;
+    private Long paymentMethodId;
+    private BigDecimal shippingCost;
+    private Integer orderStatusId;
+    private List<OrderItemDTO> orderItems;
 }
-
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
-//class TransactionDetails {
-//    private String orderId;
-//    private String transactionId;
-//}
-//
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
-//class CreditCard {
-//    private Boolean secure;
-//}
-//
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
-//class ItemDetails {
-//    private String itemId;
-//    private BigDecimal price;
-//    private Integer quantity;
-//    private String itemName;
-//}
-//
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
-//class CustomerDetails {
-//    private String firstName;
-//    private String lastName;
-//    private String email;
-//    private String phone;
-//}
-//
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
-//class ShippingAddress {
-//    private String firstName;
-//    private String lastName;
-//    private String email;
-//    private String phone;
-//    private String address;
-//    private String city;
-//    private String postalCode;
-//    private String countryCode;
-//}
