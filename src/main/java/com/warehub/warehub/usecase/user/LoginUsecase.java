@@ -6,4 +6,5 @@ import com.warehub.warehub.infrastructure.users.dto.LoginResponseDTO;
 
 public interface LoginUsecase {
     LoginResponseDTO authenticateUser(LoginRequestDTO req);
+    LoginResponseDTO refreshToken(String refreshToken);
 }

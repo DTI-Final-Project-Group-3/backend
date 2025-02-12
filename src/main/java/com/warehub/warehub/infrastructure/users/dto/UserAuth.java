@@ -83,9 +83,9 @@ public class UserAuth implements UserDetails {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (principal instanceof Jwt jwt) {
-            String email = jwt.getClaim("userEmail"); // Ensure your JWT includes the 'email' claim
+            Long userId = jwt.getClaim("userId"); // Ensure your JWT includes the 'email' claim
 
-            Optional<User> user = usersRepository.findByEmailContainsIgnoreCase(email);
+            Optional<User> user = usersRepository.findById(userId);
             if (!user.isEmpty()) {
                 return user.get();
             }
