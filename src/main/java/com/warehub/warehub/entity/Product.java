@@ -13,7 +13,10 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "products")
+@Table(name = "products",
+        indexes = {
+        @Index(name = "idx_product_category_id", columnList = "product_category_id")
+})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "products_id_gen")

@@ -36,7 +36,7 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
     @Override
     @Transactional
     public ProductDetailResponseDTO updateProductById(Long productId, ProductRequestDTO req) {
-        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
+        productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found!"));
 
         ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(req.getProductCategoryId())

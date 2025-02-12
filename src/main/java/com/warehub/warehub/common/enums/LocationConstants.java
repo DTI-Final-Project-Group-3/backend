@@ -1,6 +1,5 @@
 package com.warehub.warehub.common.enums;
 
-import lombok.Data;
 import lombok.Getter;
 
 @Getter

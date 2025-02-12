@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,11 +19,24 @@ public class WarehouseInventorySummaryResponseDTO {
     private WarehouseInventoryStatusResponseDTO status;
     private WarehouseResponseDTO warehouse;
 
-    public WarehouseInventorySummaryResponseDTO(WarehouseInventory warehouseInventory, String thumbnail){
-        this.id = warehouseInventory.getId();
-        this.product = new ProductSummaryResponseDTO(warehouseInventory.getProduct(), thumbnail);
-        this.quantity = warehouseInventory.getQuantity();
-        this.status = new WarehouseInventoryStatusResponseDTO(warehouseInventory.getWarehouseInventoryStatus());
-        this.warehouse = new WarehouseResponseDTO(warehouseInventory.getWarehouse());
-    }
+    public WarehouseInventorySummaryResponseDTO(
+                Long warehouseInventoryId,  // wi.id
+                Long productId,             // p.id
+                String productName,         // p.name
+                BigDecimal productPrice,    // p.price
+                Long categoryId,            // p.productCategory.id
+                String categoryName,        // p.productCategory.name
+                String imageUrl,            // pi.url
+                Integer quantity,           // wi.quantity
+                Long statusId,             // wis.id
+                String statusName,          // wis.name
+                Long warehouseId,          // w.id
+                String warehouseName       // w.name
+        ) {
+            this.id = warehouseInventoryId;
+            this.product = new ProductSummaryResponseDTO(productId, productName, productPrice, categoryId, categoryName, imageUrl);
+            this.quantity = quantity;
+            this.status = new WarehouseInventoryStatusResponseDTO(statusId, statusName);
+            this.warehouse = new WarehouseResponseDTO(warehouseId, warehouseName);
+        }
 }
