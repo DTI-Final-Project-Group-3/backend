@@ -37,10 +37,15 @@ public class LoginUsecaseImpl implements LoginUsecase {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
             );
+
+            String email = authentication.getName();
+            User user = usersRepository.findByEmailContainsIgnoreCase(email).get();
+
             String accessToken = tokenGenerationUsecase.generateToken(authentication, 3600L);
             String refreshToken = tokenGenerationUsecase.generateToken(authentication, 604800L);
             long expiresAt = Instant.now().plusSeconds(3600L).toEpochMilli();
-            return new LoginResponseDTO(accessToken,refreshToken,expiresAt);
+            long refreshExpiresAt = Instant.now().plusSeconds(604800L).toEpochMilli();
+            return new LoginResponseDTO(accessToken,refreshToken,expiresAt,refreshExpiresAt, user.getRole().getName());
         } catch (AuthenticationException e) {
             throw new DataNotFoundException("Wrong credentials");
         }
@@ -56,12 +61,13 @@ public class LoginUsecaseImpl implements LoginUsecase {
         // Step 2: Extract email and scope from the refresh token
         String email = tokenGenerationUsecase.extractEmailFromToken(refreshToken);
         String scope = tokenGenerationUsecase.extractScopeFromToken(refreshToken);
+        User user = usersRepository.findByEmailContainsIgnoreCase(email).get();
 
         // Step 3: Generate new access and refresh tokens
         String newAccessToken = tokenGenerationUsecase.generateToken(email, scope, 3600L);  // 1 hour
         String newRefreshToken = tokenGenerationUsecase.generateToken(email, scope, 604800L);  // 7 days
         long expiresAt = Instant.now().plusSeconds(3600L).toEpochMilli(); // Access token expiry
-
-        return new LoginResponseDTO(newAccessToken, newRefreshToken, expiresAt);
+        long refreshExpiresAt = Instant.now().plusSeconds(604800L).toEpochMilli();
+        return new LoginResponseDTO(newAccessToken, newRefreshToken, expiresAt, refreshExpiresAt, user.getRole().getName());
     }
 }
