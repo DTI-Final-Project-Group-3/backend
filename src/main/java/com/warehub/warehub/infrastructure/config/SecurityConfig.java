@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/warehouse-inventories/**").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
                         .requestMatchers("/api/v1/products/mutations/**").permitAll()
+                        .requestMatchers("/api/v1/verify/**").permitAll()
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
                 )
