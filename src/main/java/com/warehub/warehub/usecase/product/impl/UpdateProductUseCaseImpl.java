@@ -36,7 +36,7 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
     @Override
     @Transactional
     public ProductDetailResponseDTO updateProductById(Long productId, ProductRequestDTO req) {
-        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
+        productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found!"));
 
         ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(req.getProductCategoryId())
@@ -46,12 +46,12 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
         requestProduct.setId(productId);
         productRepository.save(requestProduct);
 
-        if (req.getProductImages().size() > 5) {
+        if (req.getImages().size() > 5) {
             throw new MaxListSizeExceededException("Maximum number of images reached");
         }
 
         List<ProductImage> existingProductImages = productImageRepository.findByProductIdAndDeletedAtIsNull(productId).stream().toList();
-        List<ProductImage> requestProductImages = req.getProductImages().stream()
+        List<ProductImage> requestProductImages = req.getImages().stream()
                 .map(productImageRequestDTO -> productImageRequestDTO.toEntity(requestProduct)).toList();
         List<ProductImage> updatedProductImages = new ArrayList<>();
         List<ProductImageResponseDTO> productImageResponseDTOS = new ArrayList<>();

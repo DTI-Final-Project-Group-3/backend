@@ -1,8 +1,6 @@
 package com.warehub.warehub.infrastructure.users.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.entity.enums.RolePermissions;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.GrantedAuthority;

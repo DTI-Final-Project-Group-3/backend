@@ -27,4 +27,16 @@ public class ProductSummaryResponseDTO {
 
         this.category = new ProductCategoryResponseDTO(product.getProductCategory());
     }
+
+    public ProductSummaryResponseDTO(Long productId, String productName, BigDecimal price,
+                                     Long productCategoryId, String productCategoryName,
+                                     String thumbnail){
+        this.id = productId;
+        this.name = productName;
+        this.price = price;
+
+        this.category = new ProductCategoryResponseDTO(productCategoryId, productCategoryName);
+
+        this.thumbnail = thumbnail;
+    }
 }
