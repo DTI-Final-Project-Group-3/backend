@@ -35,7 +35,7 @@ public class ProductRequestDTO {
     private BigDecimal length;
 
     @Max(5)
-    private List<ProductImageRequestDTO> productImages;
+    private List<ProductImageRequestDTO> images;
 
     public Product toEntity(ProductCategory productCategory){
         Product product = new Product();
