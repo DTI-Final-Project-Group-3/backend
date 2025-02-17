@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,6 +25,9 @@ public class CustomerOrder {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL)
+    private List<CustomerOrderItem> customerOrderitems;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
@@ -31,6 +35,9 @@ public class CustomerOrder {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
+
+//    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<CustomerOrderItem> orderItems;
 
     @Column(name = "payment_proof_image_url", length = Integer.MAX_VALUE)
     private String paymentProofImageUrl;
