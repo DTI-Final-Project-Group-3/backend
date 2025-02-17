@@ -11,7 +11,10 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "product_images")
+@Table(name = "product_images",
+        indexes = {
+        @Index(name = "idx_product_images_position", columnList = "position")
+})
 public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_images_id_gen")

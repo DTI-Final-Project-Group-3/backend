@@ -46,7 +46,7 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
         ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(req.getProductCategoryId())
                 .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID "+ req.getProductCategoryId() + " not found !"));
 
-        if (req.getProductImages().size() > 5){
+        if (req.getImages().size() > 5){
             throw new MaxListSizeExceededException("Maximum number of product images exceeded !");
         }
 
@@ -54,7 +54,7 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
         productRepository.save(product);
 
         List<ProductImage> productImages = new ArrayList<ProductImage>();
-        for (ProductImageRequestDTO productImage : req.getProductImages()){
+        for (ProductImageRequestDTO productImage : req.getImages()){
             productImages.add(productImage.toEntity(product));
         }
         productImageRepository.saveAll(productImages);
