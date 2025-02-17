@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/users").permitAll()
-                        .requestMatchers("/api/v1/auth/login/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/signup/**").permitAll()
                         .requestMatchers("/api/v1/warehouses/**").permitAll()
                         .requestMatchers("/api/v1/warehouse-inventories/**").permitAll()
