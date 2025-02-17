@@ -36,8 +36,8 @@ public class CustomerOrder {
     @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
 
-    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CustomerOrderItem> orderItems;
+//    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<CustomerOrderItem> orderItems;
 
     @Column(name = "payment_proof_image_url", length = Integer.MAX_VALUE)
     private String paymentProofImageUrl;
