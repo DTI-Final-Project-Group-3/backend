@@ -2,7 +2,6 @@ package com.warehub.warehub.infrastructure.product.dto;
 
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductCategory;
-import com.warehub.warehub.entity.ProductImage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -36,7 +35,7 @@ public class ProductRequestDTO {
     private BigDecimal length;
 
     @Max(5)
-    private List<ProductImageRequestDTO> productImages;
+    private List<ProductImageRequestDTO> images;
 
     public Product toEntity(ProductCategory productCategory){
         Product product = new Product();

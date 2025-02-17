@@ -1,6 +1,5 @@
 package com.warehub.warehub.infrastructure.warehouseInventory.dto;
 
-import com.warehub.warehub.entity.WarehouseInventory;
 import com.warehub.warehub.entity.WarehouseInventoryStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;

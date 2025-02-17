@@ -1,7 +1,6 @@
 package com.warehub.warehub.infrastructure.warehouseInventory.dto;
 
 import com.warehub.warehub.entity.WarehouseInventory;
-import com.warehub.warehub.infrastructure.product.dto.ProductCategoryResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;

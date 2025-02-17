@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,26 +59,26 @@ public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUs
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
-        String nearbyWarehouseIds = warehouseRepository
+
+        Long[] nearbyWarehouseIds = warehouseRepository
                 .findNearbyWarehouses(
                         location.getLongitude(),
                         location.getLatitude(),
-                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue(),null
+                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue(),
+                        null
                 )
                 .stream()
-                .map(nearbyWarehouse -> String.valueOf(nearbyWarehouse[0]))
-                .collect(Collectors.joining(",", "{", "}"));
+                .map(nearbyWarehouse -> (Long) nearbyWarehouse[0])
+                .toArray(Long[]::new);
 
-        Page<WarehouseInventory> warehouseInventoryPage = warehouseInventoryRepository.findDistinctByProduct(nearbyWarehouseIds, req.getProductCategoryId(), req.getSearchQuery(), pageRequest);
+        Page<WarehouseInventorySummaryResponseDTO> warehouseInventoryPage =
+                warehouseInventoryRepository.findDistinctByProduct(
+                        nearbyWarehouseIds,
+                        req.getProductCategoryId(),
+                        req.getSearchQuery(),
+                        pageRequest
+                );
 
-        List<WarehouseInventorySummaryResponseDTO> responseDTOS = warehouseInventoryPage.stream().map(warehouseInventory -> {
-            String imageUrl = productImageRepository.findByProductIdAndDeletedAtIsNull(warehouseInventory.getProduct().getId())
-                    .stream()
-                    .filter(productImage -> productImage.getPosition().equals(1))
-                    .findFirst().get().getUrl();
-            return new WarehouseInventorySummaryResponseDTO(warehouseInventory, imageUrl);
-        }).toList();
-
-        return new PaginationInfo<>(warehouseInventoryPage, responseDTOS);
+        return new PaginationInfo<>(warehouseInventoryPage, warehouseInventoryPage.getContent());
     }
 }

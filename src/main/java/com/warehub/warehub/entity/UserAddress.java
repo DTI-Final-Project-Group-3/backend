@@ -8,7 +8,6 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.locationtech.jts.geom.Point;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Getter

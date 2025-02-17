@@ -2,10 +2,13 @@ package com.warehub.warehub.infrastructure.users.controller;
 
 
 import com.warehub.warehub.common.response.ApiResponse;
+import com.warehub.warehub.infrastructure.users.dto.GoogleLoginRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.LoginRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.LoginResponseDTO;
+import com.warehub.warehub.usecase.user.GoogleLoginUsecase;
 import com.warehub.warehub.usecase.user.LoginUsecase;
 import com.warehub.warehub.usecase.user.TokenGenerationUsecase;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final LoginUsecase loginUsecase;
     private final TokenGenerationUsecase tokenGenerationUsecase;
+
+    @Autowired
+    private GoogleLoginUsecase googleLoginUsecase;
 
     public AuthController(LoginUsecase loginUsecase, TokenGenerationUsecase tokenGenerationUsecase) {
         this.loginUsecase = loginUsecase;
@@ -74,5 +80,20 @@ public class AuthController {
         System.out.println("Token refreshed");
         // Step 6: Return the successful response with new tokens
         return ApiResponse.successfulResponse("Successfully refreshed token", response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequestDTO request) {
+        LoginResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = googleLoginUsecase.login(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Google Login failed : "+errorMessage);
+        return ApiResponse.successfulResponse("GoogleLogin successful", result);
     }
 }
