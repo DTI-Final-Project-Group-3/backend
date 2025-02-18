@@ -1,5 +1,6 @@
 package com.warehub.warehub;
 
+import com.midtrans.Midtrans;
 import com.warehub.warehub.infrastructure.config.RsaKeyConfigProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
