@@ -34,8 +34,8 @@ public class Product {
     @JoinColumn(name = "product_category_id", nullable = false)
     private ProductCategory productCategory;
 
-    @Column(name = "descriptions", length = Integer.MAX_VALUE)
-    private String descriptions;
+    @Column(name = "description", length = Integer.MAX_VALUE)
+    private String description;
 
     @NotNull
     @Column(name = "price", nullable = false, precision = 10, scale = 5)
