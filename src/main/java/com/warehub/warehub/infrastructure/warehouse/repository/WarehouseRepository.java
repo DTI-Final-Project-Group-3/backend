@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.warehouse.repository;
 
 import com.warehub.warehub.entity.Warehouse;
+import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -31,6 +32,29 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
             @Param("latitude") double latitude,
             @Param("radius") double radius,
             @Param("productId") Long productId);
+
+    @Query(value = """
+            SELECT 
+                w.id,
+                w.name
+            FROM warehouses w
+            JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
+            WHERE
+                w.deleted_at IS NULL
+            AND ST_DWithin(
+                w.location::geography, 
+                ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, 
+                :radius
+            )
+            AND wi.deleted_at IS NULL
+            AND wi.product_id = :productId
+            AND wi.quantity > 0
+            """, nativeQuery = true)
+    Optional<WarehouseResponseDTO> findNearestWarehouseByProductId(@Param("longitude") Double longitude,
+                                                                   @Param("latitude") Double latitude,
+                                                                   @Param("radius") Double radius,
+                                                                   @Param("productId") Long productId);
+
 
     List<Warehouse> findAllByDeletedAtIsNull();
 

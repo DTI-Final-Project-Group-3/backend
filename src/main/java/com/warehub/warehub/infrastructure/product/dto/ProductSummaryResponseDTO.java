@@ -13,30 +13,23 @@ public class ProductSummaryResponseDTO {
     private Long id;
     private String name;
     private BigDecimal price;
-
+    private String categoryName;
     private String thumbnail;
+    private Long totalStock;
 
-    private ProductCategoryResponseDTO category;
-
-    public ProductSummaryResponseDTO(Product product, String thumbnail){
-        this.id = product.getId();
-        this.name = product.getName();
-        this.price = product.getPrice();
-
-        this.thumbnail = thumbnail;
-
-        this.category = new ProductCategoryResponseDTO(product.getProductCategory());
-    }
-
-    public ProductSummaryResponseDTO(Long productId, String productName, BigDecimal price,
-                                     Long productCategoryId, String productCategoryName,
-                                     String thumbnail){
+    public ProductSummaryResponseDTO(Long productId, String productName, BigDecimal price, String thumbnail){
         this.id = productId;
         this.name = productName;
         this.price = price;
-
-        this.category = new ProductCategoryResponseDTO(productCategoryId, productCategoryName);
-
         this.thumbnail = thumbnail;
+    }
+
+    public ProductSummaryResponseDTO(Long productId, String productName, BigDecimal price, String categoryName, String thumbnail, Long totalStock){
+        this.id = productId;
+        this.name = productName;
+        this.price = price;
+        this.categoryName = categoryName;
+        this.thumbnail = thumbnail;
+        this.totalStock = totalStock;
     }
 }
