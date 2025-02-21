@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/products/mutations/**").permitAll()
                         .requestMatchers("/api/v1/verify/**").permitAll()
                         .requestMatchers("/api/v1/transactions/**").permitAll()
+                        .requestMatchers("/api/v1/orders/**").permitAll()
                         .requestMatchers("/").permitAll()
                         .anyRequest().permitAll()
                 )
