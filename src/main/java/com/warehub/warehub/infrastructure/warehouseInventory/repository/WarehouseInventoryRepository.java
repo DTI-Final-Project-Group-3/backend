@@ -1,5 +1,6 @@
 package com.warehub.warehub.infrastructure.warehouseInventory.repository;
 
+import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.entity.WarehouseInventory;
 import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventorySummaryResponseDTO;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,25 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
     Optional<WarehouseInventory> findByIdAndDeletedAtIsNull(Long warehouseInventoryId);
 
     List<WarehouseInventory> findByWarehouseIdAndDeletedAtIsNull(Long warehouseId);
+
+    @Query(value = """
+    SELECT 
+        COALESCE(SUM(wi.quantity), 0)
+    FROM warehouse_inventories wi
+    JOIN warehouses w ON wi.warehouse_id = w.id
+    WHERE
+        wi.deleted_at IS NULL
+        AND wi.product_id = :productId
+        AND ST_DWithin(
+            w.location::geography, 
+            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, 
+            :radius
+        )
+    """, nativeQuery = true)
+    Integer findTotalStockNearby(@Param("longitude") Double longitude,
+                                 @Param("latitude") Double latitude,
+                                 @Param("radius") Double radius,
+                                 @Param("productId") Long productId);
 
     @Query(value = """
             SELECT * 
