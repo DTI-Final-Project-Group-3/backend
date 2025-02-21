@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.product.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
+import com.warehub.warehub.infrastructure.product.dto.ProductNearbyRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductPaginationRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
@@ -40,12 +41,33 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getPaginatedProduct(@RequestParam int page,
+    public ResponseEntity<?> getPaginatedProducts(@RequestParam int page,
                                                  @RequestParam int limit,
-                                                 @RequestParam(required = false) Long category,
-                                                 @RequestParam(required = false) String search){
-        ProductPaginationRequestDTO requestDTO = new ProductPaginationRequestDTO(page, limit, category, search);
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get paginated product response success", getProductUseCase.getPaginatedProducts(requestDTO));
+                                                 @RequestParam(required = false) Long productCategoryId,
+                                                 @RequestParam(required = false) String searchQuery){
+        ProductPaginationRequestDTO requestDTO = new ProductPaginationRequestDTO(page, limit, productCategoryId, searchQuery);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get products success", getProductUseCase.getPaginatedProducts(requestDTO));
+    }
+
+    @GetMapping(value = "/nearby", params = {"page", "limit"})
+    public ResponseEntity<?> getPaginatedNearbyProducts(@RequestParam int page,
+                                                    @RequestParam int limit,
+                                                    @RequestParam(required = false) Double longitude,
+                                                    @RequestParam(required = false) Double latitude,
+                                                    @RequestParam(required = false) Double radius,
+                                                    @RequestParam(required = false) Long productCategoryId,
+                                                    @RequestParam(required = false) String searchQuery) {
+        ProductPaginationRequestDTO requestDTO = new ProductPaginationRequestDTO(page, limit, longitude, latitude, radius, productCategoryId, searchQuery);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby products success", getProductUseCase.getPaginatedNearbyProducts(requestDTO));
+    }
+
+    @GetMapping(value = "/nearby", params = "productId")
+    public ResponseEntity<?> getNearbyProductById(@RequestParam(required = false) Double longitude,
+                                                @RequestParam(required = false) Double latitude,
+                                                @RequestParam(required = false) Double radius,
+                                                @RequestParam(required = false) Long productId) {
+        ProductNearbyRequestDTO requestDTO = new ProductNearbyRequestDTO(longitude, latitude, radius, productId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby products success", getProductUseCase.getNearbyProductById(requestDTO));
     }
 
     @GetMapping("/all")

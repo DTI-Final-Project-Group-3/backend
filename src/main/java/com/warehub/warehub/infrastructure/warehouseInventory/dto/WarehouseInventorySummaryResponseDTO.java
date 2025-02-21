@@ -34,7 +34,7 @@ public class WarehouseInventorySummaryResponseDTO {
                 String warehouseName       // w.name
         ) {
             this.id = warehouseInventoryId;
-            this.product = new ProductSummaryResponseDTO(productId, productName, productPrice, categoryId, categoryName, imageUrl);
+            this.product = new ProductSummaryResponseDTO(productId, productName, productPrice,  imageUrl);
             this.quantity = quantity;
             this.status = new WarehouseInventoryStatusResponseDTO(statusId, statusName);
             this.warehouse = new WarehouseResponseDTO(warehouseId, warehouseName);
