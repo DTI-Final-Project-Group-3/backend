@@ -7,11 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaginatedProductRequestDTO {
-    private int page;
-    private int limit;
+public class ProductNearbyRequestDTO {
     private Double longitude;
     private Double latitude;
-    private Long productCategoryId;
-    private String searchQuery;
+    private Double radius;
+    private Long productId;
 }
+

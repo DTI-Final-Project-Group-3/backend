@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.product.dto;
 
 import com.warehub.warehub.entity.Product;
+import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -24,6 +25,9 @@ public class ProductDetailResponseDTO {
 
     private ProductCategoryResponseDTO category;
 
+    private Integer totalStock;
+    private WarehouseResponseDTO nearestWarehouse;
+
     public ProductDetailResponseDTO(Product product, List<ProductImageResponseDTO> productImages){
         this.id = product.getId();
         this.name = product.getName();
@@ -38,5 +42,6 @@ public class ProductDetailResponseDTO {
 
         this.category = new ProductCategoryResponseDTO(product.getProductCategory());
     }
+
 }
 

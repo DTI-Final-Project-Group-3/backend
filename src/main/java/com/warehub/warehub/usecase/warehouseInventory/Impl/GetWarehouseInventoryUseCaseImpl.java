@@ -20,8 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUseCase {
@@ -41,8 +39,7 @@ public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUs
         WarehouseInventory warehouseInventory = warehouseInventoryRepository.findByIdAndDeletedAtIsNull(warehouseInventoryId)
                 .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory with ID " + warehouseInventoryId + " not found !"));
 
-        List<ProductImageResponseDTO> productImageResponseDTO = productImageRepository.findByProductIdAndDeletedAtIsNull(warehouseInventory.getProduct().getId())
-                .stream().map(ProductImageResponseDTO::new).toList();
+        List<ProductImageResponseDTO> productImageResponseDTO = productImageRepository.findByProductIdAndDeletedAtIsNullDTO(warehouseInventory.getProduct().getId());
 
         return new WarehouseInventoryDetailResponseDTO(warehouseInventory, productImageResponseDTO);
     }
