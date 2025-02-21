@@ -13,7 +13,7 @@ public class ProductDetailResponseDTO {
 
     private Long id;
     private String name;
-    private String descriptions;
+    private String description;
     private BigDecimal price;
     private BigDecimal weight;
     private BigDecimal height;
@@ -27,7 +27,7 @@ public class ProductDetailResponseDTO {
     public ProductDetailResponseDTO(Product product, List<ProductImageResponseDTO> productImages){
         this.id = product.getId();
         this.name = product.getName();
-        this.descriptions = product.getDescriptions();
+        this.description = product.getDescription();
         this.price = product.getPrice();
         this.weight = product.getWeight();
         this.height = product.getHeight();

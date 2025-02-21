@@ -81,8 +81,8 @@ public class UserAddressUsecaseImpl implements UserAddressUsecase {
         response.setDetailAddress(savedUserAddress.getDetailAddress());
         response.setPrimary(savedUserAddress.isPrimary());
         Point location = savedUserAddress.getLocation();
-        response.setLatitude(location.getX());
-        response.setLongitude(location.getY());
+        response.setLatitude(location.getY());
+        response.setLongitude(location.getX());
         response.setCreatedAt(savedUserAddress.getCreatedAt());
         response.setUpdatedAt(savedUserAddress.getUpdatedAt());
 
@@ -146,8 +146,8 @@ public class UserAddressUsecaseImpl implements UserAddressUsecase {
         response.setDetailAddress(address.getDetailAddress());
         response.setPrimary(address.isPrimary());
         Point location = address.getLocation();
-        response.setLatitude(location.getX());
-        response.setLongitude(location.getY());
+        response.setLatitude(location.getY());
+        response.setLongitude(location.getX());
         response.setCreatedAt(address.getCreatedAt());
         response.setUpdatedAt(address.getUpdatedAt());
         return response;

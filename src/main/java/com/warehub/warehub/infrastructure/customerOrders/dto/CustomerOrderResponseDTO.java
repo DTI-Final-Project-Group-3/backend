@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -14,12 +15,9 @@ import java.util.List;
 public class CustomerOrderResponseDTO {
 
     private Long id;
-//    private User user;\
     private Long userId;
-//    private Warehouse warehouse;
     private Long warehouseId;
     private String warehouseName;
-    //    private PaymentMethod paymentMethod;
     private Long paymentMethodId;
     private String paymentMethodName;
     private List<CustomerOrderItemsDTO> customerOrderitems;
@@ -27,12 +25,12 @@ public class CustomerOrderResponseDTO {
     private String gatewayTrxId;
     private BigDecimal shippingCost;
     private BigDecimal totalAmount;
-//    private CustomerOrderStatus orderStatus;
     private Long orderStatusId;
     private String orderStatusName;
     private String invoiceCode;
+    private OffsetDateTime createdAt;
 
-    public static CustomerOrderResponseDTO toEntity(CustomerOrder order) {
+    public static CustomerOrderResponseDTO mapToDTO(CustomerOrder order) {
         return new CustomerOrderResponseDTO(
                 order.getId(),
                 order.getUser().getId(),
@@ -45,6 +43,7 @@ public class CustomerOrderResponseDTO {
                                 item.getId(),
                                 order.getId(),
                                 item.getProduct().getId(),
+                                item.getProduct().getName(),
                                 item.getQuantity(),
                                 item.getProductPrice()
                         )).toList(),
@@ -54,7 +53,8 @@ public class CustomerOrderResponseDTO {
                 order.getTotalAmount(),
                 order.getOrderStatus().getId(),
                 order.getOrderStatus().getName(),
-                order.getInvoiceCode()
+                order.getInvoiceCode(),
+                order.getCreatedAt()
         );
     }
 }

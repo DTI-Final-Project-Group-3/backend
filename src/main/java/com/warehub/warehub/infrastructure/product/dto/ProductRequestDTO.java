@@ -20,7 +20,7 @@ public class ProductRequestDTO {
     @NotNull
     private Long productCategoryId;
 
-    private String descriptions;
+    private String description;
 
     @NotNull
     private BigDecimal price;
@@ -41,7 +41,7 @@ public class ProductRequestDTO {
         Product product = new Product();
         product.setName(this.name);
         product.setProductCategory(productCategory);
-        product.setDescriptions(this.descriptions);
+        product.setDescription(this.description);
         product.setPrice(this.price);
         product.setWeight(this.weight);
         product.setHeight(this.height);
