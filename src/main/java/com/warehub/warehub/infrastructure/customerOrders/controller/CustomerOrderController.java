@@ -27,6 +27,7 @@ public class CustomerOrderController {
     public ResponseEntity<?> getCustomerOrders(@RequestParam int page,
                                                @RequestParam int limit,
                                                @RequestParam(required = false) Long customerOrderStatusId,
+                                               @RequestParam(required = false) Long warehouseId,
                                                @RequestParam(required = false) String search,
                                                @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startDate,
                                                @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endDate
@@ -41,6 +42,7 @@ public class CustomerOrderController {
         reqDTO.setSearchQuery((search != null && !search.isBlank()) ? search : null);
         reqDTO.setStartDate(startDate != null ? startDate.withOffsetSameInstant(ZoneOffset.UTC) : null);
         reqDTO.setEndDate(endDate != null ? endDate.withOffsetSameInstant(ZoneOffset.UTC) : null);
+        reqDTO.setWarehouseId(warehouseId);
 
         return ApiResponse.successfulResponse("Get all customer orders success", customerOrderUsecase.getAllCustomerOrders(reqDTO));
     }
