@@ -16,7 +16,7 @@ import com.warehub.warehub.infrastructure.customerOrders.dto.PaginatedCustomerOr
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.customerOrders.specification.CustomerOrderSpecification;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
-import com.warehub.warehub.infrastructure.warehouseAdmin.repository.WarehouseAdminRepository;
+import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseAdminRepository;
 import com.warehub.warehub.usecase.customerOrder.CustomerOrderUsecase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +26,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
@@ -69,13 +70,18 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
             }
         } else if (user.getRole().getName().equals(RoleType.ADMIN_WAREHOUSE.name())) {
             // SHow only orders that belong to the warehouse where this admin is assigned
-            WarehouseAdmin warehouseAdmin = warehouseAdminRepository.findByUserAssigneeId(user.getId());
+            Optional<WarehouseAdmin> warehouseAdmin = warehouseAdminRepository.findByUserAssigneeId(user.getId());
+
+            // Ensure warehouseAdmin is present before accessing its warehouse
+            if (warehouseAdmin.isEmpty()) {
+                throw new DataNotFoundException("Warehouse admin not found for this user");
+            }
 
             // Restrict access to only their assigned warehouse
-            spec = spec.and(CustomerOrderSpecification.hasWarehouseId(warehouseAdmin.getWarehouse().getId()));
+            spec = spec.and(CustomerOrderSpecification.hasWarehouseId(warehouseAdmin.get().getWarehouse().getId()));
 
-            // If a warehouseId is provided and it's NOT their assigned warehouse, throw an error
-            if (request.getWarehouseId() != null && !request.getWarehouseId().equals(warehouseAdmin.getWarehouse().getId())) {
+            /// If a warehouseId is provided and it's NOT their assigned warehouse, throw an error
+            if (request.getWarehouseId() != null && !request.getWarehouseId().equals(warehouseAdmin.get().getWarehouse().getId())) {
                 throw new IllegalArgumentException("You're not assigned to this warehouse");
             }
         } else {
