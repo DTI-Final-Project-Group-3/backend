@@ -12,6 +12,7 @@ import java.time.OffsetDateTime;
 public class PaginatedCustomerOrderRequestDTO {
 
     private Long userId;
+    private Long warehouseId;
     private int page = 0;
     private int limit = 10;
     private Long customerOrderStatusId;

@@ -12,6 +12,11 @@ public class CustomerOrderSpecification {
                 (userId == null) ? null : criteriaBuilder.equal(root.get("user").get("id"), userId);
     }
 
+    public static Specification<CustomerOrder> hasWarehouseId(Long warehouseId) {
+        return (root, query, criteriaBuilder) ->
+                (warehouseId == null) ? null : criteriaBuilder.equal(root.get("warehouse").get("id"), warehouseId);
+    }
+
     public static Specification<CustomerOrder> hasStatusId(Long statusId) {
         return (root, query, criteriaBuilder) ->
                 (statusId == null) ? null : criteriaBuilder.equal(root.get("orderStatus").get("id"), statusId);
