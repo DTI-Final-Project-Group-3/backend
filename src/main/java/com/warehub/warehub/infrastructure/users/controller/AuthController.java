@@ -2,11 +2,10 @@ package com.warehub.warehub.infrastructure.users.controller;
 
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.users.dto.GoogleLoginRequestDTO;
-import com.warehub.warehub.infrastructure.users.dto.LoginRequestDTO;
-import com.warehub.warehub.infrastructure.users.dto.LoginResponseDTO;
+import com.warehub.warehub.infrastructure.users.dto.*;
 import com.warehub.warehub.usecase.user.GoogleLoginUsecase;
 import com.warehub.warehub.usecase.user.LoginUsecase;
+import com.warehub.warehub.usecase.user.ResetPasswordUsecase;
 import com.warehub.warehub.usecase.user.TokenGenerationUsecase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +20,9 @@ public class AuthController {
 
     @Autowired
     private GoogleLoginUsecase googleLoginUsecase;
+
+    @Autowired
+    private ResetPasswordUsecase resetPasswordUsecase;
 
     public AuthController(LoginUsecase loginUsecase, TokenGenerationUsecase tokenGenerationUsecase) {
         this.loginUsecase = loginUsecase;
@@ -95,5 +97,35 @@ public class AuthController {
         if (result == null)
             return ApiResponse.failedResponse("Google Login failed : "+errorMessage);
         return ApiResponse.successfulResponse("GoogleLogin successful", result);
+    }
+
+    @PostMapping("/reset-password-request")
+    public ResponseEntity<?> resetPasswordRequest() {
+        ResetPasswordGenerateResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = resetPasswordUsecase.generateToken();
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Reset password request failed : "+errorMessage);
+        return ApiResponse.successfulResponse("Reset password request successful", result);
+    }
+
+    @PostMapping("/reset-password-verify")
+    public ResponseEntity<?> resetPasswordVerify(@RequestBody  ResetPasswordVerifyRequestDTO requestDTO) {
+        ResetPasswordVerifyResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = resetPasswordUsecase.verifyToken(requestDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Reset password request failed : "+errorMessage);
+        return ApiResponse.successfulResponse("Reset password request successful", result);
     }
 }
