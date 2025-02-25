@@ -57,7 +57,7 @@ public class TransactionController {
         return ApiResponse.successfulResponse("Manual transaction created successfully.", trxResponse);
     }
 
-    @PutMapping("/payment-proof/{customerOrderId")
+    @PutMapping("/payment-proof/{customerOrderId}")
     public ResponseEntity<?> updateManualPaymentImage(@PathVariable("customerOrderId") Long customerOrderId, UpdatePaymentProofRequestDTO req) {
         Long userId = Claims.getUserIdFromJwt();
 
