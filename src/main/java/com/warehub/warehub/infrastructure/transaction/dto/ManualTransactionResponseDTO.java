@@ -1,5 +1,8 @@
 package com.warehub.warehub.infrastructure.transaction.dto;
 
+import com.warehub.warehub.entity.CustomerOrderItem;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,5 +33,4 @@ public class ManualTransactionResponseDTO {
     private OffsetDateTime updatedAt;
     private String transactionStatus; // From `orderStatus`
 
-    private String gatewayTransactionId; // Matches `gatewayTrxId`
 }
