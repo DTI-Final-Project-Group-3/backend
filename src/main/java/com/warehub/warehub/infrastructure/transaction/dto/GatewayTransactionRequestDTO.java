@@ -10,12 +10,11 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionRequestDTO {
-    private String orderId;
+public class GatewayTransactionRequestDTO {
     private BigDecimal grossAmount;
-
+    private Double latitude;
+    private Double longitude;
     private Long userId;
-    private Long warehouseId;
     private Long paymentMethodId;
     private BigDecimal shippingCost;
     private Integer orderStatusId;

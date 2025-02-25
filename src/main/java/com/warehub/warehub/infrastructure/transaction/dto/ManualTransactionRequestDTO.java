@@ -12,10 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 public class ManualTransactionRequestDTO {
     private BigDecimal grossAmount;
-
-    private String paymentProofUrl;
+    private Double longitude;
+    private Double latitude;
     private Long userId;
-    private Long warehouseId;
     private Long paymentMethodId;
     private BigDecimal shippingCost;
     private Integer orderStatusId;
