@@ -34,6 +34,23 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
             @Param("productId") Long productId);
 
     @Query(value = """
+            SELECT w.id, w.name, 
+                ST_X(w.location) AS longitude, 
+                ST_Y(w.location) AS latitude, 
+                ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) AS distance
+            FROM warehouses w
+            JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
+            WHERE ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius 
+                AND w.deleted_at IS NULL 
+            GROUP BY w.id, w.name, longitude, latitude, distance
+            ORDER BY distance ASC
+        """, nativeQuery = true)
+    List<Object[]> findNearestWarehouses(
+            @Param("longitude") double longitude,
+            @Param("latitude") double latitude,
+            @Param("radius") double radius);
+
+    @Query(value = """
             SELECT 
                 w.id,
                 w.name
