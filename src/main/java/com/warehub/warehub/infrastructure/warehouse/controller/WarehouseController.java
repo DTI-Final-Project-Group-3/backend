@@ -20,7 +20,10 @@ public class WarehouseController {
     private final UpdateWarehouseUseCase updateWarehouseUseCase;
     private final DeleteWarehouseUseCase deleteWarehouseUseCase;
 
-    public WarehouseController(CreateWarehouseUseCase createWarehouseUseCase, GetWarehouseUseCase getWarehouseUseCase, UpdateWarehouseUseCase updateWarehouseUseCase, DeleteWarehouseUseCase deleteWarehouseUseCase) {
+    public WarehouseController(CreateWarehouseUseCase createWarehouseUseCase,
+                               GetWarehouseUseCase getWarehouseUseCase,
+                               UpdateWarehouseUseCase updateWarehouseUseCase,
+                               DeleteWarehouseUseCase deleteWarehouseUseCase) {
         this.createWarehouseUseCase = createWarehouseUseCase;
         this.getWarehouseUseCase = getWarehouseUseCase;
         this.updateWarehouseUseCase = updateWarehouseUseCase;
@@ -37,21 +40,32 @@ public class WarehouseController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all warehouse success", getWarehouseUseCase.getAllWarehouse());
     }
 
+    @GetMapping("/available/all")
+    public ResponseEntity<?> getNearbyWarehouseByProductId(@RequestParam Long warehouseId,
+                                                           @RequestParam Long productId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get available warehouse success",
+                getWarehouseUseCase.getNearbyWarehouseByProductId(warehouseId, productId));
+    }
+
     @GetMapping("/nearby")
     public ResponseEntity<?> getNearbyWarehouses(@RequestParam Double longitude,
                                                  @RequestParam Double latitude,
                                                  @RequestParam(required = false) Long productId){
-        NearbyWarehouseRequestDTO nearbyWarehouseRequestDTO = new NearbyWarehouseRequestDTO(longitude, latitude,  productId);
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby warehouse success", getWarehouseUseCase.getNearbyWarehouses(nearbyWarehouseRequestDTO));
+        NearbyWarehouseRequestDTO nearbyWarehouseRequestDTO = new NearbyWarehouseRequestDTO(longitude, latitude, productId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get nearby warehouse success",
+                getWarehouseUseCase.getNearbyWarehouses(nearbyWarehouseRequestDTO));
     }
 
     @GetMapping("/{warehouseId}")
     public ResponseEntity<?> getWarehouseById(@PathVariable Long warehouseId){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse by ID success", getWarehouseUseCase.getWarehouseById(warehouseId));
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse by ID success",
+                getWarehouseUseCase.getWarehouseById(warehouseId));
     }
+
     @PutMapping("/{warehouseId}")
     public ResponseEntity<?> updateWarehouse(@PathVariable Long warehouseId, @RequestBody WarehouseRequestDTO req){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update warehouse successful", updateWarehouseUseCase.updateWarehouse(warehouseId, req));
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update warehouse successful",
+                updateWarehouseUseCase.updateWarehouse(warehouseId, req));
     }
 
     @DeleteMapping("/{warehouseId}")
@@ -59,5 +73,4 @@ public class WarehouseController {
         deleteWarehouseUseCase.deleteWarehouseById(warehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Delete warehouse successful");
     }
-
 }

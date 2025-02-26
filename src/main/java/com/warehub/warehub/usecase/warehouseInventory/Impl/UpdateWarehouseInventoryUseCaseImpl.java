@@ -57,9 +57,9 @@ public class UpdateWarehouseInventoryUseCaseImpl implements UpdateWarehouseInven
                 .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getRequesterId() + " not found !"));
         Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
-        ProductMutationType productMutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(1L)
+        ProductMutationType productMutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(3L)
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
-        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(4L)
+        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
         productMutationRepository.save(req.toEntity(product, requester, destinationWarehouse, productMutationStatus, productMutationType));
 
