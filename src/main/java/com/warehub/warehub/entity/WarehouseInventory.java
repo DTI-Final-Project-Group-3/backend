@@ -16,7 +16,6 @@ import java.time.OffsetDateTime;
         indexes = {
                 @Index(name = "idx_warehouse_inventories_product_id", columnList = "product_id"),
                 @Index(name = "idx_warehouse_inventories_warehouse_id", columnList = "warehouse_id"),
-                @Index(name = "idx_warehouse_inventories_status_id", columnList = "warehouse_inventory_status_id")
         }
 )
 public class WarehouseInventory {
@@ -38,11 +37,6 @@ public class WarehouseInventory {
 
     @Column(name = "quantity")
     private Integer quantity;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "warehouse_inventory_status_id", nullable = false)
-    private WarehouseInventoryStatus warehouseInventoryStatus;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")

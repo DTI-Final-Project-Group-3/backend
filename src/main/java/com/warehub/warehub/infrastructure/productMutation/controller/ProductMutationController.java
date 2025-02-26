@@ -1,7 +1,7 @@
 package com.warehub.warehub.infrastructure.productMutation.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.productMutation.dto.ApproveProductMutationRequestDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationApproveRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.usecase.productMutation.CreateProductMutationUseCase;
 import com.warehub.warehub.usecase.productMutation.DeleteProductMutationUseCase;
@@ -42,13 +42,8 @@ public class ProductMutationController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation by id success", getProductMutationUseCase.getProductMutationById(productMutationId));
     }
 
-    @PutMapping("/{productMutationId}")
-    public ResponseEntity<?> updateProductMutationById(@PathVariable Long productMutationId, @RequestBody ProductMutationRequestDTO req){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Update product mutation success", updateProductMutationUseCase.updateProductMutationById(productMutationId, req));
-    }
-
     @PutMapping("/manual/{productMutationId}")
-    public ResponseEntity<?> approveManualProductMutation(@PathVariable Long productMutationId, @RequestBody ApproveProductMutationRequestDTO req){
+    public ResponseEntity<?> approveManualProductMutation(@PathVariable Long productMutationId, @RequestBody ProductMutationApproveRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Approve manual product mutation success !", updateProductMutationUseCase.approveManualProductMutation(productMutationId, req));
     }
 

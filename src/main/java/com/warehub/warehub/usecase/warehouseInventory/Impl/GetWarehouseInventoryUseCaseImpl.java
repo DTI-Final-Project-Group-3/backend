@@ -1,81 +1,30 @@
 package com.warehub.warehub.usecase.warehouseInventory.Impl;
 
-import com.warehub.warehub.common.enums.LocationConstants;
-import com.warehub.warehub.common.exceptions.WarehouseInventoryNotFoundException;
-import com.warehub.warehub.common.utils.Location;
-import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
-import com.warehub.warehub.entity.WarehouseInventory;
-import com.warehub.warehub.infrastructure.product.dto.ProductImageResponseDTO;
-import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
-import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryDetailResponseDTO;
 import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryPaginationRequestDTO;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventorySummaryResponseDTO;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryResponseDTO;
+import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryPaginationResponseDTO;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.warehouseInventory.GetWarehouseInventoryUseCase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUseCase {
 
-    private final WarehouseRepository warehouseRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
-    private final ProductImageRepository productImageRepository;
 
-    public GetWarehouseInventoryUseCaseImpl(WarehouseRepository warehouseRepository, WarehouseInventoryRepository warehouseInventoryRepository, ProductImageRepository productImageRepository) {
-        this.warehouseRepository = warehouseRepository;
+    public GetWarehouseInventoryUseCaseImpl(WarehouseInventoryRepository warehouseInventoryRepository) {
         this.warehouseInventoryRepository = warehouseInventoryRepository;
-        this.productImageRepository = productImageRepository;
     }
 
-    @Override
-    public WarehouseInventoryDetailResponseDTO getDetailWarehouseInventoryById(Long warehouseInventoryId) {
-        WarehouseInventory warehouseInventory = warehouseInventoryRepository.findByIdAndDeletedAtIsNull(warehouseInventoryId)
-                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory with ID " + warehouseInventoryId + " not found !"));
-
-        List<ProductImageResponseDTO> productImageResponseDTO = productImageRepository.findByProductIdAndDeletedAtIsNullDTO(warehouseInventory.getProduct().getId());
-
-        return new WarehouseInventoryDetailResponseDTO(warehouseInventory, productImageResponseDTO);
-    }
 
     @Override
-    public List<WarehouseInventoryResponseDTO> getWarehouseInventoryByWarehouseId(Long warehouseId) {
-        List<WarehouseInventory> warehouseInventories = warehouseInventoryRepository.findByWarehouseIdAndDeletedAtIsNull(warehouseId);
+    public PaginationInfo<WarehouseInventoryPaginationResponseDTO> getPaginatedWarehouseInventoryByWarehouseId(WarehouseInventoryPaginationRequestDTO req) {
 
-        return warehouseInventories.stream().map(WarehouseInventoryResponseDTO::new).toList();
-    }
-
-    @Override
-    public PaginationInfo<WarehouseInventorySummaryResponseDTO> getPaginatedWarehouseInventory(WarehouseInventoryPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
+        Page<WarehouseInventoryPaginationResponseDTO> inventories = warehouseInventoryRepository.findByWarehouseId(req.getWarehouseId(), pageRequest);
 
-        Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
-
-        Long[] nearbyWarehouseIds = warehouseRepository
-                .findNearbyWarehouses(
-                        location.getLongitude(),
-                        location.getLatitude(),
-                        LocationConstants.MAX_DISTANCE_IN_METERS.getValue(),
-                        null
-                )
-                .stream()
-                .map(nearbyWarehouse -> (Long) nearbyWarehouse[0])
-                .toArray(Long[]::new);
-
-        Page<WarehouseInventorySummaryResponseDTO> warehouseInventoryPage =
-                warehouseInventoryRepository.findDistinctByProduct(
-                        nearbyWarehouseIds,
-                        req.getProductCategoryId(),
-                        req.getSearchQuery(),
-                        pageRequest
-                );
-
-        return new PaginationInfo<>(warehouseInventoryPage, warehouseInventoryPage.getContent());
+        return new PaginationInfo<>(inventories, inventories.getContent());
     }
 }

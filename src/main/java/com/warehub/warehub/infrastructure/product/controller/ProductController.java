@@ -72,7 +72,7 @@ public class ProductController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllProduct(){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProduct());
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProductList());
     }
 
     @GetMapping("/{productId}")

@@ -18,7 +18,6 @@ public class ProductMutationResponseDTO {
     private Long productMutationTypeId;
     private String productMutationTypeName;
     private Long productMutationStatusId;
-    private String productMutationStatusName;
     private OffsetDateTime acceptedAt;
 
     public ProductMutationResponseDTO(ProductMutation productMutation){
@@ -33,7 +32,6 @@ public class ProductMutationResponseDTO {
         this.productMutationTypeId = productMutation.getProductMutationType().getId();
         this.productMutationTypeName = productMutation.getProductMutationType().getName();
         this.productMutationStatusId = productMutation.getProductMutationStatus().getId();
-        this.productMutationStatusName = productMutation.getProductMutationStatus().getName();
         this.acceptedAt = productMutation.getAcceptedAt();
     }
 }
