@@ -26,6 +26,8 @@ public class UserDetailResponseDTO implements Serializable {
     private String phoneNumber;
     private String profileImageUrl;
     private OffsetDateTime createdAt;
+    private Long warehouseId = -1L;
+    private Long userAssignerId = -1L;
 
     public UserDetailResponseDTO copyFromUser(User user) {
         id = user.getId();
