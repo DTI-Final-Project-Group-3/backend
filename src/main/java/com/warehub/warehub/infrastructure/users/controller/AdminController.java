@@ -115,4 +115,20 @@ public class AdminController {
             return ApiResponse.failedResponse("Failed to delete assignent warehouse :  " + errorMessage);
         return ApiResponse.successfulResponse("Success delete assignent warehouse.", result);
     }
+
+    @GetMapping("/current-warehouse")
+    public ResponseEntity<?> getCurrentWarehouse() {
+        CurrentWarehouseResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = adminUsecase.getCurrentWarehouseDTO();
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to get current warehouse assignment :  " + errorMessage);
+        return ApiResponse.successfulResponse("Success get current warehouse assignment ", result);
+    }
+
 }
