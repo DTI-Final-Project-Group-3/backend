@@ -62,4 +62,9 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
                     return nearbyWarehouseResponseDTO;
                 }).toList();
     }
+
+    @Override
+    public List<NearbyWarehouseResponseDTO> getNearbyWarehouseByProductId(NearbyWarehouseRequestDTO req) {
+        return null;
+    }
 }

@@ -10,4 +10,5 @@ public interface GetWarehouseUseCase {
     List<WarehouseDetailResponseDTO> getAllWarehouse();
     WarehouseDetailResponseDTO getWarehouseById(Long warehouseId);
     List<NearbyWarehouseResponseDTO> getNearbyWarehouses(NearbyWarehouseRequestDTO req);
+    List<NearbyWarehouseResponseDTO> getNearbyWarehouseByProductId(NearbyWarehouseRequestDTO req);
 }
