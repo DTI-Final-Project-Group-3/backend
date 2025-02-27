@@ -105,7 +105,12 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     }
 
     @Override
-    public List<ProductBasicResponseDTO> getProductByWarehouseId(Long warehouseId) {
-        return productRepository.findByWarehouseId(warehouseId);
+    public List<ProductBasicResponseDTO> getProductsIncludeFilter(Long warehouseId) {
+        return productRepository.findProductsIncludeFilter(warehouseId);
+    }
+
+    @Override
+    public List<ProductBasicResponseDTO> getProductsExcludeFilter(Long warehouseId) {
+        return productRepository.findProductsExcludeFilter(warehouseId);
     }
 }

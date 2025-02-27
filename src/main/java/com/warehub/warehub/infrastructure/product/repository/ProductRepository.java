@@ -2,7 +2,6 @@ package com.warehub.warehub.infrastructure.product.repository;
 
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.infrastructure.product.dto.ProductBasicResponseDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductSummaryResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +45,25 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                 AND wi.warehouse_id = :warehouseId
             ORDER BY p.id
             """, nativeQuery = true)
-    List<ProductBasicResponseDTO> findByWarehouseId(@Param("warehouseId") Long warehouseId);
+    List<ProductBasicResponseDTO> findProductsIncludeFilter(@Param("warehouseId") Long warehouseId);
+
+    @Query(value = """
+            SELECT
+                p.id,
+                p.name
+            FROM products p
+            WHERE
+                p.deleted_at IS NULL
+                AND p.id NOT IN (
+                    SELECT wi.product_id
+                    FROM warehouse_inventories wi
+                    WHERE wi.deleted_at IS NULL
+                      AND wi.warehouse_id = :warehouseId
+                )
+            ORDER BY p.id
+            """, nativeQuery = true)
+    List<ProductBasicResponseDTO> findProductsExcludeFilter(@Param("warehouseId") Long warehouseId);
+
 
     @Query(value = """
     SELECT 

@@ -75,9 +75,14 @@ public class ProductController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProductList());
     }
 
-    @GetMapping("/warehouses/{warehouseId}")
-    public ResponseEntity<?> getProductByWarehouseId(@PathVariable Long warehouseId){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by warehouse ID success", getProductUseCase.getProductByWarehouseId(warehouseId));
+    @GetMapping("/filter/include")
+    public ResponseEntity<?> getProductByWarehouseId(@RequestParam Long warehouseId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get products with include filter success", getProductUseCase.getProductsIncludeFilter(warehouseId));
+    }
+
+    @GetMapping("/filter/exclude")
+    public ResponseEntity<?> getProductExcludeFilter(@RequestParam Long warehouseId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get products with exclude filter success !", getProductUseCase.getProductsExcludeFilter(warehouseId));
     }
 
     @GetMapping("/{productId}")
