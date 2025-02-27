@@ -5,30 +5,40 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductMutationDetailResponseDTO {
     private Long productMutationId;
+
     private Long productId;
     private String productName;
     private String productThumbnail;
     private Integer quantity;
-    private String notes;
+
     private Long requesterId;
     private String requesterName;
-    private Long approverId;
-    private String approverName;
+    private String requesterNotes;
+
+    private Long reviewerId;
+    private String reviewerName;
+    private String reviewerNotes;
+
     private Long originWarehouseId;
     private String originWarehouseName;
+
     private Long destinationWarehouseId;
     private String destinationWarehouseName;
+
     private Long productMutationTypeId;
     private String productMutationTypeName;
+
     private Long productMutationStatusId;
     private String productMutationStatusName;
+
+    private String invoiceCode;
+
     private Instant createdAt;
-    private Instant acceptedAt;
+    private Instant reviewedAt;
 }

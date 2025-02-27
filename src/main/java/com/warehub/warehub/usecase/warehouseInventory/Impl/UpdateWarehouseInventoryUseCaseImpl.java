@@ -53,14 +53,19 @@ public class UpdateWarehouseInventoryUseCaseImpl implements UpdateWarehouseInven
         // create journal on product mutation
         Product product = productRepository.findByIdAndDeletedAtIsNull(req.getProductId())
                 .orElseThrow(()-> new ProductNotFoundException("Product with ID " + req.getProductId() + " not found !"));
+
         User requester = usersRepository.findByIdAndDeletedAtIsNull(req.getRequesterId())
                 .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getRequesterId() + " not found !"));
+
         Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
-        ProductMutationType productMutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(3L)
+
+        ProductMutationType productMutationType = productMutationTypeRepository.findByNameIgnoreCaseAndDeletedAtIsNull("manual adjustment")
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
-        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+
+        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByNameIgnoreCaseAndDeletedAtIsNull("completed")
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
+
         productMutationRepository.save(req.toEntity(product, requester, destinationWarehouse, productMutationStatus, productMutationType));
 
         return new WarehouseInventoryResponseDTO(warehouseInventoryRepository.save(warehouseInventory));

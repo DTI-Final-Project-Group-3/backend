@@ -1,7 +1,7 @@
 package com.warehub.warehub.infrastructure.productMutation.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationApproveRequestDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationPaginationRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.usecase.productMutation.CreateProductMutationUseCase;
@@ -53,9 +53,14 @@ public class ProductMutationController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation by id success", getProductMutationUseCase.getProductMutationById(productMutationId));
     }
 
-    @PutMapping("/manual/{productMutationId}")
-    public ResponseEntity<?> approveManualProductMutation(@PathVariable Long productMutationId, @RequestBody ProductMutationApproveRequestDTO req){
+    @PutMapping("/manual/approve/{productMutationId}")
+    public ResponseEntity<?> approveManualProductMutation(@PathVariable Long productMutationId, @RequestBody ProductMutationProcessRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Approve manual product mutation success !", updateProductMutationUseCase.approveManualProductMutation(productMutationId, req));
+    }
+
+    @PutMapping("/manual/decline/{productMutationId}")
+    public ResponseEntity<?> declineManualProductMutation(@PathVariable Long productMutationId, @RequestBody ProductMutationProcessRequestDTO req){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Approve manual product mutation success !", updateProductMutationUseCase.declineManualProductMutation(productMutationId, req));
     }
 
     @DeleteMapping("/{productMutationId}")

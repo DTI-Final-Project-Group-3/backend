@@ -4,8 +4,6 @@ import com.warehub.warehub.entity.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.OffsetDateTime;
-
 @Data
 public class ProductMutationRequestDTO {
 
@@ -15,7 +13,7 @@ public class ProductMutationRequestDTO {
     @NotNull
     private Integer quantity;
 
-    private String notes;
+    private String requesterNotes;
 
     @NotNull
     private Long requesterId;
@@ -30,7 +28,7 @@ public class ProductMutationRequestDTO {
 
         productMutation.setProduct(product);
         productMutation.setQuantity(this.quantity);
-        productMutation.setNotes(this.notes);
+        productMutation.setRequesterNotes(this.requesterNotes);
         productMutation.setRequester(requester);
         productMutation.setDestinationWarehouse(destinationWarehouse);
         productMutation.setProductMutationStatus(status);
@@ -44,7 +42,7 @@ public class ProductMutationRequestDTO {
 
         productMutation.setProduct(product);
         productMutation.setQuantity(this.quantity);
-        productMutation.setNotes(this.notes);
+        productMutation.setRequesterNotes(this.requesterNotes);
         productMutation.setRequester(requester);
         productMutation.setOriginWarehouse(originWarehouse);
         productMutation.setDestinationWarehouse(destinationWarehouse);
