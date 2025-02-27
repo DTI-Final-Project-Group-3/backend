@@ -12,4 +12,5 @@ public interface GetProductUseCase {
     PaginationInfo<ProductSummaryResponseDTO> getPaginatedProducts(ProductPaginationRequestDTO req);
     PaginationInfo<ProductSummaryResponseDTO> getPaginatedNearbyProducts(ProductPaginationRequestDTO req);
     List<ProductBasicResponseDTO> getAllProductList();
+    List<ProductBasicResponseDTO> getProductByWarehouseId(Long warehouseId);
 }

@@ -35,6 +35,20 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<ProductBasicResponseDTO> findAllProduct();
 
     @Query(value = """
+            SELECT
+                p.id,
+                p.name
+            FROM products p
+            JOIN warehouse_inventories wi ON wi.product_id = p.id
+            WHERE
+                p.deleted_at IS NULL
+                AND wi.deleted_at IS NULL
+                AND wi.warehouse_id = :warehouseId
+            ORDER BY p.id
+            """, nativeQuery = true)
+    List<ProductBasicResponseDTO> findByWarehouseId(@Param("warehouseId") Long warehouseId);
+
+    @Query(value = """
     SELECT 
         p.id AS "id",
         p.name AS "name",

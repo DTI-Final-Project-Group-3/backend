@@ -103,4 +103,9 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     public List<ProductBasicResponseDTO> getAllProductList() {
         return productRepository.findAllProduct();
     }
+
+    @Override
+    public List<ProductBasicResponseDTO> getProductByWarehouseId(Long warehouseId) {
+        return productRepository.findByWarehouseId(warehouseId);
+    }
 }

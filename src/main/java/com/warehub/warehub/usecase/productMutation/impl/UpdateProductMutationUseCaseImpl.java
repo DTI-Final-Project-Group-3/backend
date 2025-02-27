@@ -44,17 +44,17 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
                 .orElseThrow(()-> new ProductMutationNotFoundException("Product mutation with ID "+ productMutationId + " not found !"));
 
         WarehouseInventory originWarehouseInventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(productMutation.getProduct().getId(), productMutation.getOriginWarehouse().getId())
-                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory not found "));
+                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Origin warehouse inventory not found "));
 
         WarehouseInventory destinationWarehouseInventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(productMutation.getProduct().getId(), productMutation.getDestinationWarehouse().getId())
-                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory not found "));
+                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Destination warehouse inventory not found "));
 
         // decrease quantity from origin warehouse
-        destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() - productMutation.getQuantity());
+        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() - productMutation.getQuantity());
         warehouseInventoryRepository.save(destinationWarehouseInventory);
 
         // increase quantity from destination warehouse
-        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + productMutation.getQuantity());
+        destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() + productMutation.getQuantity());
         warehouseInventoryRepository.save(destinationWarehouseInventory);
 
         // update product mutation to completed
@@ -79,7 +79,7 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
                 .orElseThrow(()-> new ProductMutationNotFoundException("Product mutation with ID "+ productMutationId + " not found !"));
 
         WarehouseInventory originWarehouseInventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(productMutation.getProduct().getId(), productMutation.getOriginWarehouse().getId())
-                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory not found "));
+                .orElseThrow(()-> new WarehouseInventoryNotFoundException("Origin warehouse inventory not found "));
 
         // roll back quantity from origin warehouse
         originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + productMutation.getQuantity());

@@ -75,6 +75,11 @@ public class ProductController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProductList());
     }
 
+    @GetMapping("/warehouses/{warehouseId}")
+    public ResponseEntity<?> getProductByWarehouseId(@PathVariable Long warehouseId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by warehouse ID success", getProductUseCase.getProductByWarehouseId(warehouseId));
+    }
+
     @GetMapping("/{productId}")
     public ResponseEntity<?> getProductById(@PathVariable Long productId){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by ID success", getProductUseCase.getProductById(productId));

@@ -62,7 +62,7 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
                 .orElseThrow(()-> new WarehouseInventoryNotFoundException("Origin warehouse inventory not found !"));
 
         // reserve quantity from origin warehouse
-        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + req.getQuantity());
+        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() - req.getQuantity());
         warehouseInventoryRepository.save(originWarehouseInventory);
 
         // create product mutation
