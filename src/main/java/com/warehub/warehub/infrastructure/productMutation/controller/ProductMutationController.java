@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/products/mutations")
 public class ProductMutationController {
@@ -43,8 +45,8 @@ public class ProductMutationController {
                                                          @RequestParam int limit,
                                                          @RequestParam(required = false) Long originWarehouseId,
                                                          @RequestParam(required = false) Long destinationWarehouseId,
-                                                         @RequestParam Long mutationTypeId){
-        ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, originWarehouseId, destinationWarehouseId, mutationTypeId);
+                                                         @RequestParam List<Long> productMutationTypeId){
+        ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, originWarehouseId, destinationWarehouseId, productMutationTypeId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getPaginatedProductMutationByWarehouseId(requestDTO));
     }
 

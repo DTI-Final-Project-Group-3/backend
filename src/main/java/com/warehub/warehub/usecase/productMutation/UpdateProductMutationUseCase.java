@@ -6,4 +6,5 @@ import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRes
 public interface UpdateProductMutationUseCase {
     ProductMutationResponseDTO approveManualProductMutation(Long productMutationId, ProductMutationProcessRequestDTO req);
     ProductMutationResponseDTO declineManualProductMutation(Long productMutationId, ProductMutationProcessRequestDTO req);
+
 }

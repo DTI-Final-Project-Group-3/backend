@@ -1,9 +1,9 @@
 package com.warehub.warehub.infrastructure.warehouseInventory.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryPaginationRequestDTO;
-import com.warehub.warehub.infrastructure.warehouseInventory.dto.WarehouseInventoryRequestDTO;
 import com.warehub.warehub.usecase.warehouseInventory.CreateWarehouseInventoryUseCase;
 import com.warehub.warehub.usecase.warehouseInventory.DeleteWarehouseInventoryUseCase;
 import com.warehub.warehub.usecase.warehouseInventory.GetWarehouseInventoryUseCase;
@@ -29,7 +29,7 @@ public class WarehouseInventoryController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createWarehouseInventory(@RequestBody WarehouseInventoryRequestDTO req){
+    public ResponseEntity<?> createWarehouseInventory(@RequestBody ProductMutationRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create new warehouse inventory success", createWarehouseInventoryUseCase.createWarehouseInventory(req));
     }
 
@@ -49,8 +49,9 @@ public class WarehouseInventoryController {
     }
 
     @DeleteMapping("/{warehouseInventoryId}")
-    public ResponseEntity<?> deleteWarehouseInventoryId(@PathVariable Long warehouseInventoryId){
-        deleteWarehouseInventoryUseCase.deletedWarehouseInventoryById(warehouseInventoryId);
+    public ResponseEntity<?> deleteWarehouseInventoryId(@PathVariable Long warehouseInventoryId, @RequestBody ProductMutationProcessRequestDTO req){
+
+        deleteWarehouseInventoryUseCase.deletedWarehouseInventoryById(warehouseInventoryId, req);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Delete warehouse inventory success");
     }
 }

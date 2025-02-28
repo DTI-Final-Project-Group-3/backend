@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.productMutation.impl;
 
+import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.*;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
@@ -34,10 +35,10 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
     @Transactional
     public ProductMutationResponseDTO approveManualProductMutation(Long productMutationId, ProductMutationProcessRequestDTO req) {
 
-        User reviewer = usersRepository.findByIdAndDeletedAtIsNull(req.getReviewerId())
-                .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getReviewerId() + " not found !"));
+        User reviewer = usersRepository.findByIdAndDeletedAtIsNull(req.getUserId())
+                .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getUserId() + " not found !"));
 
-        ProductMutationStatus productMutationStatusApproved = productMutationStatusRepository.findByNameIgnoreCaseAndDeletedAtIsNull("completed")
+        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(MutationConstant.STATUS_COMPLETED.getValue())
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
         ProductMutation productMutation = productMutationRepository.findByIdAndDeletedAtIsNull(productMutationId)
@@ -59,9 +60,9 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
 
         // update product mutation to completed
         productMutation.setReviewer(reviewer);
-        productMutation.setReviewerNotes(req.getReviewerNotes());
+        productMutation.setReviewerNotes(req.getNotes());
         productMutation.setReviewedAt(OffsetDateTime.now());
-        productMutation.setProductMutationStatus(productMutationStatusApproved);
+        productMutation.setProductMutationStatus(productMutationStatus);
 
         return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
     }
@@ -69,10 +70,10 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
     @Override
     @Transactional
     public ProductMutationResponseDTO declineManualProductMutation(Long productMutationId, ProductMutationProcessRequestDTO req) {
-        User reviewer = usersRepository.findByIdAndDeletedAtIsNull(req.getReviewerId())
-                .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getReviewerId() + " not found !"));
+        User reviewer = usersRepository.findByIdAndDeletedAtIsNull(req.getUserId())
+                .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getUserId() + " not found !"));
 
-        ProductMutationStatus productMutationStatusDeclined = productMutationStatusRepository.findByNameIgnoreCaseAndDeletedAtIsNull("declined")
+        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(MutationConstant.STATUS_DECLINED.getValue())
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
         ProductMutation productMutation = productMutationRepository.findByIdAndDeletedAtIsNull(productMutationId)
@@ -87,9 +88,9 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
 
         // update product mutation to completed
         productMutation.setReviewer(reviewer);
-        productMutation.setReviewerNotes(req.getReviewerNotes());
+        productMutation.setReviewerNotes(req.getNotes());
         productMutation.setReviewedAt(OffsetDateTime.now());
-        productMutation.setProductMutationStatus(productMutationStatusDeclined);
+        productMutation.setProductMutationStatus(productMutationStatus);
 
         return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
     }

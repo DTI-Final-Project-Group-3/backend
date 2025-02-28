@@ -21,7 +21,6 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
 
     Optional<WarehouseInventory> findByProductIdAndWarehouseIdAndDeletedAtIsNull(Long productId, Long warehouseId);
 
-
     @Query(value = """
     SELECT 
         COALESCE(SUM(wi.quantity), 0)

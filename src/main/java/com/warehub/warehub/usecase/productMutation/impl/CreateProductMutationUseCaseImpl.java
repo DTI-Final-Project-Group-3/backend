@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.productMutation.impl;
 
+import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.*;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
@@ -52,10 +53,10 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
         Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));        
         
-        ProductMutationType productMutationTypeManual = productMutationTypeRepository.findByNameIgnoreCaseAndDeletedAtIsNull("manual mutation")
+        ProductMutationType productMutationTypeManual = productMutationTypeRepository.findByIdAndDeletedAtIsNull(MutationConstant.TYPE_MANUAL_MUTATION.getValue())
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
-        ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByNameIgnoreCaseAndDeletedAtIsNull("pending")
+        ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(MutationConstant.STATUS_PENDING.getValue())
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
         WarehouseInventory originWarehouseInventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(req.getProductId(), req.getOriginWarehouseId())
@@ -90,7 +91,7 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
         Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
 
-        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByNameIgnoreCaseAndDeletedAtIsNull("auto mutation")
+        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(MutationConstant.TYPE_AUTO_MUTATION.getValue())
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
         ProductMutationStatus productMutationStatusCompleted = productMutationStatusRepository.findByNameIgnoreCaseAndDeletedAtIsNull("completed")

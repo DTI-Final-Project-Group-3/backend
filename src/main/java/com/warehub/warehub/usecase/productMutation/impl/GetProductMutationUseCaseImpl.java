@@ -34,7 +34,7 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
     public PaginationInfo<ProductMutationDetailResponseDTO> getPaginatedProductMutationByWarehouseId(ProductMutationPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
-        Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository.findByWarehouseIdDTO(req.getOriginWarehouseId(), req.getDestinationWarehouseId(), req.getMutationTypeId(), pageRequest);
+        Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository.findByWarehouseIdDTO(req.getOriginWarehouseId(), req.getDestinationWarehouseId(), req.getProductMutationTypeId(), pageRequest);
 
         return new PaginationInfo<>(responseDTOS, responseDTOS.getContent());
     }

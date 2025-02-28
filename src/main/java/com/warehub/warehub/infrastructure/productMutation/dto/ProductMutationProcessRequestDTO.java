@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class ProductMutationProcessRequestDTO {
     @NotNull
-    private Long reviewerId;
+    private Long userId;
 
-    private String reviewerNotes;
+    private String notes;
 }

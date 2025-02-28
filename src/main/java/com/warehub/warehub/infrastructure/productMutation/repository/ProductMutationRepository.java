@@ -9,11 +9,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ProductMutationRepository extends JpaRepository<ProductMutation, Long> {
     Optional<ProductMutation> findByIdAndDeletedAtIsNull(Long productMutationId);
+
+    @Query(value = """
+        SELECT *
+        FROM product_mutations pm
+        WHERE
+            pm.deleted_at IS NULL
+            AND pm.product_mutation_status_id = 1
+            AND pm.created_at + INTERVAL :expiryInterval < :now
+        """, nativeQuery = true)
+    List<ProductMutation> findPendingExpired(@Param("now") OffsetDateTime now, @Param("expiryInterval") String expiryInterval);
 
     @Query(value = """
                 SELECT 
@@ -49,13 +61,13 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
                 JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
                 JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
                 WHERE pm.deleted_at IS NULL 
-                  AND pm.product_mutation_type_id = :productMutationTypeId
+                  AND pm.product_mutation_type_id IN :productMutationTypeId
                   AND (:originWarehouseId IS NULL OR pm.origin_warehouse_id = :originWarehouseId)
                   AND (:destinationWarehouseId IS NULL OR pm.destination_warehouse_id = :destinationWarehouseId)
                 ORDER BY pm.created_at DESC
             """, nativeQuery = true)
     Page<ProductMutationDetailResponseDTO> findByWarehouseIdDTO(@Param("originWarehouseId") Long originWarehouseId,
                                                                 @Param("destinationWarehouseId") Long destinationWarehouseId,
-                                                                @Param("productMutationTypeId") Long productMutationTypeId,
+                                                                @Param("productMutationTypeId") List<Long> productMutationTypeId,
                                                                 Pageable pageable);
 }

@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.warehouseInventory.Impl;
 
+import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.*;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
@@ -60,10 +61,10 @@ public class UpdateWarehouseInventoryUseCaseImpl implements UpdateWarehouseInven
         Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
 
-        ProductMutationType productMutationType = productMutationTypeRepository.findByNameIgnoreCaseAndDeletedAtIsNull("manual adjustment")
+        ProductMutationType productMutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(MutationConstant.TYPE_UPDATE_INVENTORY.getValue())
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
-        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByNameIgnoreCaseAndDeletedAtIsNull("completed")
+        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(MutationConstant.STATUS_COMPLETED.getValue())
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
         productMutationRepository.save(req.toEntity(product, requester, destinationWarehouse, productMutationStatus, productMutationType));
