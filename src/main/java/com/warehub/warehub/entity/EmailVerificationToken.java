@@ -45,6 +45,10 @@ public class EmailVerificationToken {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    //@Column(name = "is_reset_password", nullable = false)
+    //@ColumnDefault("false")
+    //private boolean isResetPassword;
+
     @PrePersist
     public void onCreate() {
         if (this.createdAt == null) {
