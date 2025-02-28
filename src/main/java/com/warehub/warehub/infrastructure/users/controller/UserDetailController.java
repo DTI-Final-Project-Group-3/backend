@@ -14,9 +14,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/user/detail")
 public class UserDetailController {
 
-    @Autowired
-    private UsersRepository usersRepository;
-
     private final UserDetailUsecase userDetailUsecase;
 
     public UserDetailController(UserDetailUsecase userDetailUsecase) {

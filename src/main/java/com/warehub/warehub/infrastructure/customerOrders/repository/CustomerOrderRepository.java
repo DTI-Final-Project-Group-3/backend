@@ -39,4 +39,6 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     })
     Page<CustomerOrder> findAll(Specification<CustomerOrder> spec, Pageable pageable);
 
+    CustomerOrder findByIdAndUserId(Long customerOrderId, Long userId);
+
 }

@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionResponseDTO {
-    private String token;
-    private String redirectUrl;
-
-//    private TransactionDetailsDTO details;
+public class UpdatePaymentProofRequestDTO {
+    private Long userId;
+    private String paymentProofImage;
 }
