@@ -62,6 +62,10 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
         WarehouseInventory originWarehouseInventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(req.getProductId(), req.getOriginWarehouseId())
                 .orElseThrow(()-> new WarehouseInventoryNotFoundException("Origin warehouse inventory not found !"));
 
+        if (originWarehouseInventory.getQuantity() < req.getQuantity()){
+            throw new NegativeQuantityException("Request quantity can't exceed available quantity !");
+        }
+
         // reserve quantity from origin warehouse
         originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() - req.getQuantity());
         warehouseInventoryRepository.save(originWarehouseInventory);

@@ -50,10 +50,6 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
         WarehouseInventory destinationWarehouseInventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(productMutation.getProduct().getId(), productMutation.getDestinationWarehouse().getId())
                 .orElseThrow(()-> new WarehouseInventoryNotFoundException("Destination warehouse inventory not found "));
 
-        // decrease quantity from origin warehouse
-        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() - productMutation.getQuantity());
-        warehouseInventoryRepository.save(destinationWarehouseInventory);
-
         // increase quantity from destination warehouse
         destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() + productMutation.getQuantity());
         warehouseInventoryRepository.save(destinationWarehouseInventory);
