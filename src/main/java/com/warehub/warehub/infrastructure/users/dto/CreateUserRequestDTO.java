@@ -1,10 +1,14 @@
 package com.warehub.warehub.infrastructure.users.dto;
 
 import com.warehub.warehub.entity.User;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class CreateUserRequestDTO {
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     private String email;
     private String password;
     private String fullname;

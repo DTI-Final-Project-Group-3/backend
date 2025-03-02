@@ -46,13 +46,13 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
 
         User requester = usersRepository.findByIdAndDeletedAtIsNull(req.getRequesterId())
                 .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getRequesterId() + " not found !"));
-
+        
         Warehouse originWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getOriginWarehouseId())
                 .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getOriginWarehouseId() + " not found !"));
 
         Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
-                .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
-
+                .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));        
+        
         ProductMutationType productMutationTypeManual = productMutationTypeRepository.findByIdAndDeletedAtIsNull(MutationConstant.TYPE_MANUAL_MUTATION.getValue())
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 

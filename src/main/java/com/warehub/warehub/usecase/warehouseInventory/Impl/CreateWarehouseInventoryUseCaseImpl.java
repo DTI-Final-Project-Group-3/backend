@@ -46,10 +46,10 @@ public class CreateWarehouseInventoryUseCaseImpl implements CreateWarehouseInven
             throw new DuplicateWarehouseInventoryException("Warehouse Inventory with product ID " + req.getProductId() + " and warehouse ID " + req.getDestinationWarehouseId() + " already exist !");
         }
         Product product = productRepository.findByIdAndDeletedAtIsNull(req.getProductId())
-                .orElseThrow(()-> new ProductNotFoundException("Product with ID "+ req.getProductId() + " not found !"));
+                        .orElseThrow(()-> new ProductNotFoundException("Product with ID "+ req.getProductId() + " not found !"));
 
         Warehouse warehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
-                .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
+                        .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
 
         // create new inventory
         WarehouseInventory warehouseInventory = new WarehouseInventory();

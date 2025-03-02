@@ -1,4 +1,4 @@
-package com.warehub.warehub.infrastructure.warehouse.dto;
+package com.warehub.warehub.infrastructure.product.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NearbyWarehouseQuantityResponseDTO {
+public class ProductBasicResponseDTO {
     private Long id;
     private String name;
-    private Double distanceInMeters;
-    private Integer totalQuantity;
 }

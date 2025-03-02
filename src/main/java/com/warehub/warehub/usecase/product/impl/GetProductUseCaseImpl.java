@@ -98,4 +98,19 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
         return new PaginationInfo<>(productPageDTO, productPageDTO.getContent());
     }
+
+    @Override
+    public List<ProductBasicResponseDTO> getAllProductList() {
+        return productRepository.findAllProduct();
+    }
+
+    @Override
+    public List<ProductBasicResponseDTO> getProductsIncludeFilter(Long warehouseId) {
+        return productRepository.findProductsIncludeFilter(warehouseId);
+    }
+
+    @Override
+    public List<ProductBasicResponseDTO> getProductsExcludeFilter(Long warehouseId) {
+        return productRepository.findProductsExcludeFilter(warehouseId);
+    }
 }

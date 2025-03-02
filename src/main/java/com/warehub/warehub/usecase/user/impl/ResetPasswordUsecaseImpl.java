@@ -1,11 +1,11 @@
 package com.warehub.warehub.usecase.user.impl;
 
+import com.warehub.warehub.entity.EmailVerificationToken;
 import com.warehub.warehub.entity.User;
 import com.warehub.warehub.infrastructure.security.Claims;
 import com.warehub.warehub.infrastructure.service.EmailService;
-import com.warehub.warehub.infrastructure.users.dto.ResetPasswordGenerateResponseDTO;
-import com.warehub.warehub.infrastructure.users.dto.ResetPasswordVerifyRequestDTO;
-import com.warehub.warehub.infrastructure.users.dto.ResetPasswordVerifyResponseDTO;
+import com.warehub.warehub.infrastructure.users.dto.*;
+import com.warehub.warehub.infrastructure.users.repository.EmailVerificationTokenRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.user.ResetPasswordUsecase;
 import jakarta.transaction.Transactional;
@@ -15,6 +15,9 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ResetPasswordUsecaseImpl implements ResetPasswordUsecase {
@@ -33,26 +36,17 @@ public class ResetPasswordUsecaseImpl implements ResetPasswordUsecase {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Override
+    @Autowired
+    private EmailVerificationTokenRepository emailVerificationTokenRepository;
+
     @Transactional
     public ResetPasswordGenerateResponseDTO generateToken(User user) {
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(1800);
-        Long userId = -1L;
-        String email;
+        Long userId = user.getId();
+        String email = user.getEmail();
 
-        if (user != null) {
-            userId = user.getId();
-            email = user.getEmail();
-        } else {
-            try {
-                userId = Claims.getUserIdFromJwt();
-                email = usersRepository.findById(userId).get().getEmail();
-            } catch (Exception e) {
-                throw new RuntimeException("User not logged in");
-            }
-        }
-
+        /*
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .subject(email)
@@ -60,31 +54,83 @@ public class ResetPasswordUsecaseImpl implements ResetPasswordUsecase {
                 .expiresAt(expiration)
                 .build();
 
-        ResetPasswordGenerateResponseDTO response = new ResetPasswordGenerateResponseDTO();
-        response.setUserId(userId);
         String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+         */
+
+        Optional<EmailVerificationToken> emailVerificationToken = emailVerificationTokenRepository.findByUserId(user.getId());
+
+        if (emailVerificationToken.isPresent()) {
+            if (emailVerificationToken.get().getCreatedAt().isBefore(OffsetDateTime.now().minusMinutes(1)))
+                emailVerificationTokenRepository.delete(emailVerificationToken.get());
+            else
+                throw new RuntimeException("Wait for 1 minute before requesting a new email verification link");
+        }
+
+        String token = "R" + UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setUser(user);
+        verificationToken.setToken(token);
+        verificationToken.setExpiresAt(OffsetDateTime.now().plusHours(24));
+        emailVerificationTokenRepository.save(verificationToken);
+
         String verificationLink = "http://localhost:3000/reset-password?token=" + token;
         System.out.println(verificationLink);
-        emailService.sendVerificationEmail(email, verificationLink);
+        emailService.sendResetPasswordEmail(email, verificationLink);
+
+        ResetPasswordGenerateResponseDTO response = new ResetPasswordGenerateResponseDTO();
+        response.setUserId(userId);
         return response;
     }
 
     @Override
-    public ResetPasswordGenerateResponseDTO generateToken() {
-        return generateToken(null);
+    public ResetPasswordGenerateResponseDTO generateTokenForEmail(ResetPasswordGenerateRequestDTO requestDTO) {
+        Optional<User> user = usersRepository.findByEmailContainsIgnoreCase(requestDTO.getEmail());
+        return generateToken(user.get());
+    }
+
+    @Override
+    public ResetPasswordGenerateResponseDTO generateTokenForLoggedUser() {
+        Long userId;
+        try {
+            userId = Claims.getUserIdFromJwt();
+        } catch (Exception e) {
+            throw new RuntimeException("User not logged in");
+        }
+        Optional<User> user = usersRepository.findById(userId);
+        return generateToken(user.get());
     }
 
     @Override
     @Transactional
     public ResetPasswordVerifyResponseDTO verifyToken(ResetPasswordVerifyRequestDTO request) {
         ResetPasswordVerifyResponseDTO response = new ResetPasswordVerifyResponseDTO();
+        String token = request.getToken();
+
+        if (request.getPassword().length() < 8) {
+            throw new RuntimeException("Password length minimum is 8 characters");
+        }
+
+        if (token.charAt(0) != 'R') {
+            throw new RuntimeException("Not a reset password token");
+        }
+
+        Optional<EmailVerificationToken> optionalToken = emailVerificationTokenRepository.findByToken(token);
+
+        if (optionalToken.isEmpty()) {
+            throw new RuntimeException("Invalid or expired verification token.");
+        }
+
+        EmailVerificationToken verificationToken = optionalToken.get();
+        if (verificationToken.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            throw new RuntimeException("Verification token has expired.");
+        }
+
         try {
-            System.out.println("token = " + request.getToken());
-            Jwt jwt = jwtDecoder.decode(request.getToken());
-            Long userId = jwt.getClaim("userId");
-            User user = usersRepository.findById(userId).get();
+            User user = usersRepository.findById(verificationToken.getUser().getId()).orElseThrow();
+            Long userId = user.getId();
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             usersRepository.save(user);
+            emailVerificationTokenRepository.delete(verificationToken);
             response.setUserId(userId);
             return response;
         } catch (Exception e) {

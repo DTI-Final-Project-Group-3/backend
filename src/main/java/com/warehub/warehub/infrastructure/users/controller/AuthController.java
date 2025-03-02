@@ -7,6 +7,7 @@ import com.warehub.warehub.usecase.user.GoogleLoginUsecase;
 import com.warehub.warehub.usecase.user.LoginUsecase;
 import com.warehub.warehub.usecase.user.ResetPasswordUsecase;
 import com.warehub.warehub.usecase.user.TokenGenerationUsecase;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -104,7 +105,22 @@ public class AuthController {
         ResetPasswordGenerateResponseDTO result = null;
         String errorMessage = "";
         try {
-            result = resetPasswordUsecase.generateToken();
+            result = resetPasswordUsecase.generateTokenForLoggedUser();
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Reset password request failed : "+errorMessage);
+        return ApiResponse.successfulResponse("Reset password request successful", result);
+    }
+
+    @PostMapping("/reset-password-request-by-email")
+    public ResponseEntity<?> resetPasswordRequest(@Valid @RequestBody ResetPasswordGenerateRequestDTO requestDTO) {
+        ResetPasswordGenerateResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = resetPasswordUsecase.generateTokenForEmail(requestDTO);
         } catch (Exception e) {
             e.printStackTrace();
             errorMessage = e.getMessage();

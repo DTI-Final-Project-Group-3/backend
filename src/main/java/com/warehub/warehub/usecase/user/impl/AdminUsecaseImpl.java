@@ -5,10 +5,8 @@ import com.warehub.warehub.entity.User;
 import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.entity.WarehouseAdmin;
 import com.warehub.warehub.entity.enums.RoleType;
-import com.warehub.warehub.infrastructure.users.dto.AssignWarehouseRequestDTO;
-import com.warehub.warehub.infrastructure.users.dto.AssignWarehouseResponseDTO;
-import com.warehub.warehub.infrastructure.users.dto.UserAdminDetailResponseDTO;
-import com.warehub.warehub.infrastructure.users.dto.UserAuth;
+import com.warehub.warehub.infrastructure.security.Claims;
+import com.warehub.warehub.infrastructure.users.dto.*;
 import com.warehub.warehub.infrastructure.users.repository.RolesRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseAdminRepository;
@@ -156,6 +154,21 @@ public class AdminUsecaseImpl implements AdminUsecase {
 
         warehouseAdminRepository.delete(existingWarehouseAdmin.get());
 
+        return responseDTO;
+    }
+
+    @Override
+    public CurrentWarehouseResponseDTO getCurrentWarehouseDTO() {
+        CurrentWarehouseResponseDTO responseDTO = new CurrentWarehouseResponseDTO();
+        Long userId = Claims.getUserIdFromJwt();
+        Optional<WarehouseAdmin> warehouseAdmin = warehouseAdminRepository.findByUserAssigneeId(userId);
+        if (warehouseAdmin.isPresent()) {
+            responseDTO.setWarehouseId(warehouseAdmin.get().getWarehouse().getId());
+            responseDTO.setUserAssignerId(warehouseAdmin.get().getUserAssigner().getId());
+        } else {
+            responseDTO.setUserAssignerId(-1L);
+            responseDTO.setWarehouseId(-1L);
+        }
         return responseDTO;
     }
 }
