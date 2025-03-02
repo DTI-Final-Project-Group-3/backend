@@ -4,7 +4,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class ApproveProductMutationRequestDTO {
+public class ProductMutationProcessRequestDTO {
     @NotNull
-    private Long approverId;
+    private Long userId;
+
+    private String notes;
 }

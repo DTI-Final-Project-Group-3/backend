@@ -7,6 +7,7 @@ import com.warehub.warehub.common.utils.Location;
 import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
+import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseQuantityResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseDetailResponseDTO;
@@ -49,7 +50,7 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
         }
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
 
-        List<Object[]> nearbyWarehouses = warehouseRepository.findNearbyWarehouses(location.getLongitude(), location.getLatitude(), LocationConstants.MAX_DISTANCE_IN_METERS.getValue(), req.getProductId());
+        List<Object[]> nearbyWarehouses = warehouseRepository.findNearbyWarehousesByCoordinate(location.getLongitude(), location.getLatitude(), LocationConstants.MAX_DISTANCE_IN_METERS.getValue(), req.getProductId());
 
         return nearbyWarehouses.stream()
                 .map(nearbyWarehouse -> {
@@ -62,4 +63,11 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
                     return nearbyWarehouseResponseDTO;
                 }).toList();
     }
+
+    @Override
+    public List<NearbyWarehouseQuantityResponseDTO> getNearbyWarehouseByProductId(Long warehouseId, Long productId) {
+
+        return warehouseRepository.findNearbyWarehouseByWarehouseIdAndProductId(warehouseId, productId);
+    }
+
 }

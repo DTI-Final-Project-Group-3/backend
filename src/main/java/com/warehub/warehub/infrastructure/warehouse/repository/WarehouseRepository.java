@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.warehouse.repository;
 
 import com.warehub.warehub.entity.Warehouse;
+import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseQuantityResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -27,28 +28,40 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
             GROUP BY w.id, w.name, longitude, latitude, distance
             ORDER BY distance ASC
         """, nativeQuery = true)
-    List<Object[]> findNearbyWarehouses(
+    List<Object[]> findNearbyWarehousesByCoordinate(
             @Param("longitude") double longitude,
             @Param("latitude") double latitude,
             @Param("radius") double radius,
             @Param("productId") Long productId);
 
     @Query(value = """
-            SELECT w.id, w.name, 
-                ST_X(w.location) AS longitude, 
-                ST_Y(w.location) AS latitude, 
-                ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) AS distance
-            FROM warehouses w
-            JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
-            WHERE ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius 
-                AND w.deleted_at IS NULL 
-            GROUP BY w.id, w.name, longitude, latitude, distance
-            ORDER BY distance ASC
-        """, nativeQuery = true)
-    List<Object[]> findNearestWarehouses(
-            @Param("longitude") double longitude,
-            @Param("latitude") double latitude,
-            @Param("radius") double radius);
+    SELECT 
+         w.id, 
+         w.name, 
+         ST_DistanceSphere(
+             w.location, 
+             ST_SetSRID(ST_MakePoint(coords.longitude, coords.latitude), 4326)
+         ) AS distance,
+         wi.quantity
+    FROM warehouses w
+    JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
+    CROSS JOIN (
+        SELECT 
+            ST_X(location) AS longitude, 
+            ST_Y(location) AS latitude
+        FROM warehouses
+        WHERE deleted_at IS NULL
+          AND id = :warehouseId
+    ) coords
+    WHERE w.deleted_at IS NULL 
+      AND wi.quantity > 0
+      AND wi.warehouse_id != :warehouseId
+      AND (:productId IS NULL OR wi.product_id = :productId)
+    ORDER BY distance ASC
+""", nativeQuery = true)
+    List<NearbyWarehouseQuantityResponseDTO> findNearbyWarehouseByWarehouseIdAndProductId(
+            @Param("warehouseId") Long warehouseID,
+            @Param("productId") Long productId);
 
     @Query(value = """
             SELECT 
@@ -71,6 +84,23 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
                                                                    @Param("latitude") Double latitude,
                                                                    @Param("radius") Double radius,
                                                                    @Param("productId") Long productId);
+
+    @Query(value = """
+            SELECT w.id, w.name, 
+                ST_X(w.location) AS longitude, 
+                ST_Y(w.location) AS latitude, 
+                ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) AS distance
+            FROM warehouses w
+            JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
+            WHERE ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius 
+                AND w.deleted_at IS NULL 
+            GROUP BY w.id, w.name, longitude, latitude, distance
+            ORDER BY distance ASC
+        """, nativeQuery = true)
+    List<Object[]> findNearestWarehouses(
+            @Param("longitude") double longitude,
+            @Param("latitude") double latitude,
+            @Param("radius") double radius);
 
 
     List<Warehouse> findAllByDeletedAtIsNull();

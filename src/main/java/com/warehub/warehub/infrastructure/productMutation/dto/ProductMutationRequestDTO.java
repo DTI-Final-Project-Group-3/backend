@@ -1,9 +1,8 @@
 package com.warehub.warehub.infrastructure.productMutation.dto;
 
+import com.warehub.warehub.entity.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.time.OffsetDateTime;
 
 @Data
 public class ProductMutationRequestDTO {
@@ -14,21 +13,43 @@ public class ProductMutationRequestDTO {
     @NotNull
     private Integer quantity;
 
-    private String notes;
+    private String requesterNotes;
 
     @NotNull
     private Long requesterId;
-
-    private Long approverId;
 
     private Long originWarehouseId;
 
     @NotNull
     private Long destinationWarehouseId;
 
-    private Long productMutationTypeId;
+    public ProductMutation toEntity(Product product, User requester, Warehouse destinationWarehouse, ProductMutationStatus status, ProductMutationType type){
+        ProductMutation productMutation = new ProductMutation();
 
-    private Long productMutationStatusId;
+        productMutation.setProduct(product);
+        productMutation.setQuantity(this.quantity);
+        productMutation.setRequesterNotes(this.requesterNotes);
+        productMutation.setRequester(requester);
+        productMutation.setDestinationWarehouse(destinationWarehouse);
+        productMutation.setProductMutationStatus(status);
+        productMutation.setProductMutationType(type);
 
-    private OffsetDateTime acceptedAt;
+        return productMutation;
+    }
+
+    public ProductMutation toEntity(Product product, User requester, Warehouse originWarehouse, Warehouse destinationWarehouse, ProductMutationStatus status, ProductMutationType type){
+        ProductMutation productMutation = new ProductMutation();
+
+        productMutation.setProduct(product);
+        productMutation.setQuantity(this.quantity);
+        productMutation.setRequesterNotes(this.requesterNotes);
+        productMutation.setRequester(requester);
+        productMutation.setOriginWarehouse(originWarehouse);
+        productMutation.setDestinationWarehouse(destinationWarehouse);
+        productMutation.setProductMutationStatus(status);
+        productMutation.setProductMutationType(type);
+
+        return productMutation;
+    }
+
 }

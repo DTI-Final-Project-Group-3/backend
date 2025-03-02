@@ -18,7 +18,6 @@ import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
-import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryStatusRepository;
 import com.warehub.warehub.usecase.transaction.ManualTransactionUsecase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +37,6 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
     private final PaymentMethodRepository paymentMethodRepository;
     private final CustomerOrderStatusRepository orderStatusRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
-    private final WarehouseInventoryStatusRepository warehouseInventoryStatusRepository;
     private final ProductMutationStatusRepository productMutationStatusRepository;
     private final ProductMutationTypeRepository productMutationTypeRepository;
     private final ProductMutationRepository productMutationRepository;
@@ -50,7 +48,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
             WarehouseRepository warehouseRepository,
             ProductRepository productRepository,
             PaymentMethodRepository paymentMethodRepository,
-            CustomerOrderStatusRepository orderStatusRepository, WarehouseInventoryRepository warehouseInventoryRepository, WarehouseInventoryStatusRepository warehouseInventoryStatusRepository, ProductMutationStatusRepository productMutationStatusRepository, ProductMutationTypeRepository productMutationTypeRepository, ProductMutationRepository productMutationRepository)
+            CustomerOrderStatusRepository orderStatusRepository, WarehouseInventoryRepository warehouseInventoryRepository, ProductMutationStatusRepository productMutationStatusRepository, ProductMutationTypeRepository productMutationTypeRepository, ProductMutationRepository productMutationRepository)
     {
         this.customerOrderRepository = customerOrderRepository;
         this.customerOrderItemsRepository = customerOrderItemsRepository;
@@ -60,7 +58,6 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         this.paymentMethodRepository = paymentMethodRepository;
         this.orderStatusRepository = orderStatusRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
-        this.warehouseInventoryStatusRepository = warehouseInventoryStatusRepository;
         this.productMutationStatusRepository = productMutationStatusRepository;
         this.productMutationTypeRepository = productMutationTypeRepository;
         this.productMutationRepository = productMutationRepository;
@@ -97,8 +94,8 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         WarehouseResponseDTO nearestWarehouseDTO = nearbyWarehouses.getFirst();
 
         /*
-        * Validate warehouse, Validate payment method and Validate order status
-        * */
+         * Validate warehouse, Validate payment method and Validate order status
+         * */
         Warehouse nearestWarehouse = warehouseRepository.findById(nearestWarehouseDTO.getId())
                 .orElseThrow(() -> new DataNotFoundException("Nearest warehouse not found"));
         PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
@@ -156,11 +153,8 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 }
                 int updateQuantity = inventory.getQuantity() + missingQuantity;
                 Long status = (updateQuantity == 0) ? 2L : 1L;
-                WarehouseInventoryStatus warehouseInventoryStatus = warehouseInventoryStatusRepository.findByIdAndDeletedAtIsNull(status)
-                        .orElseThrow(()-> new WarehouseInventoryStatusNotFoundException("Warehouse inventory with status ID "+ status + " not found !"));
 
                 inventory.setQuantity(inventory.getQuantity() + missingQuantity);
-                inventory.setWarehouseInventoryStatus(warehouseInventoryStatus);
                 warehouseInventoryRepository.save(inventory);
 
                 // Create product mutation records
@@ -172,11 +166,8 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
             assert inventory != null;
             int updateQuantity = inventory.getQuantity() - requiredQuantity;
             Long status = (updateQuantity == 0) ? 2L : 1L;
-            WarehouseInventoryStatus warehouseInventoryStatus = warehouseInventoryStatusRepository.findByIdAndDeletedAtIsNull(status)
-                    .orElseThrow(()-> new WarehouseInventoryStatusNotFoundException("Warehouse inventory with status ID "+ status + " not found !"));
 
             inventory.setQuantity(inventory.getQuantity() - requiredQuantity);
-            inventory.setWarehouseInventoryStatus(warehouseInventoryStatus);
             warehouseInventoryRepository.save(inventory);
 
             // Product auto mutation type
@@ -197,7 +188,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 ProductMutation productMutation = new ProductMutation();
                 productMutation.setProduct(productItem);
                 productMutation.setQuantity(-orderItem.getQuantity()); // Negative to indicate stock decrease
-                productMutation.setNotes("Product sent to customer with payment using manual transfer");
+                productMutation.setRequesterNotes("Product sent to customer with payment using manual transfer");
                 productMutation.setRequester(user);
                 productMutation.setOriginWarehouse(nearestWarehouse);
                 productMutation.setProductMutationType(productMutationTypeAuto);
@@ -299,7 +290,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         ProductMutation mutation = new ProductMutation();
         mutation.setProduct(product);
         mutation.setQuantity(quantity);
-        mutation.setNotes(notes);
+        mutation.setRequesterNotes(notes);
         mutation.setRequester(user);
         mutation.setOriginWarehouse(fromWarehouse);
         mutation.setDestinationWarehouse(toWarehouse);
@@ -308,4 +299,3 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         productMutationRepository.save(mutation);
     }
 }
-

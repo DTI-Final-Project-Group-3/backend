@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ProductMutationTypeRepository extends JpaRepository<ProductMutationType, Long> {
     Optional<ProductMutationType> findByIdAndDeletedAtIsNull(Long productMutationTypeId);
+
+    Optional<ProductMutationType> findByNameIgnoreCaseAndDeletedAtIsNull(String manualMutation);
 }

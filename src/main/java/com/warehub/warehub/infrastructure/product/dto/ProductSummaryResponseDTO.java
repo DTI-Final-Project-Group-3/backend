@@ -24,6 +24,14 @@ public class ProductSummaryResponseDTO {
         this.thumbnail = thumbnail;
     }
 
+    public ProductSummaryResponseDTO(Long productId, String productName, BigDecimal price, String categoryName, String thumbnail){
+        this.id = productId;
+        this.name = productName;
+        this.price = price;
+        this.categoryName = categoryName;
+        this.thumbnail = thumbnail;
+    }
+
     public ProductSummaryResponseDTO(Long productId, String productName, BigDecimal price, String categoryName, String thumbnail, Long totalStock){
         this.id = productId;
         this.name = productName;
