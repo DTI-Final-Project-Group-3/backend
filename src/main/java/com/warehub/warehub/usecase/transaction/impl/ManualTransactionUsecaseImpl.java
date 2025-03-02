@@ -94,8 +94,8 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         WarehouseResponseDTO nearestWarehouseDTO = nearbyWarehouses.getFirst();
 
         /*
-        * Validate warehouse, Validate payment method and Validate order status
-        * */
+         * Validate warehouse, Validate payment method and Validate order status
+         * */
         Warehouse nearestWarehouse = warehouseRepository.findById(nearestWarehouseDTO.getId())
                 .orElseThrow(() -> new DataNotFoundException("Nearest warehouse not found"));
         PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
@@ -188,6 +188,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 ProductMutation productMutation = new ProductMutation();
                 productMutation.setProduct(productItem);
                 productMutation.setQuantity(-orderItem.getQuantity()); // Negative to indicate stock decrease
+                productMutation.setRequesterNotes("Product sent to customer with payment using manual transfer");
                 productMutation.setRequester(user);
                 productMutation.setOriginWarehouse(nearestWarehouse);
                 productMutation.setProductMutationType(productMutationTypeAuto);
@@ -289,6 +290,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         ProductMutation mutation = new ProductMutation();
         mutation.setProduct(product);
         mutation.setQuantity(quantity);
+        mutation.setRequesterNotes(notes);
         mutation.setRequester(user);
         mutation.setOriginWarehouse(fromWarehouse);
         mutation.setDestinationWarehouse(toWarehouse);
@@ -297,4 +299,3 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         productMutationRepository.save(mutation);
     }
 }
-
