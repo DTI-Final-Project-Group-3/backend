@@ -59,7 +59,7 @@ public class CustomerOrderController {
         return ApiResponse.successfulResponse("Get customer order detail success", customerOrderUsecase.getCustomerOrder(requestDTO));
     }
 
-    @PostMapping("/{orderId}")
+    @PostMapping("/customer/{orderId}")
     public ResponseEntity<?> confirmCustomerOrder(@PathVariable Long orderId) {
 
         Long userId = Claims.getUserIdFromJwt();
@@ -70,4 +70,6 @@ public class CustomerOrderController {
 
         return ApiResponse.successfulResponse("Confirm order success", customerOrderUsecase.confirmCustomerOrder(requestDTO));
     }
+
+    // TODO : customer cancel order where the order createdAt < createdAt + 1 hr
 }

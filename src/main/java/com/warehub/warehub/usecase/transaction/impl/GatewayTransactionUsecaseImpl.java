@@ -26,13 +26,12 @@ import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
-import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryStatusRepository;
 import com.warehub.warehub.usecase.transaction.GatewayTransactionUsecase;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -46,7 +45,6 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
     private final PaymentMethodRepository paymentMethodRepository;
     private final CustomerOrderStatusRepository customerOrderStatusRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
-    private final WarehouseInventoryStatusRepository warehouseInventoryStatusRepository;
     private final ProductMutationTypeRepository productMutationTypeRepository;
     private final ProductMutationStatusRepository productMutationStatusRepository;
     private final ProductMutationRepository productMutationRepository;
@@ -66,7 +64,6 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
             PaymentMethodRepository paymentMethodRepository,
             CustomerOrderStatusRepository customerOrderStatusRepository,
             WarehouseInventoryRepository warehouseInventoryRepository,
-            WarehouseInventoryStatusRepository warehouseInventoryStatusRepository,
             ProductMutationTypeRepository productMutationTypeRepository,
             ProductMutationStatusRepository productMutationStatusRepository,
             ProductMutationRepository productMutationRepository
@@ -79,7 +76,6 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
         this.paymentMethodRepository = paymentMethodRepository;
         this.customerOrderStatusRepository = customerOrderStatusRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
-        this.warehouseInventoryStatusRepository = warehouseInventoryStatusRepository;
         this.productMutationTypeRepository = productMutationTypeRepository;
         this.productMutationStatusRepository = productMutationStatusRepository;
         this.productMutationRepository = productMutationRepository;
@@ -144,12 +140,7 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
                  * Update deduct the stock if met the stock needed
                  * */
                 int updateQuantity = inventory.getQuantity() - item.getQuantity();
-                Long status = (updateQuantity == 0) ? 2L : 1L;
-                WarehouseInventoryStatus warehouseInventoryStatus = warehouseInventoryStatusRepository.findByIdAndDeletedAtIsNull(status)
-                        .orElseThrow(()-> new WarehouseInventoryStatusNotFoundException("Warehouse inventory with status ID "+ status + " not found !"));
-
                 inventory.setQuantity(updateQuantity);
-                inventory.setWarehouseInventoryStatus(warehouseInventoryStatus);
                 warehouseInventoryRepository.save(inventory);
 
                 /*
@@ -166,12 +157,11 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
                 ProductMutation productMutation = new ProductMutation();
                 productMutation.setProduct(product);
                 productMutation.setQuantity(-item.getQuantity()); // Negative to indicate stock decrease
-                productMutation.setNotes("Product sent to customer with payment using gateway transfer");
+                productMutation.setRequesterNotes("Product sent to customer with payment using gateway transfer");
                 productMutation.setRequester(user);
                 productMutation.setOriginWarehouse(warehouse);
                 productMutation.setProductMutationType(productMutationTypeManual);
                 productMutation.setProductMutationStatus(productMutationStatusPending);
-//            productMutation.setAcceptedAt(OffsetDateTime.now());
                 productMutationRepository.save(productMutation);
             }
 

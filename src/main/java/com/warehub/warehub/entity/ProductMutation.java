@@ -28,16 +28,19 @@ public class ProductMutation {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "notes", length = Integer.MAX_VALUE)
-    private String notes;
+    @Column(name = "requester_notes")
+    private String requesterNotes;
+
+    @Column(name = "reviewer_notes")
+    private String reviewerNotes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")
     private User requester;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approver_id")
-    private User approver;
+    @JoinColumn(name = "reviewer_id")
+    private User reviewer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_warehouse_id")
@@ -55,8 +58,11 @@ public class ProductMutation {
     @JoinColumn(name = "product_mutation_status_id")
     private ProductMutationStatus productMutationStatus;
 
-    @Column(name = "accepted_at")
-    private OffsetDateTime acceptedAt;
+    @Column(name = "invoice_code")
+    private String invoiceCode;
+
+    @Column(name = "reviewed_at")
+    private OffsetDateTime reviewedAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
