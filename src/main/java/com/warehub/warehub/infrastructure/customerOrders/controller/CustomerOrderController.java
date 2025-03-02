@@ -6,6 +6,7 @@ import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderDetail
 import com.warehub.warehub.infrastructure.customerOrders.dto.PaginatedCustomerOrderRequestDTO;
 import com.warehub.warehub.infrastructure.security.Claims;
 import com.warehub.warehub.usecase.customerOrder.CustomerOrderUsecase;
+import com.warehub.warehub.usecase.transaction.ManualTransactionUsecase;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +19,13 @@ import java.time.ZoneOffset;
 public class CustomerOrderController {
 
     private final CustomerOrderUsecase customerOrderUsecase;
+    private final ManualTransactionUsecase manualTransactionUsecase;
 
-    public CustomerOrderController(CustomerOrderUsecase customerOrderUsecase) {
+    public CustomerOrderController(CustomerOrderUsecase customerOrderUsecase,
+                                   ManualTransactionUsecase manualTransactionUsecase
+    ) {
         this.customerOrderUsecase = customerOrderUsecase;
+        this.manualTransactionUsecase = manualTransactionUsecase;
     }
 
     @GetMapping
@@ -71,5 +76,8 @@ public class CustomerOrderController {
         return ApiResponse.successfulResponse("Confirm order success", customerOrderUsecase.confirmCustomerOrder(requestDTO));
     }
 
-    // TODO : customer cancel order where the order createdAt < createdAt + 1 hr
+    @PutMapping("/customer/cancel/{orderId}")
+    public ResponseEntity<?> cancelCustomerOrder(@PathVariable Long orderId) {
+        return ApiResponse.successfulResponse("Cancel order with ID : " + orderId + " success", manualTransactionUsecase.cancelManualTransaction(orderId));
+    }
 }

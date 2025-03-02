@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,9 +111,12 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         User user = usersRepository.findById(request.getUserId())
                 .orElseThrow(() -> new DataNotFoundException("User not found."));
 
-        // Check is user verified as customer
-        if(!"CUSTOMER_VERIFIED".equals(user.getRole().getName())) {
-            throw new DataNotFoundException("Customer is not verified.");
+        // Define allowed roles
+        List<String> allowedRoles = Arrays.asList("CUSTOMER_VERIFIED", "ADMIN_WAREHOUSE", "ADMIN_SUPER");
+
+        // Check if the user has one of the allowed roles
+        if (!allowedRoles.contains(user.getRole().getName())) {
+            throw new IllegalArgumentException("You do not have permission to access this order.");
         }
 
         // Check if the order exist

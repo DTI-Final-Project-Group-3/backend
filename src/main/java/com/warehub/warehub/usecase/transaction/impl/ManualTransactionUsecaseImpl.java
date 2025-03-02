@@ -7,6 +7,7 @@ import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.customerOrderItems.repository.CustomerOrderItemsRepository;
 import com.warehub.warehub.infrastructure.customerOrderStatus.CustomerOrderStatusRepository;
+import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderResponseDTO;
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.paymentMethod.repository.PaymentMethodRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
@@ -19,6 +20,7 @@ import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.transaction.ManualTransactionUsecase;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
     private final CustomerOrderRepository customerOrderRepository;
     private final CustomerOrderItemsRepository customerOrderItemsRepository;
@@ -40,32 +43,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
     private final ProductMutationStatusRepository productMutationStatusRepository;
     private final ProductMutationTypeRepository productMutationTypeRepository;
     private final ProductMutationRepository productMutationRepository;
-
-    public ManualTransactionUsecaseImpl(
-            CustomerOrderRepository customerOrderRepository,
-            CustomerOrderItemsRepository customerOrderItemsRepository,
-            UsersRepository usersRepository,
-            WarehouseRepository warehouseRepository,
-            ProductRepository productRepository,
-            PaymentMethodRepository paymentMethodRepository,
-            CustomerOrderStatusRepository orderStatusRepository,
-            WarehouseInventoryRepository warehouseInventoryRepository,
-            ProductMutationStatusRepository productMutationStatusRepository,
-            ProductMutationTypeRepository productMutationTypeRepository,
-            ProductMutationRepository productMutationRepository)
-    {
-        this.customerOrderRepository = customerOrderRepository;
-        this.customerOrderItemsRepository = customerOrderItemsRepository;
-        this.usersRepository = usersRepository;
-        this.warehouseRepository = warehouseRepository;
-        this.productRepository = productRepository;
-        this.paymentMethodRepository = paymentMethodRepository;
-        this.orderStatusRepository = orderStatusRepository;
-        this.warehouseInventoryRepository = warehouseInventoryRepository;
-        this.productMutationStatusRepository = productMutationStatusRepository;
-        this.productMutationTypeRepository = productMutationTypeRepository;
-        this.productMutationRepository = productMutationRepository;
-    }
+    private final CustomerOrderStatusRepository customerOrderStatusRepository;
 
     @Transactional
     @Override
@@ -263,14 +241,89 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         // Validate customer order exist for the user
         CustomerOrder customerOrder = customerOrderRepository.findByIdAndUserId(customerOrderId, request.getUserId());
 
-        if (customerOrder.getPaymentProofImageUrl().isEmpty()) {
-            customerOrder.setPaymentProofImageUrl(request.getPaymentProofImage());
-        } else throw new PaymentProofAlreadyExistsException("Customer order with Id " + customerOrderId + " already has a payment proof image");
+        if (customerOrder == null) {
+            throw new DataNotFoundException("Customer order with ID " + customerOrderId + " not found for the user.");
+        }
+
+        // Check if payment proof already exists
+        if (customerOrder.getPaymentProofImageUrl() != null && !customerOrder.getPaymentProofImageUrl().isEmpty()) {
+            throw new PaymentProofAlreadyExistsException("Customer order with ID " + customerOrderId + " already has a payment proof image.");
+        }
+
+        CustomerOrderStatus waitingForAdminConfirmation = customerOrderStatusRepository.findById(2)
+                .orElseThrow(() -> new DataNotFoundException("Customer order with ID " + customerOrderId + " not found"));
+
+        // Update payment proof
+        customerOrder.setPaymentProofImageUrl(request.getPaymentProofImage());
+        customerOrder.setOrderStatus(waitingForAdminConfirmation);
         customerOrderRepository.save(customerOrder);
 
         return new UpdatePaymentProofResponseDTO(
                 customerOrder.getPaymentProofImageUrl()
         );
+    }
+
+    @Override
+    public CustomerOrderResponseDTO cancelManualTransaction(Long customerOrderId) {
+        // Find the user
+//        User user = usersRepository.findById(userId)
+//                .orElseThrow(() -> new DataNotFoundException("User not found"));
+
+        // Find the customer order
+        CustomerOrder customerOrder = customerOrderRepository.findById(customerOrderId)
+                .orElseThrow(() -> new DataNotFoundException("Customer order not found"));
+
+        // Get order items
+        List<CustomerOrderItem> orderItems = customerOrderItemsRepository.findByCustomerOrderId(customerOrderId);
+
+        if (orderItems.isEmpty()) throw new DataNotFoundException("No oder items found for this transaction");
+
+        // Reverse stock changes
+        for (CustomerOrderItem item : orderItems) {
+            Product product = item.getProduct();
+            int quantityToReturn = item.getQuantity();
+
+            // Find product mutation records (to track stock movement)
+            List<ProductMutation> mutations = productMutationRepository.findByInvoiceCodeAndProductId(
+                    customerOrder.getInvoiceCode(), product.getId());
+
+            for (ProductMutation mutation : mutations) {
+                Warehouse originWarehouse = mutation.getOriginWarehouse();
+                Warehouse destinationWarehouse = mutation.getDestinationWarehouse();
+                int mutatedQuantity = mutation.getQuantity(); // The actual quantity moved in mutation
+
+                // Stock was moved out (deducted)
+                if (mutatedQuantity < 0) {
+                    // Restore stock in the origin warehouse
+                    WarehouseInventory originInventory = warehouseInventoryRepository
+                            .findByProductIdAndWarehouseIdAndDeletedAtIsNull(product.getId(), originWarehouse.getId())
+                            .orElseThrow(() -> new DataNotFoundException("Inventory record not found"));
+
+                    // Restore only what is needed
+                    int quantityToRestore = Math.min(quantityToReturn, Math.abs(mutatedQuantity));
+                    originInventory.setQuantity(originInventory.getQuantity() + quantityToRestore);
+                    warehouseInventoryRepository.save(originInventory);
+
+                    // Log mutation (reverse stock movement)
+                    createProductMutationRecord(
+                            product, quantityToRestore, "Order canceled : reversing transaction calcellation",
+                            customerOrder.getUser(), destinationWarehouse, originWarehouse,
+                            2L, 3L, customerOrder.getInvoiceCode()
+                    );
+
+                    // Reduce remaining quantity to return
+                    quantityToReturn -= quantityToRestore;
+                    if (quantityToReturn <= 0) break; // Stop if all stock is restored
+                }
+            }
+        }
+        // Mark order as canceled
+        CustomerOrderStatus canceledStatus = customerOrderStatusRepository.findById(6)
+                .orElseThrow(() -> new DataNotFoundException("Order status not found"));
+        customerOrder.setOrderStatus(canceledStatus);
+        customerOrderRepository.save(customerOrder);
+
+        return CustomerOrderResponseDTO.mapToDTO(customerOrder);
     }
 
     /**

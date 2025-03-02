@@ -58,13 +58,13 @@ public class TransactionController {
     }
 
     @PutMapping("/payment-proof/{customerOrderId}")
-    public ResponseEntity<?> updateManualPaymentImage(@PathVariable("customerOrderId") Long customerOrderId, UpdatePaymentProofRequestDTO req) {
+    public ResponseEntity<?> updateManualPaymentImage(@PathVariable("customerOrderId") Long customerOrderId, @RequestBody UpdatePaymentProofRequestDTO req) {
         Long userId = Claims.getUserIdFromJwt();
 
         UpdatePaymentProofRequestDTO reqDTO = new UpdatePaymentProofRequestDTO();
         reqDTO.setUserId(userId);
         reqDTO.setPaymentProofImage(req.getPaymentProofImage());
 
-        return ApiResponse.successfulResponse("Upload payment proof image successfully.", manualTransactionUsecase.updateManualPaymentProof(customerOrderId, req));
+        return ApiResponse.successfulResponse("Upload payment proof image successfully.", manualTransactionUsecase.updateManualPaymentProof(customerOrderId, reqDTO));
     }
 }
