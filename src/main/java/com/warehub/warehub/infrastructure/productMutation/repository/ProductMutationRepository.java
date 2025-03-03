@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.productMutation.repository;
 
 import com.warehub.warehub.entity.ProductMutation;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDailySummaryResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDetailResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationReportResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationTotalResponseDTO;
@@ -55,6 +56,44 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
             @Param("productMutationTypeId") Long productMutationTypeId,
             @Param("productMutationStatusId") Long productMutationStatusId
     );
+
+    @Query(nativeQuery = true, value = """
+        WITH date_series AS (
+          SELECT generate_series(
+            :startedAt,
+            :endedAt,
+            '1 day'::interval
+          )::date AS date
+        )
+        SELECT
+          ds.date as date,
+          COALESCE(SUM(CASE WHEN pm.quantity > 0 THEN pm.quantity ELSE 0 END), 0) AS total_addition,
+          COALESCE(SUM(CASE WHEN pm.quantity < 0 THEN ABS(pm.quantity) ELSE 0 END), 0) AS total_reduction
+        FROM
+          date_series ds
+        LEFT JOIN
+          product_mutations pm ON ds.date = pm.created_at::date
+        LEFT JOIN
+          products p ON pm.product_id = p.id
+        WHERE
+          (pm.id IS NULL OR
+          ((:productId IS NULL OR pm.product_id = :productId)
+          AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+          AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
+          AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+          AND (pm.created_at BETWEEN :startedAt AND :endedAt)))
+        GROUP BY
+          ds.date
+        ORDER BY
+          ds.date DESC
+        """)
+    List<ProductMutationDailySummaryResponseDTO> findDailyMutationSummary(
+            @Param("startedAt") OffsetDateTime startedAt,
+            @Param("endedAt") OffsetDateTime endedAt,
+            @Param("productId") Long productId,
+            @Param("productCategoryId") Long productCategoryId,
+            @Param("productMutationTypeId") Long productMutationTypeId,
+            @Param("productMutationStatusId") Long productMutationStatusId);
 
     @Query(value = """
     SELECT

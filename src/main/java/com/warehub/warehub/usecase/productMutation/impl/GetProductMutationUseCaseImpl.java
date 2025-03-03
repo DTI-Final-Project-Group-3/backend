@@ -48,4 +48,21 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
                         req.getProductId(), req.getProductCategoryId(),
                         req.getProductMutationTypeId(), req.getProductMutationStatusId());
     }
+
+    @Override
+    public ProductMutationTotalResponseDTO getTotalProductMutation(ProductMutationReportRequestDTO req) {
+        return productMutationRepository
+                .calculateProductQuantityMetricsByDateRange(
+                        req.getStartDate(), req.getEndDate(),
+                        req.getProductId(), req.getProductCategoryId(),
+                        req.getProductMutationTypeId(), req.getProductMutationStatusId());
+    }
+
+    @Override
+    public List<ProductMutationDailySummaryResponseDTO> getDailyMutationSummary(ProductMutationReportRequestDTO req) {
+        return productMutationRepository
+                .findDailyMutationSummary(req.getStartDate(), req.getEndDate(),
+                        req.getProductId(), req.getProductCategoryId(),
+                        req.getProductMutationTypeId(), req.getProductMutationStatusId());
+    }
 }

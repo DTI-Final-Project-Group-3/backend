@@ -10,4 +10,6 @@ public interface GetProductMutationUseCase {
     ProductMutationResponseDTO getProductMutationById(Long productMutationId);
     PaginationInfo<ProductMutationDetailResponseDTO> getPaginatedProductMutationByWarehouseId(ProductMutationPaginationRequestDTO req);
     List<ProductMutationReportResponseDTO> getProductMutationReport(ProductMutationReportRequestDTO req);
+    ProductMutationTotalResponseDTO getTotalProductMutation(ProductMutationReportRequestDTO req);
+    List<ProductMutationDailySummaryResponseDTO> getDailyMutationSummary(ProductMutationReportRequestDTO req);
 }
