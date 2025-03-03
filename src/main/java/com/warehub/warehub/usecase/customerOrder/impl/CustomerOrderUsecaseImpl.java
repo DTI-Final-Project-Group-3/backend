@@ -92,6 +92,7 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         // Apply additional filters from request params
         spec = spec.and(CustomerOrderSpecification.hasStatusId(request.getCustomerOrderStatusId()))
                 .and(CustomerOrderSpecification.hasSearchQuery(request.getSearchQuery()))
+                .and(CustomerOrderSpecification.hasWarehouseId(request.getWarehouseId()))
                 .and(CustomerOrderSpecification.hasStartDate(request.getStartDate()))
                 .and(CustomerOrderSpecification.hasEndDate(request.getEndDate()));
 
