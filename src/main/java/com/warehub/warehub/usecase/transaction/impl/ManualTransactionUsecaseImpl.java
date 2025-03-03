@@ -2,6 +2,7 @@ package com.warehub.warehub.usecase.transaction.impl;
 
 import com.warehub.warehub.common.enums.LocationConstants;
 import com.warehub.warehub.common.exceptions.*;
+import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.Location;
 import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.entity.*;
@@ -44,6 +45,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
     private final ProductMutationTypeRepository productMutationTypeRepository;
     private final ProductMutationRepository productMutationRepository;
     private final CustomerOrderStatusRepository customerOrderStatusRepository;
+    private final CreateProductMutationLog createProductMutationLog;
 
     @Transactional
     @Override
@@ -53,9 +55,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
         // Check if the user is verified
-        if (!user.getIsEmailVerified()) {
-            throw new IllegalArgumentException("User is not verified to perform the action, verify the email first");
-        }
+        if (!user.getIsEmailVerified()) throw new IllegalArgumentException("User is not verified to perform the action, verify the email first");
 
         // Generate invoice code
         String invoiceCode = "ORDER-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + UUID.randomUUID().toString().substring(0, 6);
@@ -140,8 +140,14 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 warehouseInventoryRepository.save(inventory);
 
                 // Create product mutation records
-                createProductMutationRecord(product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode);
-                createProductMutationRecord(product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode);
+                createProductMutationLog.createProductMutationRecord(
+                        product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode
+                );
+                createProductMutationLog.createProductMutationRecord(
+                        product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode
+                );
+//                createProductMutationRecord(product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode);
+//                createProductMutationRecord(product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode);
             }
 
             // Deduct stock for order
@@ -305,7 +311,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                     warehouseInventoryRepository.save(originInventory);
 
                     // Log mutation (reverse stock movement)
-                    createProductMutationRecord(
+                    createProductMutationLog.createProductMutationRecord(
                             product, quantityToRestore, "Order canceled : reversing transaction calcellation",
                             customerOrder.getUser(), destinationWarehouse, originWarehouse,
                             2L, 3L, customerOrder.getInvoiceCode()
@@ -324,31 +330,6 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         customerOrderRepository.save(customerOrder);
 
         return CustomerOrderResponseDTO.mapToDTO(customerOrder);
-    }
-
-    /**
-     * Helper method to create a product mutation record.
-     */
-    public void createProductMutationRecord(Product product, int quantity, String notes, User user,
-                                            Warehouse fromWarehouse, Warehouse toWarehouse, Long mutationTypeId, Long mutationStatusId, String invoiceCode) {
-
-        ProductMutationType mutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(mutationTypeId)
-                .orElseThrow(() -> new ProductMutationTypeNotFoundException("Product mutation type not found"));
-
-        ProductMutationStatus mutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(mutationStatusId)
-                .orElseThrow(() -> new ProductMutationStatusNotFoundException("Product mutation status not found"));
-
-        ProductMutation mutation = new ProductMutation();
-        mutation.setProduct(product);
-        mutation.setQuantity(quantity);
-        mutation.setRequesterNotes(notes);
-        mutation.setRequester(user);
-        mutation.setOriginWarehouse(fromWarehouse);
-        mutation.setDestinationWarehouse(toWarehouse);
-        mutation.setProductMutationType(mutationType);
-        mutation.setProductMutationStatus(mutationStatus);
-        mutation.setInvoiceCode(invoiceCode);
-        productMutationRepository.save(mutation);
     }
 }
 

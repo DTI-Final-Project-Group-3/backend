@@ -10,6 +10,7 @@ import com.warehub.warehub.infrastructure.customerOrders.dto.UpdateOrderRequestD
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.customerOrder.AdminCustomerOrderUsecase;
+import com.warehub.warehub.usecase.transaction.ManualTransactionUsecase;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -23,11 +24,17 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
     private final UsersRepository usersRepository;
     private final CustomerOrderRepository customerOrderRepository;
     private final CustomerOrderStatusRepository customerOrderStatusRepository;
+    private final ManualTransactionUsecase manualTransactionUsecase;
 
-    public AdminCustomerOrderUsecaseImpl(UsersRepository usersRepository, CustomerOrderRepository customerOrderRepository, CustomerOrderStatusRepository customerOrderStatusRepository) {
+    public AdminCustomerOrderUsecaseImpl(UsersRepository usersRepository,
+                                         CustomerOrderRepository customerOrderRepository,
+                                         CustomerOrderStatusRepository customerOrderStatusRepository,
+                                         ManualTransactionUsecase manualTransactionUsecase
+    ) {
         this.usersRepository = usersRepository;
         this.customerOrderRepository = customerOrderRepository;
         this.customerOrderStatusRepository = customerOrderStatusRepository;
+        this.manualTransactionUsecase = manualTransactionUsecase;
     }
 
     @Override
@@ -94,7 +101,7 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
 
     @Override
     public void autoUpdateCustomerOrderStatus() {
-        // Get all lists of pending orders
+        // Get all lists of waiting for payment orders
         List<CustomerOrder> pendingOrders = customerOrderRepository.findByOrderStatusId(1L);
 
         if (pendingOrders.isEmpty()) return;
@@ -115,17 +122,21 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
 
             if (isPaymentGateway) {
                 if (hoursSinceCreation >= 1) {
-                    order.setOrderStatus(cancelPayment);
+//                    order.setOrderStatus(cancelPayment);
+//                    customerOrderRepository.save(order);
+                    manualTransactionUsecase.cancelManualTransaction(order.getId());
                 }
             } else {
                 if(!hasPaymentProof && hoursSinceCreation >= 1) {
-                    order.setOrderStatus(cancelPayment);
+//                    order.setOrderStatus(cancelPayment);
+//                    customerOrderRepository.save(order);
+                    manualTransactionUsecase.cancelManualTransaction(order.getId());
                 } else if (hasPaymentProof && hoursSinceCreation < 1) {
                     order.setOrderStatus(waitingForAdminConfirmation);
+                    customerOrderRepository.save(order);
                 }
             }
         }
-        customerOrderRepository.saveAll(pendingOrders);
     }
 }
 
