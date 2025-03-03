@@ -1,24 +1,17 @@
 package com.warehub.warehub.infrastructure.users.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.entity.EmailVerificationToken;
-import com.warehub.warehub.entity.User;
-import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.users.dto.CreateUserRequestDTO;
+import com.warehub.warehub.infrastructure.users.dto.EmailVerificationVerifyRequestDTO;
+import com.warehub.warehub.infrastructure.users.dto.EmailVerificationVerifyResponseDTO;
 import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
-import com.warehub.warehub.infrastructure.users.repository.EmailVerificationTokenRepository;
 import com.warehub.warehub.infrastructure.users.repository.RolesRepository;
-import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.user.CreateUserUsecase;
 import com.warehub.warehub.usecase.user.EmailVerificationUsecase;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.OffsetDateTime;
-import java.util.Optional;
-
-import static com.warehub.warehub.entity.enums.RoleUtil.roleEnumFromString;
 
 @RestController
 @RequestMapping("/api/v1/signup")
@@ -33,13 +26,13 @@ public class SignupController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUserCustomer(@RequestBody CreateUserRequestDTO req,
+    public ResponseEntity<?> createUserCustomer(@Valid @RequestBody CreateUserRequestDTO req,
                                                 @RequestParam(defaultValue = "NOT_VERIFIED") String role) {
         UserDetailResponseDTO result = null;
         String errorMessage = "";
         try {
             result = createUserUsecase.createUser(req, role);
-            emailVerificationUsecase.send(result.getId());
+            //emailVerificationUsecase.send(result.getId());
         } catch (Exception e) {
             e.printStackTrace();
             errorMessage = e.getMessage();
@@ -52,8 +45,19 @@ public class SignupController {
     @Autowired
     private RolesRepository rolesRepository;
 
-    @GetMapping("/verify")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-        return emailVerificationUsecase.verify(token);
+    @PostMapping("/verify")
+    public ResponseEntity<?> verifyEmail(@RequestBody EmailVerificationVerifyRequestDTO request) {
+        EmailVerificationVerifyResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = emailVerificationUsecase.verifyEmailVerificationToken(request);
+            //emailVerificationUsecase.send(result.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Email verificaiton failed : " + errorMessage);
+        return ApiResponse.successfulResponse("Email verified successfully.", result);
     }
 }

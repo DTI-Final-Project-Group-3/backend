@@ -1,8 +1,5 @@
 package com.warehub.warehub.infrastructure.transaction.dto;
 
-import com.warehub.warehub.entity.CustomerOrderItem;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

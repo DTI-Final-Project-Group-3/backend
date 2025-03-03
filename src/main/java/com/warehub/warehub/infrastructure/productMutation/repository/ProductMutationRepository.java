@@ -135,4 +135,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
                                                                 @Param("destinationWarehouseId") Long destinationWarehouseId,
                                                                 @Param("productMutationTypeId") List<Long> productMutationTypeId,
                                                                 Pageable pageable);
+
+    List<ProductMutation> findByInvoiceCodeAndProductId(String invoiceCode, Long productId);
+
 }
