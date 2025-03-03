@@ -3,15 +3,18 @@ package com.warehub.warehub.infrastructure.productMutation.controller;
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationPaginationRequestDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationReportRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.usecase.productMutation.CreateProductMutationUseCase;
 import com.warehub.warehub.usecase.productMutation.DeleteProductMutationUseCase;
 import com.warehub.warehub.usecase.productMutation.GetProductMutationUseCase;
 import com.warehub.warehub.usecase.productMutation.UpdateProductMutationUseCase;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -48,6 +51,19 @@ public class ProductMutationController {
                                                          @RequestParam List<Long> productMutationTypeId){
         ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, originWarehouseId, destinationWarehouseId, productMutationTypeId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getPaginatedProductMutationByWarehouseId(requestDTO));
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<?> getProductMutationReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startedAt,
+                                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endedAt,
+                                                @RequestParam(required = false) Long productId,
+                                                @RequestParam(required = false) Long productCategoryId,
+                                                @RequestParam(required = false) Long productMutationTypeId,
+                                                @RequestParam(required = false) Long productMutationStatusId){
+
+        ProductMutationReportRequestDTO requestDTO = new ProductMutationReportRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get products success", getProductMutationUseCase.getProductMutationReport(requestDTO));
+
     }
 
     @GetMapping("/{productMutationId}")

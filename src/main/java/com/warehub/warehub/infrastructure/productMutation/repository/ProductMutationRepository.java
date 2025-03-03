@@ -2,6 +2,8 @@ package com.warehub.warehub.infrastructure.productMutation.repository;
 
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDetailResponseDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationReportResponseDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationTotalResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +18,68 @@ import java.util.Optional;
 @Repository
 public interface ProductMutationRepository extends JpaRepository<ProductMutation, Long> {
     Optional<ProductMutation> findByIdAndDeletedAtIsNull(Long productMutationId);
+
+    @Query(value = """
+    SELECT
+        pm.id AS id,
+        pm.created_at AS createdAt,
+        pm.quantity AS quantity,
+        p.id AS productId,
+        p.name AS productName,
+        pc.id AS productCategoryId,
+        pc.name AS productCategoryName,
+        pmt.id AS productMutationTypeId,
+        pmt.name AS productMutationTypeName,
+        pms.id AS productMutationStatusId,
+        pms.name AS productMutationStatusName
+    FROM product_mutations pm
+    JOIN products p ON pm.product_id = p.id
+    JOIN product_categories pc ON p.product_category_id = pc.id
+    JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
+    JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
+    WHERE
+        pm.deleted_at IS NULL
+        AND pm.created_at >= :startedAt
+        AND pm.created_at <= :endedAt
+        AND (:productId IS NULL OR pm.product_id = :productId)
+        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+        AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
+        AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+    ORDER BY pm.created_at DESC
+    """, nativeQuery = true)
+    List<ProductMutationReportResponseDTO> findProductMutationDetailsByDateRange(
+            @Param("startedAt") OffsetDateTime startedAt,
+            @Param("endedAt") OffsetDateTime endedAt,
+            @Param("productId") Long productId,
+            @Param("productCategoryId") Long productCategoryId,
+            @Param("productMutationTypeId") Long productMutationTypeId,
+            @Param("productMutationStatusId") Long productMutationStatusId
+    );
+
+    @Query(value = """
+    SELECT
+        SUM(CASE WHEN pm.created_at < :startedAt THEN pm.quantity ELSE 0 END) AS starting_quantity,
+        SUM(CASE WHEN pm.created_at BETWEEN :startedAt AND :endedAt
+            AND pm.quantity > 0 THEN pm.quantity ELSE 0 END) AS total_added,
+        ABS(SUM(CASE WHEN pm.created_at BETWEEN :startedAt AND :endedAt 
+            AND pm.quantity < 0 THEN pm.quantity ELSE 0 END)) AS total_reduced,
+        SUM(CASE WHEN pm.created_at BETWEEN :startedAt AND :endedAt THEN pm.quantity ELSE 0 END) AS net_change,
+        SUM(CASE WHEN pm.created_at <= :endedAt THEN pm.quantity ELSE 0 END) AS ending_quantity
+    FROM product_mutations pm
+    JOIN products p ON pm.product_id = p.id
+    WHERE
+        pm.deleted_at IS NULL
+        AND (:productId IS NULL OR pm.product_id = :productId)
+        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+        AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
+        AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+            """, nativeQuery = true)
+    ProductMutationTotalResponseDTO calculateProductQuantityMetricsByDateRange( @Param("startedAt") OffsetDateTime startedAt,
+                                                            @Param("endedAt") OffsetDateTime endedAt,
+                                                            @Param("productId") Long productId,
+                                                            @Param("productCategoryId") Long productCategoryId,
+                                                            @Param("productMutationTypeId") Long productMutationTypeId,
+                                                            @Param("productMutationStatusId") Long productMutationStatusId);
 
     @Query(value = """
     SELECT *
