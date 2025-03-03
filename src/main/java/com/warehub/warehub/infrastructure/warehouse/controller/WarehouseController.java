@@ -17,7 +17,6 @@ public class WarehouseController {
     private final GetWarehouseUseCase getWarehouseUseCase;
     private final UpdateWarehouseUseCase updateWarehouseUseCase;
     private final DeleteWarehouseUseCase deleteWarehouseUseCase;
-    private final GetWarehouseAssignedUseCase getWarehouseAssignedUseCase;
 
     public WarehouseController(CreateWarehouseUseCase createWarehouseUseCase,
                                GetWarehouseUseCase getWarehouseUseCase,
@@ -27,7 +26,6 @@ public class WarehouseController {
         this.getWarehouseUseCase = getWarehouseUseCase;
         this.updateWarehouseUseCase = updateWarehouseUseCase;
         this.deleteWarehouseUseCase = deleteWarehouseUseCase;
-        this.getWarehouseAssignedUseCase = getWarehouseAssignedUseCase;
     }
 
     @PostMapping
@@ -45,6 +43,7 @@ public class WarehouseController {
                                                            @RequestParam Long productId){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get available warehouse success",
                 getWarehouseUseCase.getNearbyWarehouseByProductId(warehouseId, productId));
+
     }
 
     @GetMapping("/all-assigned")
