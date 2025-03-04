@@ -4,13 +4,10 @@ import lombok.Data;
 
 import java.util.List;
 
-import lombok.Data;
-import java.util.List;
-
 @Data
 public class ShippingCostResponseDTO {
-    private String courier;
-    private List<ShippingCostDetail> costs;
+    private String couriers;
+    private List<ShippingCostDetail> details;
 
     @Data
     public static class ShippingCostDetail {
@@ -21,16 +18,21 @@ public class ShippingCostResponseDTO {
         private float cost;
         private String etd;
 
-        // Constructor
-        public ShippingCostDetail(String service, float cost, String etd) {
+        public ShippingCostDetail() {
+        }
+
+        public ShippingCostDetail(String service, String name, String code, String description, float cost, String etd) {
+            this.name = name;
+            this.code = code;
+            this.description = description;
             this.service = service;
             this.cost = cost;
             this.etd = etd;
         }
     }
 
-    public ShippingCostResponseDTO(String courier, List<ShippingCostDetail> costs) {
-        this.courier = courier;
-        this.costs = costs;
+    public ShippingCostResponseDTO(String courier, List<ShippingCostDetail> detail) {
+        this.couriers = courier;
+        this.details = detail;
     }
 }
