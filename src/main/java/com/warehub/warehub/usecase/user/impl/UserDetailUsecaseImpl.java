@@ -63,6 +63,13 @@ public class UserDetailUsecaseImpl implements UserDetailUsecase {
             user.setGender(req.getGender());
         if (req.getBirthdate() != null)
             user.setBirthdate(req.getBirthdate());
+
+        if (req.getBiodata() != null)
+            user.setBiodata(req.getBiodata());
+        if (req.getProfileImageUrl() != null)
+            user.setProfileImageUrl(req.getProfileImageUrl());
+        if (req.getPhoneNumber() != null)
+            user.setPhoneNumber(req.getPhoneNumber());
         usersRepository.save(user);
         return getUserDetail(authToken);
     }
