@@ -332,3 +332,4 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         return CustomerOrderResponseDTO.mapToDTO(customerOrder);
     }
 }
+

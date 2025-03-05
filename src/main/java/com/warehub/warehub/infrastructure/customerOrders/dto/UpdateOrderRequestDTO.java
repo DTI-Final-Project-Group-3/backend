@@ -11,5 +11,6 @@ public class UpdateOrderRequestDTO {
 
     private Long userId;
     private Long orderId;
+    private Boolean isAdminApproved;
 
 }
