@@ -99,12 +99,17 @@ public class UserAddressUsecaseImpl implements UserAddressUsecase {
         if (address == null)
             return null;
 
-        address.setName(request.getName());
-        address.setDetailAddress(request.getDetailAddress());
-        address.setLocation(geometryFactory.createPoint(
+        if (request.getName() != null)
+            address.setName(request.getName());
+        if (request.getDetailAddress() != null)
+            address.setDetailAddress(request.getDetailAddress());
+
+        if ((request.getLongitude() != null) && (request.getLatitude() != null))
+            address.setLocation(geometryFactory.createPoint(
                 new Coordinate(request.getLongitude(), request.getLatitude())));
 
-        if (request.getIsPrimary()) {
+        System.out.println("request.getIsPrimary() = " + request.getIsPrimary());
+        if ((request.getIsPrimary() != null) && request.getIsPrimary()) {
             userAddressRepository.unsetOtherPrimaryAddresses(user.getId());
             address.setPrimary(true);
         }
