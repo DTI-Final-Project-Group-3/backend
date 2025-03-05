@@ -9,7 +9,9 @@ import java.util.List;
 public interface GetProductMutationUseCase {
     ProductMutationResponseDTO getProductMutationById(Long productMutationId);
     PaginationInfo<ProductMutationDetailResponseDTO> getPaginatedProductMutationByWarehouseId(ProductMutationPaginationRequestDTO req);
-    List<ProductMutationHistoryResponseDTO> getProductMutationHistory(ProductMutationHistoryRequestDTO req);
+
+    // report
+    PaginationInfo<ProductMutationHistoryResponseDTO> getProductMutationHistory(ProductMutationHistoryRequestDTO req);
     ProductMutationTotalResponseDTO getTotalProductMutation(ProductMutationHistoryRequestDTO req);
     List<ProductMutationDailySummaryResponseDTO> getDailyMutationSummary(ProductMutationHistoryRequestDTO req);
 

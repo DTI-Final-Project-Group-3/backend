@@ -21,6 +21,8 @@ public interface ProductMutationStatusRepository extends JpaRepository<ProductMu
                 FROM product_mutation_statuses pms
                 WHERE
                     pms.deleted_at IS NULL
+               ORDER BY
+                    pms.id
                """, nativeQuery = true)
     List<ProductMutationStatusResponseDTO> findAllAndDeletedAtIsNull();
 }

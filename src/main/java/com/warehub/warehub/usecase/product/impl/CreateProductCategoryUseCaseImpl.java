@@ -1,30 +1,27 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.exceptions.DuplicateProductCategoryException;
-import com.warehub.warehub.entity.ProductCategory;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductCategoryRepository;
 import com.warehub.warehub.usecase.product.CreateProductCategoryUseCase;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class CreateProductCategoryUseCaseImpl implements CreateProductCategoryUseCase {
+
+    private final ValidationService validationService;
     private final ProductCategoryRepository productCategoryRepository;
 
-    public CreateProductCategoryUseCaseImpl(ProductCategoryRepository productCategoryRepository){
+    public CreateProductCategoryUseCaseImpl(ValidationService validationService, ProductCategoryRepository productCategoryRepository){
+        this.validationService = validationService;
         this.productCategoryRepository = productCategoryRepository;
     }
 
     @Override
     public ProductCategoryResponseDTO createProductCategory(ProductCategoryRequestDTO req) {
-        Optional<ProductCategory> productCategory = productCategoryRepository.findByNameIgnoreCaseAndDeletedAtIsNull(req.getName());
 
-        if (productCategory.isPresent()){
-            throw new DuplicateProductCategoryException("Product category with name " + req.getName() + " already exist !");
-        }
+        validationService.validateDuplicateProductCategoryName(req.getName());
         return new ProductCategoryResponseDTO(productCategoryRepository.save(req.toEntity()));
     }
 }

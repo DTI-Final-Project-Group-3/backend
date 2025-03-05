@@ -1,5 +1,6 @@
 package com.warehub.warehub.infrastructure.productMutation.repository;
 
+import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDailySummaryResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDetailResponseDTO;
@@ -49,14 +50,15 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
         AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
     ORDER BY pm.created_at DESC
     """, nativeQuery = true)
-    List<ProductMutationHistoryResponseDTO> findProductMutationDetailsByDateRange(
+    Page<ProductMutationHistoryResponseDTO> findProductMutationDetailsByDateRange(
             @Param("startedAt") LocalDate startedAt,
             @Param("endedAt") LocalDate endedAt,
             @Param("productId") Long productId,
             @Param("productCategoryId") Long productCategoryId,
             @Param("productMutationTypeId") Long productMutationTypeId,
             @Param("productMutationStatusId") Long productMutationStatusId,
-            @Param("warehouseId") Long warehouseId
+            @Param("warehouseId") Long warehouseId,
+            Pageable pageable
     );
 
     @Query(nativeQuery = true, value = """

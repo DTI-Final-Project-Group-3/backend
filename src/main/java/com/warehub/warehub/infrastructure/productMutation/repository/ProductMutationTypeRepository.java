@@ -22,6 +22,8 @@ public interface ProductMutationTypeRepository extends JpaRepository<ProductMuta
                 FROM product_mutation_types pmt
                 WHERE
                     pmt.deleted_at IS NULL
+                ORDER BY
+                    pmt.id
                """, nativeQuery = true)
     List<ProductMutationTypeResponseDTO> findAllAndDeletedAtIsNull();
 }

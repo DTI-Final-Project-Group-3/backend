@@ -1,6 +1,6 @@
 package com.warehub.warehub.usecase.warehouse.impl;
 
-import com.warehub.warehub.common.exceptions.DuplicateWarehouseException;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.Warehouse;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseDetailResponseDTO;
@@ -13,19 +13,18 @@ import java.util.Optional;
 @Service
 public class CreateWarehouseUseCaseImpl implements CreateWarehouseUseCase {
 
+    private final ValidationService validationService;
     private final WarehouseRepository warehouseRepository;
 
-    public CreateWarehouseUseCaseImpl(WarehouseRepository warehouseRepository) {
+    public CreateWarehouseUseCaseImpl(ValidationService validationService, WarehouseRepository warehouseRepository) {
+        this.validationService = validationService;
         this.warehouseRepository = warehouseRepository;
     }
 
     @Override
     public WarehouseDetailResponseDTO createWarehouse(WarehouseRequestDTO req) {
-        Optional<Warehouse> warehouse = warehouseRepository.findByNameIgnoreCaseAndDeletedAtIsNull(req.getName());
 
-        if (warehouse.isPresent()){
-            throw new DuplicateWarehouseException("Warehouse with name " + req.getName() + " already exist !");
-        }
+        validationService.validateDuplicateWarehouseName(req.getName());
 
         Warehouse newWarehouse = warehouseRepository.save(req.toEntity());
 

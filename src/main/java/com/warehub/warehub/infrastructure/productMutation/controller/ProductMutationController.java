@@ -54,15 +54,17 @@ public class ProductMutationController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<?> getProductMutationReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
+    public ResponseEntity<?> getProductMutationReport(@RequestParam int page,
+                                                      @RequestParam int limit,
+                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
                                                       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endedAt,
                                                       @RequestParam(required = false) Long productId,
                                                       @RequestParam(required = false) Long productCategoryId,
                                                       @RequestParam(required = false) Long productMutationTypeId,
                                                       @RequestParam(required = false) Long productMutationStatusId,
-                                                      @RequestParam(required = false) Long warehouseId){
+                                                      @RequestParam(required = false) Long destinationWarehouseId){
 
-        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, warehouseId);
+        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(page, limit, startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, destinationWarehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getProductMutationHistory(requestDTO));
 
     }
@@ -74,9 +76,9 @@ public class ProductMutationController {
                                                      @RequestParam(required = false) Long productCategoryId,
                                                      @RequestParam(required = false) Long productMutationTypeId,
                                                      @RequestParam(required = false) Long productMutationStatusId,
-                                                     @RequestParam(required = false) Long warehouseId
+                                                     @RequestParam(required = false) Long destinationWarehouseId
                                                      ) {
-        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, warehouseId);
+        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, destinationWarehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get total summary products success", getProductMutationUseCase.getTotalProductMutation(requestDTO));
     }
 
@@ -87,8 +89,8 @@ public class ProductMutationController {
                                                             @RequestParam(required = false) Long productCategoryId,
                                                             @RequestParam(required = false) Long productMutationTypeId,
                                                             @RequestParam(required = false) Long productMutationStatusId,
-                                                            @RequestParam(required = false) Long warehouseId) {
-        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, warehouseId);
+                                                            @RequestParam(required = false) Long destinationWarehouseId) {
+        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, destinationWarehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get daily summary product mutation success", getProductMutationUseCase.getDailyMutationSummary(requestDTO));
     }
 

@@ -1,9 +1,9 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.exceptions.ProductNotFoundException;
 import com.warehub.warehub.common.utils.Location;
 import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.infrastructure.product.dto.*;
 import com.warehub.warehub.infrastructure.product.repository.ProductImageRepository;
@@ -21,12 +21,14 @@ import java.util.List;
 @Service
 public class GetProductUseCaseImpl implements GetProductUseCase {
 
+    private final ValidationService validationService;
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
     private final WarehouseRepository warehouseRepository;
 
-    public GetProductUseCaseImpl(ProductRepository productRepository, ProductImageRepository productImageRepository, WarehouseInventoryRepository warehouseInventoryRepository, WarehouseRepository warehouseRepository) {
+    public GetProductUseCaseImpl(ValidationService validationService, ProductRepository productRepository, ProductImageRepository productImageRepository, WarehouseInventoryRepository warehouseInventoryRepository, WarehouseRepository warehouseRepository) {
+        this.validationService = validationService;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
@@ -35,8 +37,7 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     @Override
     public ProductDetailResponseDTO getProductById(Long productId) {
-        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
-                .orElseThrow(()-> new ProductNotFoundException("Product with Id " + productId + " not found !"));
+        Product product = validationService.validateProductId(productId);
 
         List<ProductImageResponseDTO> productImages = productImageRepository.findByProductIdAndDeletedAtIsNullDTO(productId);
 
@@ -46,9 +47,7 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     @Override
     public ProductDetailResponseDTO getNearbyProductById(ProductNearbyRequestDTO req) {
 
-        Product product = productRepository.findByIdAndDeletedAtIsNull(req.getProductId())
-                .orElseThrow(()-> new ProductNotFoundException("Product with ID " + req.getProductId() + " not found !"));
-
+        Product product = validationService.validateProductId(req.getProductId());
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
 
         Integer totalStock = warehouseInventoryRepository.findTotalStockNearby(location.getLongitude(), location.getLatitude(), req.getRadius(), req.getProductId());
@@ -79,6 +78,8 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
     public PaginationInfo<ProductSummaryResponseDTO> getPaginatedProducts(ProductPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
+        validationService.validateProductCategoryId(req.getProductCategoryId());
+
         Page<ProductSummaryResponseDTO> productPage = productRepository.findPaginatedProductsByFilter(req.getProductCategoryId(), req.getSearchQuery(), pageRequest);
 
         return new PaginationInfo<>(productPage, productPage.getContent());
@@ -89,6 +90,7 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
         Location userLocation = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
+        validationService.validateProductCategoryId(req.getProductCategoryId());
 
         Page<ProductSummaryResponseDTO> productPageDTO = productRepository.findPaginatedProductsByUserLocationAndFilter(
                 userLocation.getLongitude(), userLocation.getLatitude(), req.getRadius(),
@@ -106,11 +108,13 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
 
     @Override
     public List<ProductBasicResponseDTO> getProductsIncludeFilter(Long warehouseId) {
+        validationService.validateWarehouseId(warehouseId, "Warehouse");
         return productRepository.findProductsIncludeFilter(warehouseId);
     }
 
     @Override
     public List<ProductBasicResponseDTO> getProductsExcludeFilter(Long warehouseId) {
+        validationService.validateWarehouseId(warehouseId, "Warehouse");
         return productRepository.findProductsExcludeFilter(warehouseId);
     }
 }
