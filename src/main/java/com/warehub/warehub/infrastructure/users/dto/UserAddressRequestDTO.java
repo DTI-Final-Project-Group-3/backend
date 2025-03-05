@@ -23,10 +23,10 @@ public class UserAddressRequestDTO {
     private String detailAddress;
 
     @NotNull
-    private double latitude;
+    private Double latitude;
 
     @NotNull
-    private double longitude;
+    private Double longitude;
 
     private Boolean isPrimary; // Use wrapper type
 }
