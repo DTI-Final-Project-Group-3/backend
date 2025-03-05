@@ -3,7 +3,7 @@ package com.warehub.warehub.infrastructure.productMutation.controller;
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationPaginationRequestDTO;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationReportRequestDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationHistoryRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.usecase.productMutation.CreateProductMutationUseCase;
 import com.warehub.warehub.usecase.productMutation.DeleteProductMutationUseCase;
@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,40 +53,55 @@ public class ProductMutationController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getPaginatedProductMutationByWarehouseId(requestDTO));
     }
 
-    @GetMapping("/report")
-    public ResponseEntity<?> getProductMutationReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startedAt,
-                                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endedAt,
-                                                @RequestParam(required = false) Long productId,
-                                                @RequestParam(required = false) Long productCategoryId,
-                                                @RequestParam(required = false) Long productMutationTypeId,
-                                                @RequestParam(required = false) Long productMutationStatusId){
+    @GetMapping("/history")
+    public ResponseEntity<?> getProductMutationReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
+                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endedAt,
+                                                      @RequestParam(required = false) Long productId,
+                                                      @RequestParam(required = false) Long productCategoryId,
+                                                      @RequestParam(required = false) Long productMutationTypeId,
+                                                      @RequestParam(required = false) Long productMutationStatusId,
+                                                      @RequestParam(required = false) Long warehouseId){
 
-        ProductMutationReportRequestDTO requestDTO = new ProductMutationReportRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId);
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getProductMutationReport(requestDTO));
+        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, warehouseId);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getProductMutationHistory(requestDTO));
 
     }
 
     @GetMapping("/total")
-    public ResponseEntity<?> getProductMutationTotal(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startedAt,
-                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endedAt,
+    public ResponseEntity<?> getProductMutationTotal(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
+                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endedAt,
                                                      @RequestParam(required = false) Long productId,
                                                      @RequestParam(required = false) Long productCategoryId,
                                                      @RequestParam(required = false) Long productMutationTypeId,
-                                                     @RequestParam(required = false) Long productMutationStatusId) {
-        ProductMutationReportRequestDTO requestDTO = new ProductMutationReportRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId);
+                                                     @RequestParam(required = false) Long productMutationStatusId,
+                                                     @RequestParam(required = false) Long warehouseId
+                                                     ) {
+        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, warehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get total summary products success", getProductMutationUseCase.getTotalProductMutation(requestDTO));
     }
 
     @GetMapping("/daily")
-    public ResponseEntity<?> getProductMutationDailySummary(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startedAt,
-                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endedAt,
-                                                     @RequestParam(required = false) Long productId,
-                                                     @RequestParam(required = false) Long productCategoryId,
-                                                     @RequestParam(required = false) Long productMutationTypeId,
-                                                     @RequestParam(required = false) Long productMutationStatusId) {
-        ProductMutationReportRequestDTO requestDTO = new ProductMutationReportRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId);
+    public ResponseEntity<?> getProductMutationDailySummary(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
+                                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endedAt,
+                                                            @RequestParam(required = false) Long productId,
+                                                            @RequestParam(required = false) Long productCategoryId,
+                                                            @RequestParam(required = false) Long productMutationTypeId,
+                                                            @RequestParam(required = false) Long productMutationStatusId,
+                                                            @RequestParam(required = false) Long warehouseId) {
+        ProductMutationHistoryRequestDTO requestDTO = new ProductMutationHistoryRequestDTO(startedAt, endedAt, productId, productCategoryId, productMutationTypeId, productMutationStatusId, warehouseId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get daily summary product mutation success", getProductMutationUseCase.getDailyMutationSummary(requestDTO));
     }
+
+    @GetMapping("/types")
+    public ResponseEntity<?> getALlProductMutationType(){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all product mutation type", getProductMutationUseCase.getAllProductMutationType());
+    }
+
+    @GetMapping("/statuses")
+    public ResponseEntity<?> getALlProductMutationStatus(){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all product mutation status ", getProductMutationUseCase.getAllProductMutationStatus());
+    }
+
 
     @GetMapping("/{productMutationId}")
     public ResponseEntity<?> getProductMutationById(@PathVariable Long productMutationId){

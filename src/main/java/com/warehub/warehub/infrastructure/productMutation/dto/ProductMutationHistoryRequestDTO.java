@@ -4,16 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductMutationReportRequestDTO {
-    private OffsetDateTime startDate;
-    private OffsetDateTime endDate;
+public class ProductMutationHistoryRequestDTO {
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Long productId;
     private Long productCategoryId;
     private Long productMutationTypeId;
     private Long productMutationStatusId;
+    private Long warehouseId;
 }

@@ -13,7 +13,7 @@ import java.time.ZoneOffset;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductMutationReportResponseDTO {
+public class ProductMutationHistoryResponseDTO {
 
     private Long id;
 
@@ -29,11 +29,11 @@ public class ProductMutationReportResponseDTO {
 
     private ProductMutationStatusResponseDTO productMutationStatus;
 
-    public ProductMutationReportResponseDTO(Long id, Instant createdAt, Integer quantity,
-                                            Long productId, String productName,
-                                            Long productCategoryId, String productCategoryName,
-                                            Long productMutationTypeId, String productMutationTypeName,
-                                            Long productMutationStatusId, String productMutationStatusName){
+    public ProductMutationHistoryResponseDTO(Long id, Instant createdAt, Integer quantity,
+                                             Long productId, String productName,
+                                             Long productCategoryId, String productCategoryName,
+                                             Long productMutationTypeId, String productMutationTypeName,
+                                             Long productMutationStatusId, String productMutationStatusName){
         this.id = id;
         this.createdAt = OffsetDateTime.ofInstant(createdAt, ZoneOffset.UTC);
         this.quantity = quantity;
