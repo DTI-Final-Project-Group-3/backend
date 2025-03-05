@@ -79,8 +79,8 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         WarehouseResponseDTO nearestWarehouseDTO = nearbyWarehouses.getFirst();
 
         /*
-        * Validate warehouse, Validate payment method and Validate order status
-        * */
+         * Validate warehouse, Validate payment method and Validate order status
+         * */
         Warehouse nearestWarehouse = warehouseRepository.findById(nearestWarehouseDTO.getId())
                 .orElseThrow(() -> new DataNotFoundException("Nearest warehouse not found"));
         PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())

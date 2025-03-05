@@ -78,6 +78,6 @@ public class CustomerOrderController {
 
     @PutMapping("/customer/cancel/{orderId}")
     public ResponseEntity<?> cancelCustomerOrder(@PathVariable Long orderId) {
-        return ApiResponse.successfulResponse("Cancel order with ID : " + orderId + " success", manualTransactionUsecase.cancelManualTransaction(orderId));
+        return ApiResponse.successfulResponse("Cancel order with ID : " + orderId + " success", customerOrderUsecase.cancelCustomerOrder(orderId));
     }
 }

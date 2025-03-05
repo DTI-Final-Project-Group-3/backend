@@ -70,6 +70,9 @@ public class CustomerOrder {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @Column(name = "sent_at")
+    private OffsetDateTime sentAt;
+
     @PrePersist
     public void onCreate() {
         if (this.createdAt == null) {

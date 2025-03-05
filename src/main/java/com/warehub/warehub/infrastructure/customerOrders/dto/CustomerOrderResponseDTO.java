@@ -29,6 +29,7 @@ public class CustomerOrderResponseDTO {
     private String orderStatusName;
     private String invoiceCode;
     private OffsetDateTime createdAt;
+    private OffsetDateTime sentAt;
 
     public static CustomerOrderResponseDTO mapToDTO(CustomerOrder order) {
         return new CustomerOrderResponseDTO(
@@ -54,7 +55,8 @@ public class CustomerOrderResponseDTO {
                 order.getOrderStatus().getId(),
                 order.getOrderStatus().getName(),
                 order.getInvoiceCode(),
-                order.getCreatedAt()
+                order.getCreatedAt(),
+                order.getSentAt()
         );
     }
 }

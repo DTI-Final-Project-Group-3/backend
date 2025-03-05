@@ -3,14 +3,14 @@ package com.warehub.warehub.usecase.productMutation.impl;
 import com.warehub.warehub.common.exceptions.ProductMutationNotFoundException;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.ProductMutation;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDetailResponseDTO;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationPaginationRequestDTO;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationResponseDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.*;
 import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
 import com.warehub.warehub.usecase.productMutation.GetProductMutationUseCase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase {
@@ -37,5 +37,15 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
         Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository.findByWarehouseIdDTO(req.getOriginWarehouseId(), req.getDestinationWarehouseId(), req.getProductMutationTypeId(), pageRequest);
 
         return new PaginationInfo<>(responseDTOS, responseDTOS.getContent());
+    }
+
+    @Override
+    public List<ProductMutationReportResponseDTO> getProductMutationReport(ProductMutationReportRequestDTO req) {
+
+        return productMutationRepository
+                .findProductMutationDetailsByDateRange(
+                        req.getStartDate(), req.getEndDate(),
+                        req.getProductId(), req.getProductCategoryId(),
+                        req.getProductMutationTypeId(), req.getProductMutationStatusId());
     }
 }
