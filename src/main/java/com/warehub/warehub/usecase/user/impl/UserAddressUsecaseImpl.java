@@ -29,7 +29,7 @@ public class UserAddressUsecaseImpl implements UserAddressUsecase {
     @Override
     public List<UserAddressResponseDTO> getAll() {
         User user = UserAuth.getCurrentUser(usersRepository);
-        List<UserAddress> addresses = userAddressRepository.findByUserId(user.getId());
+        List<UserAddress> addresses = userAddressRepository.findByUserIdOrderByCreatedAtAsc(user.getId());
 
         return addresses.stream().map(this::mapToResponse).toList();
     }
