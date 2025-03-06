@@ -37,8 +37,6 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
         User user = usersRepository.findById(requestDTO.getUserId())
                 .orElseThrow(() -> new DataNotFoundException("User Not Found"));
 
-        System.out.println("Request DTO " +requestDTO);
-
         // 3L = ADMIN_WAREHOUSE | 4L = ADMIN_SUPER
         Set<Long> allowedRoles = Set.of(3L, 4L);
         if (!allowedRoles.contains(user.getRole().getId())) throw new IllegalArgumentException("User is not a SUPER_ADMIN nor WAREHOUSE_ADMIN");
