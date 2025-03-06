@@ -3,6 +3,7 @@ package com.warehub.warehub.infrastructure.productMutation.scheduler;
 import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.ProductMutationStatusNotFoundException;
 import com.warehub.warehub.common.exceptions.WarehouseInventoryNotFoundException;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.entity.ProductMutationStatus;
 import com.warehub.warehub.entity.WarehouseInventory;
@@ -21,13 +22,13 @@ import java.util.List;
 @EnableScheduling
 public class ProductMutationExpiryService {
 
+    private final ValidationService validationService;
     private final ProductMutationRepository productMutationRepository;
-    private final ProductMutationStatusRepository productMutationStatusRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
 
-    public ProductMutationExpiryService(ProductMutationRepository productMutationRepository, ProductMutationStatusRepository productMutationStatusRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+    public ProductMutationExpiryService(ValidationService validationService, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+        this.validationService = validationService;
         this.productMutationRepository = productMutationRepository;
-        this.productMutationStatusRepository = productMutationStatusRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
@@ -40,12 +41,11 @@ public class ProductMutationExpiryService {
 
         List<ProductMutation> expiredMutations = productMutationRepository.findPendingExpired(now, expiryInterval);
 
-        ProductMutationStatus expiredStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(MutationConstant.STATUS_EXPIRED.getValue())
-                .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation expired not found !"));
+        ProductMutationStatus expiredStatus = validationService.validateProductMutationStatusId(MutationConstant.STATUS_EXPIRED.getValue());
 
         for (ProductMutation mutation : expiredMutations){
-            WarehouseInventory inventory = warehouseInventoryRepository.findByProductIdAndWarehouseIdAndDeletedAtIsNull(mutation.getProduct().getId(), mutation.getOriginWarehouse().getId())
-                    .orElseThrow(()-> new WarehouseInventoryNotFoundException("Warehouse inventory for mutation " + mutation.getId() + " not found"));
+
+            WarehouseInventory inventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(mutation.getProduct().getId(), mutation.getOriginWarehouse().getId());
 
             // restore quantity
             inventory.setQuantity(inventory.getQuantity() + mutation.getQuantity());

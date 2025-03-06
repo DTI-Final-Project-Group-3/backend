@@ -1,6 +1,6 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.exceptions.ProductCategoryNotFoundException;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductCategory;
 import com.warehub.warehub.infrastructure.product.repository.ProductCategoryRepository;
@@ -15,10 +15,12 @@ import java.util.List;
 @Service
 public class DeleteProductCategoryUseCaseImpl implements DeleteProductCategoryUseCase {
 
+    private final ValidationService validationService;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductRepository productRepository;
 
-    public DeleteProductCategoryUseCaseImpl(ProductCategoryRepository productCategoryRepository, ProductRepository productRepository) {
+    public DeleteProductCategoryUseCaseImpl(ValidationService validationService, ProductCategoryRepository productCategoryRepository, ProductRepository productRepository) {
+        this.validationService = validationService;
         this.productCategoryRepository = productCategoryRepository;
         this.productRepository = productRepository;
     }
@@ -27,10 +29,10 @@ public class DeleteProductCategoryUseCaseImpl implements DeleteProductCategoryUs
     @Transactional
     public void deleteProductCategoryById(Long productCategoryId) {
 
-        ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(productCategoryId)
-                .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID "+ productCategoryId + " not found !"));
+        ProductCategory productCategory = validationService.validateProductCategoryId(productCategoryId);
 
         productCategory.setDeletedAt(OffsetDateTime.now());
+        productCategoryRepository.save(productCategory);
 
         List<Product> products = productRepository.findByProductCategoryIdAndDeletedAtIsNull(productCategoryId);
 
