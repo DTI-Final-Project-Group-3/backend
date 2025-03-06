@@ -6,5 +6,7 @@ import com.warehub.warehub.infrastructure.customerOrders.dto.UpdateOrderRequestD
 public interface AdminCustomerOrderUsecase {
 
     CustomerOrderResponseDTO updateCustomerOrder(UpdateOrderRequestDTO requestDTO);
+    CustomerOrderResponseDTO processCustomerOrder(UpdateOrderRequestDTO requestDTO);
     void autoUpdateCustomerOrderStatus();
+    void autoConfirmCustomerOrderStatus();
 }

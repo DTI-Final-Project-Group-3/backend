@@ -82,7 +82,7 @@ public class UserAddressController {
     }
 
     @PutMapping("/id/{id}")
-    private ResponseEntity<?> updateById(@PathVariable("id") Long id, UserAddressRequestDTO request) {
+    private ResponseEntity<?> updateById(@PathVariable("id") Long id, @RequestBody UserAddressRequestDTO request) {
         UserAddressResponseDTO result = null;
         String errorMessage = "";
         try {

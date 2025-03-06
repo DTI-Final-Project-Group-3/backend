@@ -68,11 +68,14 @@ public class ShippingUsecaseImpl implements ShippingUsecase {
             List<Map<String, Object>> results = (List<Map<String, Object>>) responseData.get("data");
 
             for (Map<String, Object> courierResult : results) {
-                costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail(
-                        courierResult.get("service").toString(),
-                        Float.parseFloat(courierResult.get("cost").toString()),
-                        courierResult.get("etd").toString()
-                ));
+                ShippingCostResponseDTO.ShippingCostDetail detail = new ShippingCostResponseDTO.ShippingCostDetail();
+                detail.setService(courierResult.get("service").toString());
+                detail.setCost(Float.parseFloat(courierResult.get("cost").toString()));
+                detail.setEtd(courierResult.get("etd").toString());
+                detail.setName(courierResult.get("name").toString());
+                detail.setCode(courierResult.get("code").toString());
+                detail.setDescription(courierResult.get("description").toString());
+                costDetails.add(detail);
             }
         }
 
@@ -84,9 +87,16 @@ public class ShippingUsecaseImpl implements ShippingUsecase {
         // Buat daftar dummy harga pengiriman
         List<ShippingCostResponseDTO.ShippingCostDetail> costDetails = new ArrayList<>();
 
-        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail("JTR", 7000.0f, "6 day"));
-        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail("REG", 9000.0f, "2 day"));
-
+        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail(
+                "Pos Reguler", "POS Indonesia (POS)", "pos", "Pos Reguler", 25000.0f, "8 day"));
+        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail(
+                "JTR", "Jalur Nugraha Ekakurir (JNE)","jne", "JNE Trucking", 10000.0f, "6 day"));
+        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail(
+                "REG", "Jalur Nugraha Ekakurir (JNE)","jne", "Layanan Reguler", 20000.0f, "2 day"));
+        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail(
+                "REG", "Citra Van Titipan Kilat (TIKI)","tiki", "Reguler Service", 25000.0f, "2 day"));
+        costDetails.add(new ShippingCostResponseDTO.ShippingCostDetail(
+                "OKE", "Jalur Nugraha Ekakurir (JNE)","jne", "Ongkos Kirim Ekonomis", 15000.0f, "4 day"));
         return new ShippingCostResponseDTO(requestDTO.getCourier(), costDetails);
     }
 
