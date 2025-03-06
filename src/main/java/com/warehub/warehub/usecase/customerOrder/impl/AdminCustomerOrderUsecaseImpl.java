@@ -13,7 +13,6 @@ import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrde
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.customerOrder.AdminCustomerOrderUsecase;
 import com.warehub.warehub.usecase.customerOrder.CustomerOrderUsecase;
-import com.warehub.warehub.usecase.transaction.ManualTransactionUsecase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,6 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
     private final UsersRepository usersRepository;
     private final CustomerOrderRepository customerOrderRepository;
     private final CustomerOrderStatusRepository customerOrderStatusRepository;
-    private final ManualTransactionUsecase manualTransactionUsecase;
     private final CustomerOrderUsecase customerOrderUsecase;
 
     @Override
@@ -108,9 +106,11 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
         CustomerOrder customerOrder = customerOrderRepository.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new DataNotFoundException("Order with ID " + requestDTO.getOrderId() + " not found"));
 
-        // Check if the order using manual payment method
-        if (!customerOrder.getPaymentMethod().getId().equals(PaymentMethods.PAYMENT_MANUAL_METHOD.getId())) {
-            throw new IllegalArgumentException("This order does not use manual payment and cannot be updated this way.");
+        // Check if the order using manual payment method or midtrans gateway
+        List<Long> allowedMethods = List.of(PaymentMethods.PAYMENT_MANUAL_METHOD.getId(), PaymentMethods.PAYMENT_GATEWAY_METHOD.getId());
+
+        if (!allowedMethods.contains(customerOrder.getPaymentMethod().getId())) {
+            throw new IllegalArgumentException("This order does not use an available payment method and cannot be updated this way.");
         }
 
         // Retrieve necessary statuses from repository
