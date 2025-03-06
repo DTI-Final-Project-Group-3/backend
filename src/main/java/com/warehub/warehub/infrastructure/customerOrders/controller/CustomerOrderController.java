@@ -3,6 +3,7 @@ package com.warehub.warehub.infrastructure.customerOrders.controller;
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.customerOrders.dto.ConfirmOrderRequestDTO;
 import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderDetailRequestDTO;
+import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderHistoryRequestDTO;
 import com.warehub.warehub.infrastructure.customerOrders.dto.PaginatedCustomerOrderRequestDTO;
 import com.warehub.warehub.infrastructure.security.Claims;
 import com.warehub.warehub.usecase.customerOrder.CustomerOrderUsecase;
@@ -11,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
@@ -50,6 +52,20 @@ public class CustomerOrderController {
         reqDTO.setWarehouseId(warehouseId);
 
         return ApiResponse.successfulResponse("Get all customer orders success", customerOrderUsecase.getAllCustomerOrders(reqDTO));
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> getHistoryCustomerOrder(@RequestParam int page,
+                                                     @RequestParam int limit,
+                                                     @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                     @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                                     @RequestParam(required = false) Long warehouseId,
+                                                     @RequestParam(required = false) Long customerOrderStatusId,
+                                                     @RequestParam(required = false) Long productId,
+                                                     @RequestParam(required = false) Long productCategoryId
+                                                     ){
+        CustomerOrderHistoryRequestDTO requestDTO = new CustomerOrderHistoryRequestDTO(page, limit, startDate, endDate, warehouseId, customerOrderStatusId, productId, productCategoryId);
+        return ApiResponse.successfulResponse("Get history customer orders success", customerOrderUsecase.getHistoryCustomerOrder(requestDTO));
     }
 
     @GetMapping("/{orderId}")

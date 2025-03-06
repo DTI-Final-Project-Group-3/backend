@@ -8,10 +8,7 @@ import com.warehub.warehub.entity.enums.OrderStatuses;
 import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.customerOrderItems.repository.CustomerOrderItemsRepository;
 import com.warehub.warehub.infrastructure.customerOrderStatus.CustomerOrderStatusRepository;
-import com.warehub.warehub.infrastructure.customerOrders.dto.ConfirmOrderRequestDTO;
-import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderResponseDTO;
-import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderDetailRequestDTO;
-import com.warehub.warehub.infrastructure.customerOrders.dto.PaginatedCustomerOrderRequestDTO;
+import com.warehub.warehub.infrastructure.customerOrders.dto.*;
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.customerOrders.specification.CustomerOrderSpecification;
 import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
@@ -217,6 +214,23 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         customerOrderRepository.save(customerOrder);
 
         return CustomerOrderResponseDTO.mapToDTO(customerOrder);
+    }
+
+    @Override
+    public PaginationInfo<CustomerOrderHistoryResponseDTO> getHistoryCustomerOrder(CustomerOrderHistoryRequestDTO req) {
+        PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
+
+        customerOrderStatusRepository.findById(req.getCustomerOrderStatusId().intValue())
+                .orElseThrow(() -> new DataNotFoundException("Order status " + req.getCustomerOrderStatusId() + " not found"));
+
+        Page<CustomerOrderHistoryResponseDTO> responseDTO = customerOrderRepository
+                .findHistoryCustomerOrderByFilter(req.getStartDate(), req.getEndDate(),
+                        req.getWarehouseId(),
+                        req.getCustomerOrderStatusId(),
+                        req.getProductId(), req.getProductCategoryId(),
+                        pageRequest);
+
+        return new PaginationInfo<>(responseDTO, responseDTO.getContent());
     }
 
     private CustomerOrderStatus getOrderStatus(OrderStatuses status) {
