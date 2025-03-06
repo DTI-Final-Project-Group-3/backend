@@ -45,4 +45,6 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     List<CustomerOrder> findByOrderStatusId(Long orderStatusId);
 
     List<CustomerOrder> findByOrderStatusIdAndSentAtBefore(Long orderStatusId, OffsetDateTime sentAt);
+
+    List<CustomerOrder> findByPaymentMethodId(Long paymentMethodId);
 }
