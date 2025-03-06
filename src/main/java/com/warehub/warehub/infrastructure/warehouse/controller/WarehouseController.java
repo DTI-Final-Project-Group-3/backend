@@ -3,10 +3,8 @@ package com.warehub.warehub.infrastructure.warehouse.controller;
 import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseRequestDTO;
-import com.warehub.warehub.usecase.warehouse.CreateWarehouseUseCase;
-import com.warehub.warehub.usecase.warehouse.DeleteWarehouseUseCase;
-import com.warehub.warehub.usecase.warehouse.GetWarehouseUseCase;
-import com.warehub.warehub.usecase.warehouse.UpdateWarehouseUseCase;
+import com.warehub.warehub.usecase.warehouse.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +21,7 @@ public class WarehouseController {
     public WarehouseController(CreateWarehouseUseCase createWarehouseUseCase,
                                GetWarehouseUseCase getWarehouseUseCase,
                                UpdateWarehouseUseCase updateWarehouseUseCase,
-                               DeleteWarehouseUseCase deleteWarehouseUseCase) {
+                               DeleteWarehouseUseCase deleteWarehouseUseCase, GetWarehouseAssignedUseCase getWarehouseAssignedUseCase) {
         this.createWarehouseUseCase = createWarehouseUseCase;
         this.getWarehouseUseCase = getWarehouseUseCase;
         this.updateWarehouseUseCase = updateWarehouseUseCase;
@@ -45,6 +43,12 @@ public class WarehouseController {
                                                            @RequestParam Long productId){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get available warehouse success",
                 getWarehouseUseCase.getNearbyWarehouseByProductId(warehouseId, productId));
+
+    }
+
+    @GetMapping("/all-assigned")
+    public ResponseEntity<?> getAllWarehouseAssigned(){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all warehouse assigned success", getWarehouseAssignedUseCase.getAllWarehouseAssigned());
     }
 
     @GetMapping("/nearby")
