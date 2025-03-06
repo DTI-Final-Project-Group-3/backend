@@ -4,7 +4,6 @@ import com.warehub.warehub.common.response.ApiResponse;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseRequestDTO;
 import com.warehub.warehub.usecase.warehouse.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,15 +16,17 @@ public class WarehouseController {
     private final GetWarehouseUseCase getWarehouseUseCase;
     private final UpdateWarehouseUseCase updateWarehouseUseCase;
     private final DeleteWarehouseUseCase deleteWarehouseUseCase;
+    private final GetWarehouseAssignedUseCase getWarehouseAssignedUseCase;
 
     public WarehouseController(CreateWarehouseUseCase createWarehouseUseCase,
                                GetWarehouseUseCase getWarehouseUseCase,
                                UpdateWarehouseUseCase updateWarehouseUseCase,
-                               DeleteWarehouseUseCase deleteWarehouseUseCase, GetWarehouseAssignedUseCase getWarehouseAssignedUseCase) {
+                               DeleteWarehouseUseCase deleteWarehouseUseCase, GetWarehouseAssignedUseCase getWarehouseAssignedUseCase, GetWarehouseAssignedUseCase getWarehouseAssignedUseCase1) {
         this.createWarehouseUseCase = createWarehouseUseCase;
         this.getWarehouseUseCase = getWarehouseUseCase;
         this.updateWarehouseUseCase = updateWarehouseUseCase;
         this.deleteWarehouseUseCase = deleteWarehouseUseCase;
+        this.getWarehouseAssignedUseCase = getWarehouseAssignedUseCase1;
     }
 
     @PostMapping
