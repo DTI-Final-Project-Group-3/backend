@@ -70,6 +70,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         p.id AS "id",
         p.name AS "name",
         p.price AS "price",
+        p.weight AS "weight",
+        p.height AS "height",
+        p.width AS "width",
+        p.length AS "length",
         pc.name AS "category_name",
         pi.url AS "thumbnail",
         SUM(wi.quantity) AS "total_quantity"
@@ -106,6 +110,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         p.id AS "id",
         p.name AS "name",
         p.price AS "price",
+        p.weight AS "weight",
+        p.height AS "height",
+        p.width AS "width",
+        p.length AS "length",
         pc.name AS "category_name",
         pi.url AS "thumbnail"
     FROM products p

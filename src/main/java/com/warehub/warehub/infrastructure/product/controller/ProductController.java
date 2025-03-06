@@ -5,8 +5,6 @@ import com.warehub.warehub.infrastructure.product.dto.ProductNearbyRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductPaginationRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryRequestDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationReportRequestDTO;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationReportResponseDTO;
 import com.warehub.warehub.usecase.product.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

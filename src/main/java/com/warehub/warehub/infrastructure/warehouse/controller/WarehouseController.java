@@ -21,14 +21,12 @@ public class WarehouseController {
     public WarehouseController(CreateWarehouseUseCase createWarehouseUseCase,
                                GetWarehouseUseCase getWarehouseUseCase,
                                UpdateWarehouseUseCase updateWarehouseUseCase,
-                               DeleteWarehouseUseCase deleteWarehouseUseCase,
-                               GetWarehouseAssignedUseCase getWarehouseAssignedUseCase
-    ) {
+                               DeleteWarehouseUseCase deleteWarehouseUseCase, GetWarehouseAssignedUseCase getWarehouseAssignedUseCase, GetWarehouseAssignedUseCase getWarehouseAssignedUseCase1) {
         this.createWarehouseUseCase = createWarehouseUseCase;
         this.getWarehouseUseCase = getWarehouseUseCase;
         this.updateWarehouseUseCase = updateWarehouseUseCase;
         this.deleteWarehouseUseCase = deleteWarehouseUseCase;
-        this.getWarehouseAssignedUseCase = getWarehouseAssignedUseCase;
+        this.getWarehouseAssignedUseCase = getWarehouseAssignedUseCase1;
     }
 
     @PostMapping
