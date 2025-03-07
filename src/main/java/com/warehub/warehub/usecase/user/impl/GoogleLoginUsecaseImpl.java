@@ -11,8 +11,6 @@ import com.warehub.warehub.usecase.user.GoogleLoginUsecase;
 import com.warehub.warehub.usecase.user.TokenGenerationUsecase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +34,7 @@ public class GoogleLoginUsecaseImpl implements GoogleLoginUsecase {
 
     @Override
     public LoginResponseDTO login(GoogleLoginRequestDTO requestDTO) {
-        Optional<User> optionalUser = usersRepository.findByEmailContainsIgnoreCase(requestDTO.getEmail());
+        Optional<User> optionalUser = usersRepository.findByEmailIgnoreCase(requestDTO.getEmail());
         User user;
         String email;
         if (optionalUser.isEmpty()) {
