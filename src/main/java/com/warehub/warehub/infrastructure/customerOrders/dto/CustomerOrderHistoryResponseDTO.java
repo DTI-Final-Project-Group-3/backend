@@ -5,16 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerOrderHistoryResponseDTO {
 
-    private OffsetDateTime dateTime;
-    private String invoiceCode;
+    private Instant dateTime;
     private Long orderId;
+    private String invoiceCode;
     private Long orderStatusId;
     private String orderStatusName;
     private Long orderItemId;
@@ -22,6 +22,6 @@ public class CustomerOrderHistoryResponseDTO {
     private String productName;
     private Long productCategoryId;
     private String productCategoryName;
-    private Integer quantity;
+    private Long quantity;
     private BigDecimal unitPrice;
 }

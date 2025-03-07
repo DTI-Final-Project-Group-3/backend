@@ -133,6 +133,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     WHERE
         pm.deleted_at IS NULL
         AND pm.product_mutation_status_id = 1
+        AND pm.product_mutation_type_id = 1
         AND pm.created_at + CAST(:expiryInterval AS INTERVAL) < :now
     """, nativeQuery = true)
     List<ProductMutation> findPendingExpired(@Param("now") OffsetDateTime now, @Param("expiryInterval") String expiryInterval);

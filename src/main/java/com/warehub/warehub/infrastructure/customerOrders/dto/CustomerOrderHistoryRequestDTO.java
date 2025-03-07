@@ -19,4 +19,15 @@ public class CustomerOrderHistoryRequestDTO {
     private Long customerOrderStatusId;
     private Long productId;
     private Long productCategoryId;
+
+    public CustomerOrderHistoryRequestDTO(LocalDate startDate, LocalDate endDate,
+                                          Long warehouseId, Long customerOrderStatusId,
+                                          Long productId, Long productCategoryId){
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.warehouseId = warehouseId;
+        this.customerOrderStatusId = customerOrderStatusId;
+        this.productId = productId;
+        this.productCategoryId = productCategoryId;
+    }
 }

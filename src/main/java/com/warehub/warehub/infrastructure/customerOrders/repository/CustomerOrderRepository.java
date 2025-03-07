@@ -1,6 +1,7 @@
 package com.warehub.warehub.infrastructure.customerOrders.repository;
 
 import com.warehub.warehub.entity.CustomerOrder;
+import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderDailyTotalResponseDTO;
 import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderHistoryResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -69,11 +70,13 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
         JOIN products p ON p.id = coi.product_id
         JOIN product_categories pc ON pc.id = p.product_category_id
         WHERE
-          co.created_at::date BETWEEN :startedAt AND :endedAt
+          (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL 
+            OR co.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE))
           AND (:warehouseId IS NULL OR co.warehouse_id = :warehouseId)
           AND (:customerOrderStatusId IS NULL OR co.order_status_id = :customerOrderStatusId)
           AND (:productId IS NULL OR coi.product_id = :productId)
           AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+        ORDER BY co.created_at DESC
         """,
             countQuery = """
         SELECT COUNT(co.id)
@@ -81,7 +84,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
         JOIN customer_order_items coi ON coi.customer_order_id = co.id
         JOIN products p ON p.id = coi.product_id
         WHERE
-          co.created_at::date BETWEEN :startedAt AND :endedAt
+          (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL 
+            OR co.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE))
           AND (:warehouseId IS NULL OR co.warehouse_id = :warehouseId)
           AND (:customerOrderStatusId IS NULL OR co.order_status_id = :customerOrderStatusId)
           AND (:productId IS NULL OR coi.product_id = :productId)
@@ -97,5 +101,44 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
             @Param("productId") Long productId,
             @Param("productCategoryId") Long productCategoryId,
             Pageable pageable
+    );
+
+    @Query(value = """
+    WITH date_series AS (
+      SELECT
+        generate_series(
+          :startDate,
+          :endDate,
+          '1 day'::interval
+        )::date AS date
+    )
+    SELECT
+      ds.date AS "date",
+      COALESCE(SUM(coi.quantity), 0) AS "quantity",
+      COALESCE(SUM(coi.quantity * coi.product_price), 0) AS "value"
+    FROM
+      date_series ds
+      LEFT JOIN customer_orders co
+        ON ds.date = co.created_at::date
+        AND (:warehouseId IS NULL OR co.warehouse_id = :warehouseId)
+        AND (:customerOrderStatusId IS NULL OR co.order_status_id = :customerOrderStatusId)
+      LEFT JOIN customer_order_items coi
+        ON co.id = coi.customer_order_id
+      LEFT JOIN products p
+        ON coi.product_id = p.id
+        AND (:productId IS NULL OR coi.product_id = :productId)  -- Fixed typo: :product_id → :productId
+        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+    GROUP BY
+      ds.date
+    ORDER BY
+      ds.date DESC;
+    """, nativeQuery = true)
+    List<CustomerOrderDailyTotalResponseDTO> findDailyTotalByFilter(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("warehouseId") Long warehouseId,
+            @Param("customerOrderStatusId") Long customerOrderStatusId,
+            @Param("productId") Long productId,
+            @Param("productCategoryId") Long productCategoryId
     );
 }

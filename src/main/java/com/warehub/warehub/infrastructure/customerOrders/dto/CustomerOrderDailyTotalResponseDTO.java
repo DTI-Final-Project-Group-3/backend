@@ -9,8 +9,9 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerOrderDailyQuantityResponseDTO {
+public class CustomerOrderDailyTotalResponseDTO {
 
     private LocalDate date;
-    private Long quantity;
+    private Long totalQuantity;
+    private Long totalValue;
 }

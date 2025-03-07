@@ -5,8 +5,10 @@ import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.entity.ProductMutationStatus;
 import com.warehub.warehub.entity.WarehouseInventory;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
+import com.warehub.warehub.usecase.warehouseInventory.CreateWarehouseInventoryUseCase;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,13 @@ public class ProductMutationExpiryService {
     private final ValidationService validationService;
     private final ProductMutationRepository productMutationRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
+    private final CreateWarehouseInventoryUseCase createWarehouseInventoryUseCase;
 
-    public ProductMutationExpiryService(ValidationService validationService, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+    public ProductMutationExpiryService(ValidationService validationService, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository, CreateWarehouseInventoryUseCase createWarehouseInventoryUseCase) {
         this.validationService = validationService;
         this.productMutationRepository = productMutationRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
+        this.createWarehouseInventoryUseCase = createWarehouseInventoryUseCase;
     }
 
     @Scheduled(fixedDelay = 60000)
@@ -47,6 +51,7 @@ public class ProductMutationExpiryService {
             // restore quantity
             inventory.setQuantity(inventory.getQuantity() + mutation.getQuantity());
             warehouseInventoryRepository.save(inventory);
+
 
             // update mutation status
             mutation.setProductMutationStatus(expiredStatus);

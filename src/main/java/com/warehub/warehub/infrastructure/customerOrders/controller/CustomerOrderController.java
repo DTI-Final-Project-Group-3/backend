@@ -68,6 +68,18 @@ public class CustomerOrderController {
         return ApiResponse.successfulResponse("Get history customer orders success", customerOrderUsecase.getHistoryCustomerOrder(requestDTO));
     }
 
+    @GetMapping("/daily")
+    public ResponseEntity<?> getTotalDailyCustomerOrder(@RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                     @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                                     @RequestParam(required = false) Long warehouseId,
+                                                     @RequestParam(required = false) Long customerOrderStatusId,
+                                                     @RequestParam(required = false) Long productId,
+                                                     @RequestParam(required = false) Long productCategoryId
+    ){
+        CustomerOrderHistoryRequestDTO requestDTO = new CustomerOrderHistoryRequestDTO(startDate, endDate, warehouseId, customerOrderStatusId, productId, productCategoryId);
+        return ApiResponse.successfulResponse("Get history customer orders success", customerOrderUsecase.getDailyTotalCustomerOrder(requestDTO));
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<?> getCustomerOrder(@PathVariable Long orderId) {
 

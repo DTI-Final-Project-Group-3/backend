@@ -220,9 +220,6 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
     public PaginationInfo<CustomerOrderHistoryResponseDTO> getHistoryCustomerOrder(CustomerOrderHistoryRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
-        customerOrderStatusRepository.findById(req.getCustomerOrderStatusId().intValue())
-                .orElseThrow(() -> new DataNotFoundException("Order status " + req.getCustomerOrderStatusId() + " not found"));
-
         Page<CustomerOrderHistoryResponseDTO> responseDTO = customerOrderRepository
                 .findHistoryCustomerOrderByFilter(req.getStartDate(), req.getEndDate(),
                         req.getWarehouseId(),
@@ -231,6 +228,15 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
                         pageRequest);
 
         return new PaginationInfo<>(responseDTO, responseDTO.getContent());
+    }
+
+    @Override
+    public List<CustomerOrderDailyTotalResponseDTO> getDailyTotalCustomerOrder(CustomerOrderHistoryRequestDTO req) {
+        return customerOrderRepository
+                .findDailyTotalByFilter(req.getStartDate(), req.getEndDate(),
+                        req.getWarehouseId(),
+                        req.getCustomerOrderStatusId(),
+                        req.getProductId(), req.getProductCategoryId());
     }
 
     private CustomerOrderStatus getOrderStatus(OrderStatuses status) {
