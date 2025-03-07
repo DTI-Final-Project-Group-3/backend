@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserAddressRepository extends JpaRepository<UserAddress, Long> {
     List<UserAddress> findByUserId(Long userId);
+    List<UserAddress> findByUserIdOrderByCreatedAtAsc(Long userId);
     Optional<UserAddress> findByUserIdAndIsPrimaryTrue(Long userId);
 
     @Modifying

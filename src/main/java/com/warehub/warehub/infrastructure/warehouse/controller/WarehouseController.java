@@ -49,7 +49,8 @@ public class WarehouseController {
 
     @GetMapping("/all-assigned")
     public ResponseEntity<?> getAllWarehouseAssigned(){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all warehouse assigned success", getWarehouseAssignedUseCase.getAllWarehouseAssigned());
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get all warehouse assigned success",
+                getWarehouseAssignedUseCase.getAllWarehouseAssignedAndEmpty());
     }
 
     @GetMapping("/nearby")
