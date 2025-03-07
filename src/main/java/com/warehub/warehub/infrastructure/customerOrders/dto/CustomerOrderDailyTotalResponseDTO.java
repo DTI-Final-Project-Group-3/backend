@@ -4,14 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerOrderDailyTotalResponseDTO {
 
-    private LocalDate date;
-    private Long totalQuantity;
-    private Long totalValue;
+    private Date date;
+    private BigDecimal totalQuantity;
+    private BigDecimal totalValue;
 }

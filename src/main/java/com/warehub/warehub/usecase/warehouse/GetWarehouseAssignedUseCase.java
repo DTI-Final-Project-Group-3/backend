@@ -6,5 +6,7 @@ import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseDetailResponseD
 import java.util.List;
 
 public interface GetWarehouseAssignedUseCase {
-    List<WarehouseDetailAssignedResponseDTO> getAllWarehouseAssigned();
+    List<WarehouseDetailAssignedResponseDTO> getAllWarehouseWithAssignedAdminOnly();
+    List<WarehouseDetailAssignedResponseDTO> getAllWarehouseEmptyAssignedAdmin();
+    List<WarehouseDetailAssignedResponseDTO> getAllWarehouseAssignedAndEmpty();
 }

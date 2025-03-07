@@ -108,4 +108,19 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
     Optional<Warehouse> findByNameIgnoreCaseAndDeletedAtIsNull(String name);
 
     Optional<Warehouse> findByIdAndDeletedAtIsNull(Long id);
+
+
+    @Query("""
+    SELECT DISTINCT w FROM Warehouse w
+    JOIN WarehouseAdmin wa ON wa.warehouse.id = w.id
+    WHERE w.deletedAt IS NULL
+    """)
+    List<Warehouse> findAllWarehousesWithAssignedAdmins();
+
+    @Query("""
+    SELECT w FROM Warehouse w
+    WHERE w.deletedAt IS NULL
+    AND w.id NOT IN (SELECT wa.warehouse.id FROM WarehouseAdmin wa)
+    """)
+    List<Warehouse> findAllWarehousesWithoutAdmins();
 }
