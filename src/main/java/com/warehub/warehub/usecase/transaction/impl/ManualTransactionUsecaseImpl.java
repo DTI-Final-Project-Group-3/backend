@@ -27,8 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -146,8 +145,6 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 createProductMutationLog.createProductMutationRecord(
                         product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode
                 );
-//                createProductMutationRecord(product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode);
-//                createProductMutationRecord(product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode);
             }
 
             // Deduct stock for order
@@ -155,32 +152,44 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
             inventory.setQuantity(inventory.getQuantity() - requiredQuantity);
             warehouseInventoryRepository.save(inventory);
 
-            // Product auto mutation type
-            ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(2L)
-                    .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
+        }
 
-            // Product status type
-            ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
-                    .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
+        // Product auto mutation type
+        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(2L)
+                .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
-            /*
-             * Add product mutation record
-             * */
-            for (OrderItemDTO orderItem : request.getOrderItems()) {
-                Product productItem = productRepository.findById(item.getProductId())
-                        .orElseThrow(() -> new DataNotFoundException("Product not found"));
+        // Product status type
+        ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+                .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
-                ProductMutation productMutation = new ProductMutation();
-                productMutation.setProduct(productItem);
-                productMutation.setQuantity(-orderItem.getQuantity()); // Negative to indicate stock decrease
-                productMutation.setRequesterNotes("Product sent to customer with payment using manual transfer");
-                productMutation.setRequester(user);
-                productMutation.setOriginWarehouse(nearestWarehouse);
-                productMutation.setProductMutationType(productMutationTypeAuto);
-                productMutation.setProductMutationStatus(productMutationStatusPending);
-                productMutation.setInvoiceCode(invoiceCode);
-                productMutationRepository.save(productMutation);
-            }
+        /*
+         * Add product mutation record
+         * */
+        // Group order items by productId to ensure one log per product
+        Map<Long, Integer> productQuantityMap = new HashMap<>();
+
+        for (OrderItemDTO orderItem : request.getOrderItems()) {
+            productQuantityMap.merge(orderItem.getProductId(), orderItem.getQuantity(), Integer::sum);
+        }
+
+        // Process each product only once
+        for (Map.Entry<Long, Integer> entry : productQuantityMap.entrySet()) {
+            Long productId = entry.getKey();
+            int totalQuantity = entry.getValue();
+
+            Product productItem = productRepository.findById(productId)
+                    .orElseThrow(() -> new DataNotFoundException("Product not found"));
+
+            ProductMutation productMutation = new ProductMutation();
+            productMutation.setProduct(productItem);
+            productMutation.setQuantity(-totalQuantity); // Negative to indicate stock decrease
+            productMutation.setRequesterNotes("Product sent to customer with payment using manual transfer");
+            productMutation.setRequester(user);
+            productMutation.setOriginWarehouse(nearestWarehouse);
+            productMutation.setProductMutationType(productMutationTypeAuto);
+            productMutation.setProductMutationStatus(productMutationStatusPending);
+            productMutation.setInvoiceCode(invoiceCode);
+            productMutationRepository.save(productMutation);
         }
 
         /*

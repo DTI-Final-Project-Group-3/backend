@@ -168,32 +168,34 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
                 inventory.setQuantity(inventory.getQuantity() - requiredQuantity);
                 warehouseInventoryRepository.save(inventory);
 
-                // Product auto mutation type
-                ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(2L)
-                        .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
-                // Product status type
-                ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
-                        .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
+            }
+            
+            // Product auto mutation type
+            ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(2L)
+                    .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
-                /*
-                 * Add product mutation record
-                 * */
-                for (OrderItemDTO orderItem : trxRequest.getOrderItems()) {
-                    Product productItem = productRepository.findById(item.getProductId())
-                            .orElseThrow(() -> new DataNotFoundException("Product not found"));
+            // Product status type
+            ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+                    .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
-                    ProductMutation productMutation = new ProductMutation();
-                    productMutation.setProduct(productItem);
-                    productMutation.setQuantity(-orderItem.getQuantity()); // Negative to indicate stock decrease
-                    productMutation.setRequesterNotes("Product sent to customer with payment using Midtrans transfer");
-                    productMutation.setRequester(user);
-                    productMutation.setOriginWarehouse(nearestWarehouse);
-                    productMutation.setProductMutationType(productMutationTypeAuto);
-                    productMutation.setProductMutationStatus(productMutationStatusPending);
-                    productMutation.setInvoiceCode(invoiceCode);
-                    productMutationRepository.save(productMutation);
-                }
+            /*
+             * Add product mutation record
+             * */
+            for (OrderItemDTO orderItem : trxRequest.getOrderItems()) {
+                Product productItem = productRepository.findById(orderItem.getProductId())
+                        .orElseThrow(() -> new DataNotFoundException("Product not found"));
+
+                ProductMutation productMutation = new ProductMutation();
+                productMutation.setProduct(productItem);
+                productMutation.setQuantity(-orderItem.getQuantity()); // Negative to indicate stock decrease
+                productMutation.setRequesterNotes("Product sent to customer with payment using Midtrans transfer");
+                productMutation.setRequester(user);
+                productMutation.setOriginWarehouse(nearestWarehouse);
+                productMutation.setProductMutationType(productMutationTypeAuto);
+                productMutation.setProductMutationStatus(productMutationStatusPending);
+                productMutation.setInvoiceCode(invoiceCode);
+                productMutationRepository.save(productMutation);
             }
 
             /*
