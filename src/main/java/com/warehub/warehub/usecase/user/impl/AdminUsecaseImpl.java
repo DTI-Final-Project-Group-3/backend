@@ -11,6 +11,7 @@ import com.warehub.warehub.infrastructure.users.repository.RolesRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseAdminRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
+import com.warehub.warehub.usecase.security.RoleCheckUsecase;
 import com.warehub.warehub.usecase.user.AdminUsecase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,13 +34,12 @@ public class AdminUsecaseImpl implements AdminUsecase {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
+    @Autowired
+    private RoleCheckUsecase roleCheckUsecase;
+
 
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseBase(boolean selectNotAssigned) {
-        Role currentRole = UserAuth.getCurrentUser(usersRepository).getRole();
-        if (!currentRole.getName().equals(RoleType.ADMIN_SUPER.toString())) {
-            System.out.println(currentRole.getName());
-            throw new RuntimeException("Not a super admin role");
-        }
+        roleCheckUsecase.enforceAdminSuper();
 
         List<UserAdminDetailResponseDTO> result = new ArrayList<>();
         Role role = rolesRepository.findByName(RoleType.ADMIN_WAREHOUSE.toString()).get();
@@ -62,21 +62,20 @@ public class AdminUsecaseImpl implements AdminUsecase {
 
     @Override
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouse() {
+        roleCheckUsecase.enforceAdminSuper();
         return getAllAdminWarehouseBase(false);
     }
 
     @Override
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseNotAssigned() {
+        roleCheckUsecase.enforceAdminSuper();
         return getAllAdminWarehouseBase(true);
     }
 
     @Override
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseAssigned(Long warehouseId) {
-        Role currentRole = UserAuth.getCurrentUser(usersRepository).getRole();
-        if (!currentRole.getName().equals(RoleType.ADMIN_SUPER.toString())) {
-            System.out.println(currentRole.getName());
-            throw new RuntimeException("Not a super admin role");
-        }
+        roleCheckUsecase.enforceAdminSuper();
+
         List<UserAdminDetailResponseDTO> result = new ArrayList<>();
         List<WarehouseAdmin> warehouseAdmins = warehouseAdminRepository.findByWarehouseId(warehouseId);
 
@@ -93,11 +92,7 @@ public class AdminUsecaseImpl implements AdminUsecase {
     @Override
     public AssignWarehouseResponseDTO assignWarehouse(AssignWarehouseRequestDTO request) {
         User superAdmin = UserAuth.getCurrentUser(usersRepository);
-        Role currentRole = superAdmin.getRole();
-        if (!currentRole.getName().equals(RoleType.ADMIN_SUPER.toString())) {
-            System.out.println(currentRole.getName());
-            throw new RuntimeException("Not a super admin role");
-        }
+        roleCheckUsecase.enforceAdminSuper();
 
         User assignee = usersRepository.findById(request.getUserAssigneeId()).get();
         if (!assignee.getRole().getName().equals(RoleType.ADMIN_WAREHOUSE.toString())) {
@@ -128,14 +123,11 @@ public class AdminUsecaseImpl implements AdminUsecase {
     @Override
     public AssignWarehouseResponseDTO removeWarehouseAssignment(AssignWarehouseRequestDTO request) {
         User superAdmin = UserAuth.getCurrentUser(usersRepository);
-        Role currentRole = superAdmin.getRole();
+        roleCheckUsecase.enforceAdminSuper();
 
         AssignWarehouseResponseDTO responseDTO = new AssignWarehouseResponseDTO();
 
-        if (!currentRole.getName().equals(RoleType.ADMIN_SUPER.toString())) {
-            System.out.println(currentRole.getName());
-            throw new RuntimeException("Not a super admin role");
-        }
+
 
         User assignee = usersRepository.findById(request.getUserAssigneeId()).get();
         if (!assignee.getRole().getName().equals(RoleType.ADMIN_WAREHOUSE.toString())) {
@@ -159,6 +151,8 @@ public class AdminUsecaseImpl implements AdminUsecase {
 
     @Override
     public CurrentWarehouseResponseDTO getCurrentWarehouseDTO() {
+        roleCheckUsecase.enforceAdminSuper();
+
         CurrentWarehouseResponseDTO responseDTO = new CurrentWarehouseResponseDTO();
         Long userId = Claims.getUserIdFromJwt();
         Optional<WarehouseAdmin> warehouseAdmin = warehouseAdminRepository.findByUserAssigneeId(userId);
@@ -170,5 +164,15 @@ public class AdminUsecaseImpl implements AdminUsecase {
             responseDTO.setWarehouseId(-1L);
         }
         return responseDTO;
+    }
+
+    @Override
+    public String deleteAdmin(Long userId) {
+        roleCheckUsecase.enforceAdminSuper();
+
+        User user = usersRepository.findById(userId).get();
+        usersRepository.delete(user);
+
+        return "Success";
     }
 }

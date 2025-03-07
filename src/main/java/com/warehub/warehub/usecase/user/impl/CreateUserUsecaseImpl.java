@@ -8,8 +8,10 @@ import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
 import com.warehub.warehub.infrastructure.users.repository.EmailVerificationTokenRepository;
 import com.warehub.warehub.infrastructure.users.repository.RolesRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
+import com.warehub.warehub.usecase.security.RoleCheckUsecase;
 import com.warehub.warehub.usecase.user.CreateUserUsecase;
 import com.warehub.warehub.usecase.user.EmailVerificationUsecase;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,9 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final EmailVerificationUsecase emailVerificationUsecase;
+
+    @Autowired
+    private RoleCheckUsecase roleCheckUsecase;
 
     public CreateUserUsecaseImpl(UsersRepository usersRepository,
                                  RolesRepository rolesRepository,
@@ -44,7 +49,15 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
     public UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role) {
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
 
-        Optional<User> existingUser = usersRepository.findByEmailContainsIgnoreCase(req.getEmail());
+        if (roleType != RoleType.NOT_VERIFIED) {
+            roleCheckUsecase.enforceAdminSuper();
+        }
+
+        if (req.getPassword().length() < 8) {
+            throw new RuntimeException("Password minimum length is 8");
+        }
+
+        Optional<User> existingUser = usersRepository.findByEmailIgnoreCase(req.getEmail());
 
         if (existingUser.isPresent()) {
             // Don't register if already registered and verified
@@ -53,6 +66,13 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
             }
 
             Optional<EmailVerificationToken> emailVerificationToken = emailVerificationTokenRepository.findByUserId(existingUser.get().getId());
+
+            System.out.println("existing user email = " + existingUser.get().getEmail());
+
+            if (!emailVerificationToken.isPresent()) {
+                emailVerificationUsecase.sendEmailVerificationLink(existingUser.get().getId());
+                return new UserDetailResponseDTO().copyFromUser(existingUser.get());
+            }
 
             if (emailVerificationToken.isPresent() &&
                     emailVerificationToken.get().getCreatedAt().isBefore(OffsetDateTime.now().minusMinutes(1))) {
@@ -72,7 +92,8 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
         newUser.setIsEmailVerified(roleType != RoleType.NOT_VERIFIED);
 
         var savedUser = usersRepository.save(newUser);
-        emailVerificationUsecase.sendEmailVerificationLink(savedUser.getId());
+        if (roleType == RoleType.NOT_VERIFIED)
+            emailVerificationUsecase.sendEmailVerificationLink(savedUser.getId());
 
         return new UserDetailResponseDTO().copyFromUser(savedUser);
     }

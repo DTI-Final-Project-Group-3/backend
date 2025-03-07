@@ -14,4 +14,6 @@ public interface AdminUsecase {
     AssignWarehouseResponseDTO assignWarehouse(AssignWarehouseRequestDTO request);
     AssignWarehouseResponseDTO removeWarehouseAssignment(AssignWarehouseRequestDTO request);
     CurrentWarehouseResponseDTO getCurrentWarehouseDTO();
+
+    String deleteAdmin(Long userId);
 }

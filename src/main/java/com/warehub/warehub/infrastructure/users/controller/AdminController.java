@@ -7,7 +7,6 @@ import com.warehub.warehub.usecase.user.AdminUsecase;
 import com.warehub.warehub.usecase.user.CreateUserUsecase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -82,8 +81,23 @@ public class AdminController {
             errorMessage = e.getMessage();
         }
         if (result == null)
-            return ApiResponse.failedResponse("Failed to create user or this email already exists : " + errorMessage);
-        return ApiResponse.successfulResponse("User created successfully. Please check your email to verify your account.", result);
+            return ApiResponse.failedResponse("Failed to create admin or this email already exists : " + errorMessage);
+        return ApiResponse.successfulResponse("Admin created successfully.", result);
+    }
+
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<?> deleteAdmin(@PathVariable("id") Long id) {
+        String result = null;
+        String errorMessage = "";
+        try {
+            result = adminUsecase.deleteAdmin(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to delete user : " + errorMessage);
+        return ApiResponse.successfulResponse("User deleted successfully.", result);
     }
 
     @PostMapping("/assign-warehouse")

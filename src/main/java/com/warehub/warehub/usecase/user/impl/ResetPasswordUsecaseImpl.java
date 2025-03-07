@@ -84,7 +84,7 @@ public class ResetPasswordUsecaseImpl implements ResetPasswordUsecase {
 
     @Override
     public ResetPasswordGenerateResponseDTO generateTokenForEmail(ResetPasswordGenerateRequestDTO requestDTO) {
-        Optional<User> user = usersRepository.findByEmailContainsIgnoreCase(requestDTO.getEmail());
+        Optional<User> user = usersRepository.findByEmailIgnoreCase(requestDTO.getEmail());
         return generateToken(user.get());
     }
 

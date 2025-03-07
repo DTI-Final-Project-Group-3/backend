@@ -13,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -39,7 +38,7 @@ public class LoginUsecaseImpl implements LoginUsecase {
             );
 
             String email = authentication.getName();
-            User user = usersRepository.findByEmailContainsIgnoreCase(email).get();
+            User user = usersRepository.findByEmailIgnoreCase(email).get();
 
             String accessToken = tokenGenerationUsecase.generateToken(authentication, 3600L);
             String refreshToken = tokenGenerationUsecase.generateToken(authentication, 604800L);
@@ -61,7 +60,7 @@ public class LoginUsecaseImpl implements LoginUsecase {
         // Step 2: Extract email and scope from the refresh token
         String email = tokenGenerationUsecase.extractEmailFromToken(refreshToken);
         String scope = tokenGenerationUsecase.extractScopeFromToken(refreshToken);
-        User user = usersRepository.findByEmailContainsIgnoreCase(email).get();
+        User user = usersRepository.findByEmailIgnoreCase(email).get();
 
         // Step 3: Generate new access and refresh tokens
         String newAccessToken = tokenGenerationUsecase.generateToken(email, scope, 3600L);  // 1 hour

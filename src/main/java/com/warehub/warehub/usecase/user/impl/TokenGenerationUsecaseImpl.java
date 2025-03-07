@@ -26,7 +26,7 @@ public class TokenGenerationUsecaseImpl implements TokenGenerationUsecase {
 
     public String generateToken(String email, String scope, long expiry) {
 
-        User user = usersRepository.findByEmailContainsIgnoreCase(email)
+        User user = usersRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
         Instant now = Instant.now();
