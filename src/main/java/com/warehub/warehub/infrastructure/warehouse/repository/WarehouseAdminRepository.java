@@ -41,4 +41,20 @@ public interface WarehouseAdminRepository extends JpaRepository<WarehouseAdmin, 
     AND (:selectNotAssigned = false OR wa.id IS NULL)
     """)
     List<UserAdminDetailResponseDTO> findAllWarehouseAdmins(@Param("roleId") Long roleId, @Param("selectNotAssigned") boolean selectNotAssigned);
+
+    @Query("""
+    SELECT new com.warehub.warehub.infrastructure.admin.dto.UserAdminDetailResponseDTO(
+        u.id, u.username, u.email, u.fullname, u.phoneNumber, u.profileImageUrl, 
+        wa.warehouse.id, 
+        wa.userAssigner.id,
+        w.name, 
+        userAssigner.email
+    )
+    FROM WarehouseAdmin wa
+    JOIN wa.userAssignee u
+    JOIN wa.warehouse w
+    LEFT JOIN wa.userAssigner userAssigner
+    WHERE wa.warehouse.id = :warehouseId
+    """)
+    List<UserAdminDetailResponseDTO> findAdminsByWarehouseId(@Param("warehouseId") Long warehouseId);
 }

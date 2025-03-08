@@ -63,18 +63,7 @@ public class AdminUsecaseImpl implements AdminUsecase {
     @Override
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseAssigned(Long warehouseId) {
         roleCheckUsecase.enforceAdminSuper();
-
-        List<UserAdminDetailResponseDTO> result = new ArrayList<>();
-        List<WarehouseAdmin> warehouseAdmins = warehouseAdminRepository.findByWarehouseId(warehouseId);
-
-        for (int loop = 0; loop < warehouseAdmins.size(); loop++) {
-            UserAdminDetailResponseDTO admin = new UserAdminDetailResponseDTO().copyFromUser(warehouseAdmins.get(loop).getUserAssignee());
-            admin.setWarehouseId(warehouseId);
-            admin.setUserAssignerId(warehouseAdmins.get(loop).getUserAssigner().getId());
-            result.add(admin);
-        }
-
-        return result;
+        return warehouseAdminRepository.findAdminsByWarehouseId(warehouseId);
     }
 
     @Override
