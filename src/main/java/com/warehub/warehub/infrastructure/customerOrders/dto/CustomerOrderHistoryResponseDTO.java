@@ -22,6 +22,6 @@ public class CustomerOrderHistoryResponseDTO {
     private String productName;
     private Long productCategoryId;
     private String productCategoryName;
-    private Long quantity;
+    private Integer quantity;
     private BigDecimal unitPrice;
 }
