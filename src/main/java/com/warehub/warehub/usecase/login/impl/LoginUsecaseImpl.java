@@ -22,6 +22,9 @@ public class LoginUsecaseImpl implements LoginUsecase {
     private final AuthenticationManager authenticationManager;
     private final TokenGenerationUsecase tokenGenerationUsecase;
 
+    private final Long SECONDS_1DAY = 86400L;
+    private final Long SECONDS_7DAY = 604800L;
+
     @Autowired
     private UsersRepository usersRepository;
 
@@ -40,10 +43,10 @@ public class LoginUsecaseImpl implements LoginUsecase {
             String email = authentication.getName();
             User user = usersRepository.findByEmailIgnoreCase(email).get();
 
-            String accessToken = tokenGenerationUsecase.generateToken(authentication, 3600L);
-            String refreshToken = tokenGenerationUsecase.generateToken(authentication, 604800L);
-            long expiresAt = Instant.now().plusSeconds(3600L).toEpochMilli();
-            long refreshExpiresAt = Instant.now().plusSeconds(604800L).toEpochMilli();
+            String accessToken = tokenGenerationUsecase.generateToken(authentication, SECONDS_1DAY);
+            String refreshToken = tokenGenerationUsecase.generateToken(authentication, SECONDS_7DAY);
+            long expiresAt = Instant.now().plusSeconds(SECONDS_1DAY).toEpochMilli();
+            long refreshExpiresAt = Instant.now().plusSeconds(SECONDS_7DAY).toEpochMilli();
             return new LoginResponseDTO(accessToken,refreshToken,expiresAt,refreshExpiresAt, user.getRole().getName());
         } catch (AuthenticationException e) {
             throw new DataNotFoundException("Wrong credentials");
@@ -63,10 +66,10 @@ public class LoginUsecaseImpl implements LoginUsecase {
         User user = usersRepository.findByEmailIgnoreCase(email).get();
 
         // Step 3: Generate new access and refresh tokens
-        String newAccessToken = tokenGenerationUsecase.generateToken(email, scope, 3600L);  // 1 hour
-        String newRefreshToken = tokenGenerationUsecase.generateToken(email, scope, 604800L);  // 7 days
-        long expiresAt = Instant.now().plusSeconds(3600L).toEpochMilli(); // Access token expiry
-        long refreshExpiresAt = Instant.now().plusSeconds(604800L).toEpochMilli();
+        String newAccessToken = tokenGenerationUsecase.generateToken(email, scope, SECONDS_1DAY);
+        String newRefreshToken = tokenGenerationUsecase.generateToken(email, scope, SECONDS_7DAY);
+        long expiresAt = Instant.now().plusSeconds(SECONDS_1DAY).toEpochMilli();
+        long refreshExpiresAt = Instant.now().plusSeconds(SECONDS_7DAY).toEpochMilli();
         return new LoginResponseDTO(newAccessToken, newRefreshToken, expiresAt, refreshExpiresAt, user.getRole().getName());
     }
 }
