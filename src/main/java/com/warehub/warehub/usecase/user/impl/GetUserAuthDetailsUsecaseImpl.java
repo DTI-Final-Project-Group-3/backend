@@ -2,7 +2,7 @@ package com.warehub.warehub.usecase.user.impl;
 
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
 import com.warehub.warehub.entity.User;
-import com.warehub.warehub.infrastructure.users.dto.UserAuth;
+import com.warehub.warehub.infrastructure.login.dto.UserAuth;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.user.GetUserAuthDetailsUsecase;
 import org.springframework.security.core.userdetails.UserDetails;
