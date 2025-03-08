@@ -3,7 +3,6 @@ package com.warehub.warehub.usecase.security.impl;
 import com.warehub.warehub.entity.Role;
 import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.security.Claims;
-import com.warehub.warehub.infrastructure.users.dto.UserAuth;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.security.RoleCheckUsecase;
 import org.springframework.beans.factory.annotation.Autowired;

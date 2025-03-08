@@ -4,7 +4,7 @@ import com.warehub.warehub.entity.User;
 import com.warehub.warehub.entity.UserAddress;
 import com.warehub.warehub.infrastructure.users.dto.UserAddressRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.UserAddressResponseDTO;
-import com.warehub.warehub.infrastructure.users.dto.UserAuth;
+import com.warehub.warehub.infrastructure.login.dto.UserAuth;
 import com.warehub.warehub.infrastructure.users.repository.UserAddressRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.user.UserAddressUsecase;
