@@ -12,6 +12,7 @@ import com.warehub.warehub.infrastructure.users.repository.RolesRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.signup.EmailVerificationUsecase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ import java.util.UUID;
 
 @Service
 public class EmailVerificationUsecaseImpl implements EmailVerificationUsecase {
+    @Value("${frontend.email.verification}")
+    private String frontendEmailVerification;
 
     @Autowired
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -53,7 +56,7 @@ public class EmailVerificationUsecaseImpl implements EmailVerificationUsecase {
             emailVerificationTokenRepository.save(verificationToken);
 
             // Send verification email
-            String verificationLink = "http://localhost:3000/verify-email?token=" + token;
+            String verificationLink = frontendEmailVerification + "/verify-email?token=" + token;
             System.out.println("email = " + user.getEmail() + " verificationLink = " + verificationLink);
             emailService.sendVerificationEmail(user.getEmail(), verificationLink);
         } catch (Exception e) {

@@ -13,6 +13,7 @@ import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.signup.ResetPasswordUsecase;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ import java.util.UUID;
 
 @Service
 public class ResetPasswordUsecaseImpl implements ResetPasswordUsecase {
+    @Value("${frontend.email.verification}")
+    private String frontendEmailVerification;
+
     @Autowired
     private JwtEncoder jwtEncoder;
 
@@ -76,7 +80,7 @@ public class ResetPasswordUsecaseImpl implements ResetPasswordUsecase {
         verificationToken.setExpiresAt(OffsetDateTime.now().plusHours(24));
         emailVerificationTokenRepository.save(verificationToken);
 
-        String verificationLink = "http://localhost:3000/reset-password?token=" + token;
+        String verificationLink = frontendEmailVerification + "/reset-password?token=" + token;
         System.out.println(verificationLink);
         emailService.sendResetPasswordEmail(email, verificationLink);
 
