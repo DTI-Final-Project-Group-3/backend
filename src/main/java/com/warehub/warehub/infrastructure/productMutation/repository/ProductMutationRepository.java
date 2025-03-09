@@ -42,12 +42,12 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
     WHERE
         pm.deleted_at IS NULL
-        AND pm.created_at::date BETWEEN :startedAt AND :endedAt
-        AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId)
-        AND (:productId IS NULL OR pm.product_id = :productId)
-        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
-        AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
-        AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+        AND (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL OR (pm.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE)))
+        AND (CAST(:warehouseId AS BIGINT) IS NULL OR pm.destination_warehouse_id = CAST(:warehouseId AS BIGINT))
+        AND (CAST(:productId AS BIGINT) IS NULL OR pm.product_id = CAST(:productId AS BIGINT))
+        AND (CAST(:productCategoryId AS BIGINT) IS NULL OR p.product_category_id = CAST(:productCategoryId AS BIGINT))
+        AND (CAST(:productMutationTypeId AS BIGINT) IS NULL OR pm.product_mutation_type_id = CAST(:productMutationTypeId AS BIGINT))
+        AND (CAST(:productMutationStatusId AS BIGINT) IS NULL OR pm.product_mutation_status_id = CAST(:productMutationStatusId AS BIGINT))
     ORDER BY pm.created_at DESC
     """, nativeQuery = true)
     Page<ProductMutationHistoryResponseDTO> findProductMutationDetailsByDateRange(
@@ -60,6 +60,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
             @Param("warehouseId") Long warehouseId,
             Pageable pageable
     );
+
 
     @Query(nativeQuery = true, value = """
         WITH date_series AS (
@@ -184,5 +185,19 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
                                                                 Pageable pageable);
 
     List<ProductMutation> findByInvoiceCodeAndProductId(String invoiceCode, Long productId);
+
+    @Query(value = """
+        SELECT CASE
+                   WHEN COUNT(pm) > 0 THEN TRUE
+                   ELSE FALSE
+               END
+        FROM product_mutations pm
+        LEFT JOIN products p ON p.id = pm.product_id
+        WHERE pm.deleted_at IS NULL
+          AND pm.product_mutation_status_id = :productMutationStatusId
+          AND p.product_category_id = :productCategoryId
+        """, nativeQuery = true)
+    boolean existPendingMutationByProductCategoryId(@Param("productMutationStatusId")Long productMutationStatusId,
+                                     @Param("productCategoryId") Long productCategoryId);
 
 }

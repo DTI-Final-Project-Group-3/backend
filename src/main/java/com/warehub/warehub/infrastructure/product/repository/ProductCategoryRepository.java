@@ -24,6 +24,7 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
                 pc.name
             FROM product_categories pc
             WHERE pc.deleted_at IS NULL
+            ORDER BY pc.id
             """, nativeQuery = true)
     Page<ProductCategoryResponseDTO> findPaginatedProductCategories(Pageable pageable);
 }

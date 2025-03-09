@@ -1,10 +1,15 @@
 package com.warehub.warehub.usecase.product.impl;
 
+import com.warehub.warehub.common.enums.MutationConstant;
+import com.warehub.warehub.common.exceptions.PendingProductMutationException;
 import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.entity.ProductCategory;
+import com.warehub.warehub.entity.WarehouseInventory;
 import com.warehub.warehub.infrastructure.product.repository.ProductCategoryRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
+import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
+import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.product.DeleteProductCategoryUseCase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +22,14 @@ public class DeleteProductCategoryUseCaseImpl implements DeleteProductCategoryUs
 
     private final ValidationService validationService;
     private final ProductCategoryRepository productCategoryRepository;
-    private final ProductRepository productRepository;
+    private final ProductMutationRepository productMutationRepository;
+    private final WarehouseInventoryRepository warehouseInventoryRepository;
 
-    public DeleteProductCategoryUseCaseImpl(ValidationService validationService, ProductCategoryRepository productCategoryRepository, ProductRepository productRepository) {
+    public DeleteProductCategoryUseCaseImpl(ValidationService validationService, ProductCategoryRepository productCategoryRepository, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
         this.validationService = validationService;
         this.productCategoryRepository = productCategoryRepository;
-        this.productRepository = productRepository;
+        this.productMutationRepository = productMutationRepository;
+        this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
     @Override
@@ -30,15 +37,20 @@ public class DeleteProductCategoryUseCaseImpl implements DeleteProductCategoryUs
     public void deleteProductCategoryById(Long productCategoryId) {
 
         ProductCategory productCategory = validationService.validateProductCategoryId(productCategoryId);
+        boolean pendingMutation = productMutationRepository.existPendingMutationByProductCategoryId(MutationConstant.STATUS_PENDING.getValue(), productCategoryId);
+
+        if (pendingMutation){
+            throw new PendingProductMutationException("There's still pending product mutation for this category !");
+        }
 
         productCategory.setDeletedAt(OffsetDateTime.now());
         productCategoryRepository.save(productCategory);
 
-        List<Product> products = productRepository.findByProductCategoryIdAndDeletedAtIsNull(productCategoryId);
+        List<WarehouseInventory> inventories = warehouseInventoryRepository.findByProductCategoryId(productCategoryId);
 
-        products.forEach(product -> {
-            product.setDeletedAt(OffsetDateTime.now());
-            productRepository.save(product);
+        inventories.forEach(inventory -> {
+            inventory.setDeletedAt(OffsetDateTime.now());
+            warehouseInventoryRepository.save(inventory);
         });
     }
 }
