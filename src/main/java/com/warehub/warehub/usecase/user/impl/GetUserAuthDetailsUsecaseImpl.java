@@ -2,7 +2,7 @@ package com.warehub.warehub.usecase.user.impl;
 
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
 import com.warehub.warehub.entity.User;
-import com.warehub.warehub.infrastructure.users.dto.UserAuth;
+import com.warehub.warehub.infrastructure.login.dto.UserAuth;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.user.GetUserAuthDetailsUsecase;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +19,7 @@ public class GetUserAuthDetailsUsecaseImpl implements GetUserAuthDetailsUsecase 
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User existingUser = usersRepository.findByEmailContainsIgnoreCase(username).orElseThrow(() -> new DataNotFoundException("User not found with email: " + username));
+        User existingUser = usersRepository.findByEmailIgnoreCase(username).orElseThrow(() -> new DataNotFoundException("User not found with email: " + username));
 
         UserAuth userAuth = new UserAuth();
         userAuth.setUser(existingUser);
