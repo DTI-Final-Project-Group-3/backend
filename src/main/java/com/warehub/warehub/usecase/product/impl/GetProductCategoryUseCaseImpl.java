@@ -27,7 +27,7 @@ public class GetProductCategoryUseCaseImpl implements GetProductCategoryUseCase 
     @Override
     public List<ProductCategoryResponseDTO> getAllProductCategory() {
 
-        List<ProductCategory> productCategories = productCategoryRepository.findAllByDeletedAtIsNull();
+        List<ProductCategory> productCategories = productCategoryRepository.findAllByDeletedAtIsNullOrderByIdAsc();
 
         return productCategories.stream().map(ProductCategoryResponseDTO::new).toList();
     }

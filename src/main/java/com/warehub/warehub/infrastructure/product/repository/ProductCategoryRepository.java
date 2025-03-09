@@ -16,7 +16,7 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
 
     Optional<ProductCategory> findByIdAndDeletedAtIsNull(Long id);
 
-    List<ProductCategory> findAllByDeletedAtIsNull();
+    List<ProductCategory> findAllByDeletedAtIsNullOrderByIdAsc();
 
     @Query(value = """
             SELECT

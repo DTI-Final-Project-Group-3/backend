@@ -1,6 +1,5 @@
 package com.warehub.warehub.infrastructure.productMutation.repository;
 
-import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDailySummaryResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDetailResponseDTO;
