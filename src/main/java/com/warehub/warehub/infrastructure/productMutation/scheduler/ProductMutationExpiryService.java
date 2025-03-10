@@ -32,7 +32,7 @@ public class ProductMutationExpiryService {
         this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 300000)
     @Transactional
     public void processExpiredMutations(){
 

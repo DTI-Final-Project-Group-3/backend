@@ -56,8 +56,8 @@ public class ProductMutationController {
     @GetMapping("/history")
     public ResponseEntity<?> getProductMutationReport(@RequestParam int page,
                                                       @RequestParam int limit,
-                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
-                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endedAt,
+                                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startedAt,
+                                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endedAt,
                                                       @RequestParam(required = false) Long productId,
                                                       @RequestParam(required = false) Long productCategoryId,
                                                       @RequestParam(required = false) Long productMutationTypeId,

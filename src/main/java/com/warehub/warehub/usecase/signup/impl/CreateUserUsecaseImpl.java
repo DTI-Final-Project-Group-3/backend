@@ -53,7 +53,7 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
             roleCheckUsecase.enforceAdminSuper();
         }
 
-        if (req.getPassword().length() < 8) {
+        if ((roleType != RoleType.NOT_VERIFIED) && (req.getPassword().length() < 8)) {
             throw new RuntimeException("Password minimum length is 8");
         }
 

@@ -2,9 +2,11 @@ package com.warehub.warehub.infrastructure.productMutation.dto;
 
 import com.warehub.warehub.entity.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class ProductMutationRequestDTO {
 
     @NotNull

@@ -41,14 +41,15 @@ public class ValidationService {
     }
 
     public void validateDateRange(LocalDate startedAt, LocalDate endedAt){
-        if (startedAt == null){
-            throw new DateTimeException("Start date can't be empty !");
-        }
-        if (endedAt == null){
-            throw new DateTimeException("End date can't be empty !");
-        }
-        if (startedAt.isAfter(endedAt)){
-            throw new DateTimeException("Start date can't be greater than end date !");
+
+        if (startedAt == null && endedAt == null) return;
+
+        if (startedAt != null && endedAt != null) {
+            if (startedAt.isAfter(endedAt)) {
+                throw new DateTimeException("Start date cannot be after end date!");
+            }
+        } else {
+            throw new DateTimeException("Both start date and end date must be provided!");
         }
     }
 

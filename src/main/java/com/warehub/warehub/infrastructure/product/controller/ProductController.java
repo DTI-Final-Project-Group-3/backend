@@ -1,10 +1,7 @@
 package com.warehub.warehub.infrastructure.product.controller;
 
 import com.warehub.warehub.common.response.ApiResponse;
-import com.warehub.warehub.infrastructure.product.dto.ProductNearbyRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductPaginationRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductCategoryRequestDTO;
-import com.warehub.warehub.infrastructure.product.dto.ProductRequestDTO;
+import com.warehub.warehub.infrastructure.product.dto.*;
 import com.warehub.warehub.usecase.product.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -108,6 +105,14 @@ public class ProductController {
     public ResponseEntity<?> createProductCategory(@RequestBody ProductCategoryRequestDTO req){
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create new product category success !", createProductCategoryUseCase.createProductCategory(req));
     }
+
+    @GetMapping("/categories")
+    public ResponseEntity<?> getPaginatedProductCategory(@RequestParam int page,
+                                                         @RequestParam int limit){
+        PaginatedProductCategoryRequestDTO requestDTO = new PaginatedProductCategoryRequestDTO(page, limit);
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get paginated product categories success", getProductCategoryUseCase.getPaginatedProductCategory(requestDTO));
+    }
+
 
     @GetMapping("/categories/all")
     public ResponseEntity<?> getAllProductCategory(){

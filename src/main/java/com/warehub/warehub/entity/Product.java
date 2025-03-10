@@ -38,7 +38,7 @@ public class Product {
     private String description;
 
     @NotNull
-    @Column(name = "price", nullable = false, precision = 10, scale = 5)
+    @Column(name = "price", nullable = false, precision = 15, scale = 3)
     private BigDecimal price;
 
     @NotNull

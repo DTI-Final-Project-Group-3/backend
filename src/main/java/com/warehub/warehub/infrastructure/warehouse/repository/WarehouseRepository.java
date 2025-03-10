@@ -54,6 +54,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
           AND id = :warehouseId
     ) coords
     WHERE w.deleted_at IS NULL 
+      AND wi.deleted_at IS NULL
       AND wi.quantity > 0
       AND wi.warehouse_id != :warehouseId
       AND (:productId IS NULL OR wi.product_id = :productId)

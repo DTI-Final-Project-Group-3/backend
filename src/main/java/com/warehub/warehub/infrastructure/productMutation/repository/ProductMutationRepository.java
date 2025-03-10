@@ -1,6 +1,5 @@
 package com.warehub.warehub.infrastructure.productMutation.repository;
 
-import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDailySummaryResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationDetailResponseDTO;
@@ -42,12 +41,12 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
     WHERE
         pm.deleted_at IS NULL
-        AND pm.created_at::date BETWEEN :startedAt AND :endedAt
-        AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId)
-        AND (:productId IS NULL OR pm.product_id = :productId)
-        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
-        AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
-        AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+        AND (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL OR (pm.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE)))
+        AND (CAST(:warehouseId AS BIGINT) IS NULL OR pm.destination_warehouse_id = CAST(:warehouseId AS BIGINT))
+        AND (CAST(:productId AS BIGINT) IS NULL OR pm.product_id = CAST(:productId AS BIGINT))
+        AND (CAST(:productCategoryId AS BIGINT) IS NULL OR p.product_category_id = CAST(:productCategoryId AS BIGINT))
+        AND (CAST(:productMutationTypeId AS BIGINT) IS NULL OR pm.product_mutation_type_id = CAST(:productMutationTypeId AS BIGINT))
+        AND (CAST(:productMutationStatusId AS BIGINT) IS NULL OR pm.product_mutation_status_id = CAST(:productMutationStatusId AS BIGINT))
     ORDER BY pm.created_at DESC
     """, nativeQuery = true)
     Page<ProductMutationHistoryResponseDTO> findProductMutationDetailsByDateRange(
@@ -60,6 +59,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
             @Param("warehouseId") Long warehouseId,
             Pageable pageable
     );
+
 
     @Query(nativeQuery = true, value = """
         WITH date_series AS (
@@ -133,6 +133,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     WHERE
         pm.deleted_at IS NULL
         AND pm.product_mutation_status_id = 1
+        AND pm.product_mutation_type_id = 1
         AND pm.created_at + CAST(:expiryInterval AS INTERVAL) < :now
     """, nativeQuery = true)
     List<ProductMutation> findPendingExpired(@Param("now") OffsetDateTime now, @Param("expiryInterval") String expiryInterval);
@@ -183,5 +184,33 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
                                                                 Pageable pageable);
 
     List<ProductMutation> findByInvoiceCodeAndProductId(String invoiceCode, Long productId);
+
+    @Query(value = """
+        SELECT CASE
+                   WHEN COUNT(pm) > 0 THEN TRUE
+                   ELSE FALSE
+               END
+        FROM product_mutations pm
+        LEFT JOIN products p ON p.id = pm.product_id
+        WHERE pm.deleted_at IS NULL
+          AND pm.product_mutation_status_id = :productMutationStatusId
+          AND p.product_category_id = :productCategoryId
+        """, nativeQuery = true)
+    boolean existPendingMutationByProductCategoryId(@Param("productMutationStatusId")Long productMutationStatusId,
+                                     @Param("productCategoryId") Long productCategoryId);
+
+    @Query(value = """
+        SELECT CASE
+                   WHEN COUNT(pm) > 0 THEN TRUE
+                   ELSE FALSE
+               END
+        FROM product_mutations pm
+        WHERE pm.deleted_at IS NULL
+          AND pm.product_mutation_status_id = :productMutationStatusId
+          AND pm.product_id = :productId
+        """, nativeQuery = true)
+    boolean existPendingMutationByProductId(@Param("productMutationStatusId")Long productMutationStatusId,
+                                                    @Param("productId") Long productId);
+
 
 }

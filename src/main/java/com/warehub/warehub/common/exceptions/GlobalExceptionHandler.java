@@ -86,4 +86,9 @@ public class GlobalExceptionHandler {
         return ApiResponse.failedResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(PendingProductMutationException.class)
+    public ResponseEntity<?>handlePendingProductMutationException(PendingProductMutationException ex){
+        return ApiResponse.failedResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+    }
+
 }
