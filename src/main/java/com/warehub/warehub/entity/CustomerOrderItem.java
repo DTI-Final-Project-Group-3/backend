@@ -40,7 +40,7 @@ public class CustomerOrderItem {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "product_price", precision = 10, scale = 5)
+    @Column(name = "product_price", precision = 15, scale = 2)
     private BigDecimal productPrice;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
