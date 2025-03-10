@@ -44,7 +44,19 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
     public UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role) {
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
 
+<<<<<<< Updated upstream:src/main/java/com/warehub/warehub/usecase/user/impl/CreateUserUsecaseImpl.java
         Optional<User> existingUser = usersRepository.findByEmailContainsIgnoreCase(req.getEmail());
+=======
+        if (roleType != RoleType.NOT_VERIFIED) {
+            roleCheckUsecase.enforceAdminSuper();
+        }
+
+        if ((roleType != RoleType.NOT_VERIFIED) && (req.getPassword().length() < 8)) {
+            throw new RuntimeException("Password minimum length is 8");
+        }
+
+        Optional<User> existingUser = usersRepository.findByEmailIgnoreCase(req.getEmail());
+>>>>>>> Stashed changes:src/main/java/com/warehub/warehub/usecase/signup/impl/CreateUserUsecaseImpl.java
 
         if (existingUser.isPresent()) {
             // Don't register if already registered and verified
