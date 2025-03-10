@@ -133,7 +133,7 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     GROUP BY
       ds.date
     ORDER BY
-      ds.date DESC;
+      ds.date ASC;
     """, nativeQuery = true)
     List<CustomerOrderDailyTotalResponseDTO> findDailyTotalByFilter(
             @Param("startDate") LocalDate startDate,
