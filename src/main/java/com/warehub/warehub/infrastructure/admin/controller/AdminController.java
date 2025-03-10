@@ -5,6 +5,7 @@ import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.UserAdminDetailResponseDTO;
+import com.warehub.warehub.infrastructure.admin.dto.UserAdminUpdateRequestDTO;
 import com.warehub.warehub.infrastructure.signup.dto.CreateUserRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.*;
 import com.warehub.warehub.usecase.admin.AdminUsecase;
@@ -102,6 +103,36 @@ public class AdminController {
         if (result == null)
             return ApiResponse.failedResponse("Failed to create admin or this email already exists : " + errorMessage);
         return ApiResponse.successfulResponse("Admin created successfully.", result);
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<?> getAdmin(@PathVariable("id") Long id) {
+        UserDetailResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = adminUsecase.getAdminDetail(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to get user : " + errorMessage);
+        return ApiResponse.successfulResponse("User get successfully.", result);
+    }
+
+    @PutMapping("/id/{id}")
+    public ResponseEntity<?> updateAdmin(@PathVariable("id") Long id, @RequestBody UserAdminUpdateRequestDTO request) {
+        UserDetailResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = adminUsecase.updateAdminDetail(id, request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to delete user : " + errorMessage);
+        return ApiResponse.successfulResponse("User deleted successfully.", result);
     }
 
     @DeleteMapping("/id/{id}")
