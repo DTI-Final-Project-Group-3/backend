@@ -87,7 +87,10 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
 
         // Only create new user if no existing record is found
         User newUser = req.toEntity();
-        newUser.setPasswordHash(passwordEncoder.encode(""));
+        if (roleType == RoleType.NOT_VERIFIED)
+            newUser.setPasswordHash(passwordEncoder.encode(""));
+        else
+            newUser.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         newUser.setRole(rolesRepository.findByName(roleType.toString()).orElseThrow(() -> new RuntimeException("Role not found")));
         newUser.setIsEmailVerified(roleType != RoleType.NOT_VERIFIED);
 
