@@ -70,5 +70,7 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
             "AND p.productCategory.id = :productCategoryId")
     List<WarehouseInventory> findByProductCategoryId(@Param("productCategoryId") Long productCategoryId);
 
+    List<WarehouseInventory> findByProductIdAndDeletedAtIsNull(Long productId);
+
 }
 

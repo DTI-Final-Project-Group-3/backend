@@ -199,4 +199,18 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     boolean existPendingMutationByProductCategoryId(@Param("productMutationStatusId")Long productMutationStatusId,
                                      @Param("productCategoryId") Long productCategoryId);
 
+    @Query(value = """
+        SELECT CASE
+                   WHEN COUNT(pm) > 0 THEN TRUE
+                   ELSE FALSE
+               END
+        FROM product_mutations pm
+        WHERE pm.deleted_at IS NULL
+          AND pm.product_mutation_status_id = :productMutationStatusId
+          AND pm.product_id = :productId
+        """, nativeQuery = true)
+    boolean existPendingMutationByProductId(@Param("productMutationStatusId")Long productMutationStatusId,
+                                                    @Param("productId") Long productId);
+
+
 }
