@@ -4,6 +4,7 @@ import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.CurrentWarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.UserAdminDetailResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseResponseDTO;
+import com.warehub.warehub.infrastructure.users.dto.UserDetailResponseDTO;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ public interface AdminUsecase {
     AssignWarehouseResponseDTO assignWarehouse(AssignWarehouseRequestDTO request);
     AssignWarehouseResponseDTO removeWarehouseAssignment(AssignWarehouseRequestDTO request);
     CurrentWarehouseResponseDTO getCurrentWarehouseDTO();
+
+    List<UserDetailResponseDTO> getAllCustomerVerified();
 
     String deleteAdmin(Long userId);
 }
