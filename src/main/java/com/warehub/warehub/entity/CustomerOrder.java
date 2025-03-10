@@ -45,10 +45,10 @@ public class CustomerOrder {
     @Column(name = "gateway_trx_id", length = Integer.MAX_VALUE)
     private String gatewayTrxId;
 
-    @Column(name = "shipping_cost", precision = 10, scale = 5)
+    @Column(name = "shipping_cost", precision = 15, scale = 2)
     private BigDecimal shippingCost;
 
-    @Column(name = "total_amount", precision = 10, scale = 5)
+    @Column(name = "total_amount", precision = 15, scale = 2)
     private BigDecimal totalAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,6 +69,9 @@ public class CustomerOrder {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+    @Column(name = "sent_at")
+    private OffsetDateTime sentAt;
 
     @PrePersist
     public void onCreate() {

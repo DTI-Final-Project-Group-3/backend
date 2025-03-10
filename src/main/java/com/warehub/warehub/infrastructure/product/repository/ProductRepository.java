@@ -1,7 +1,7 @@
 package com.warehub.warehub.infrastructure.product.repository;
 
 import com.warehub.warehub.entity.Product;
-import com.warehub.warehub.infrastructure.product.dto.ProductDetailResponseDTO;
+import com.warehub.warehub.infrastructure.product.dto.ProductBasicResponseDTO;
 import com.warehub.warehub.infrastructure.product.dto.ProductSummaryResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,10 +24,56 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findByProductCategoryIdAndDeletedAtIsNull(Long productCategoryId);
 
     @Query(value = """
+            SELECT 
+                p.id,
+                p.name
+           FROM products p
+           WHERE p.deleted_at is NULL
+           ORDER BY p.id
+            """, nativeQuery = true)
+    List<ProductBasicResponseDTO> findAllProduct();
+
+    @Query(value = """
+            SELECT
+                p.id,
+                p.name
+            FROM products p
+            JOIN warehouse_inventories wi ON wi.product_id = p.id
+            WHERE
+                p.deleted_at IS NULL
+                AND wi.deleted_at IS NULL
+                AND wi.warehouse_id = :warehouseId
+            ORDER BY p.id
+            """, nativeQuery = true)
+    List<ProductBasicResponseDTO> findProductsIncludeFilter(@Param("warehouseId") Long warehouseId);
+
+    @Query(value = """
+            SELECT
+                p.id,
+                p.name
+            FROM products p
+            WHERE
+                p.deleted_at IS NULL
+                AND p.id NOT IN (
+                    SELECT wi.product_id
+                    FROM warehouse_inventories wi
+                    WHERE wi.deleted_at IS NULL
+                      AND wi.warehouse_id = :warehouseId
+                )
+            ORDER BY p.id
+            """, nativeQuery = true)
+    List<ProductBasicResponseDTO> findProductsExcludeFilter(@Param("warehouseId") Long warehouseId);
+
+
+    @Query(value = """
     SELECT 
         p.id AS "id",
         p.name AS "name",
         p.price AS "price",
+        p.weight AS "weight",
+        p.height AS "height",
+        p.width AS "width",
+        p.length AS "length",
         pc.name AS "category_name",
         pi.url AS "thumbnail",
         SUM(wi.quantity) AS "total_quantity"
@@ -64,8 +110,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         p.id AS "id",
         p.name AS "name",
         p.price AS "price",
+        p.weight AS "weight",
+        p.height AS "height",
+        p.width AS "width",
+        p.length AS "length",
+        pc.name AS "category_name",
         pi.url AS "thumbnail"
-        pc.name AS "category"
     FROM products p
     JOIN product_categories pc ON p.product_category_id = pc.id
     LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.position = 1
@@ -73,7 +123,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         p.deleted_at IS NULL
         AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
         AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
-    GROUP BY p.id, p.name, p.price
     ORDER BY p.id
     """, nativeQuery = true)
     Page<ProductSummaryResponseDTO> findPaginatedProductsByFilter(

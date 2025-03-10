@@ -15,13 +15,23 @@ import java.util.List;
 public class WarehouseDetailAssignedResponseDTO extends WarehouseDetailResponseDTO {
     private List<AssignedAdmin> assignedAdmins;
 
-    public WarehouseDetailAssignedResponseDTO(Warehouse warehouse, List<WarehouseAdmin> warehouseAdmins){
+    public WarehouseDetailAssignedResponseDTO(Warehouse warehouse, List<WarehouseAdmin> warehouseAdmins) {
         super(warehouse);
         assignedAdmins = new ArrayList<>();
-        for (int loop = 0; loop < warehouseAdmins.size(); loop++) {
-            WarehouseAdmin warehouseAdmin = warehouseAdmins.get(loop);
-            assignedAdmins.add(new AssignedAdmin(warehouseAdmin.getUserAssignee().getId(),
-                    warehouseAdmin.getUserAssigner().getId()));
+        for (WarehouseAdmin warehouseAdmin : warehouseAdmins) {
+            addWarehouseAdmin(warehouseAdmin);
         }
+    }
+
+    // New method to add a warehouse admin dynamically
+    public void addWarehouseAdmin(WarehouseAdmin warehouseAdmin) {
+        assignedAdmins.add(new AssignedAdmin(
+                warehouseAdmin.getUserAssignee().getId(),
+                warehouseAdmin.getUserAssigner().getId()
+        ));
+    }
+
+    public List<AssignedAdmin> getAssignedAdmins() {
+        return assignedAdmins;
     }
 }

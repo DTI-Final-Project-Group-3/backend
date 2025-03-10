@@ -1,12 +1,11 @@
 package com.warehub.warehub.usecase.warehouse.impl;
 
 import com.warehub.warehub.common.enums.LocationConstants;
-import com.warehub.warehub.common.exceptions.ProductNotFoundException;
-import com.warehub.warehub.common.exceptions.WarehouseNotFoundException;
 import com.warehub.warehub.common.utils.Location;
 import com.warehub.warehub.common.utils.LocationService;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.Warehouse;
-import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
+import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseQuantityResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.NearbyWarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.warehouse.dto.WarehouseDetailResponseDTO;
@@ -19,12 +18,12 @@ import java.util.List;
 @Service
 public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
 
+    private final ValidationService validationService;
     private final WarehouseRepository warehouseRepository;
-    private final ProductRepository productRepository;
 
-    public GetWarehouseUseCaseImpl(WarehouseRepository warehouseRepository, ProductRepository productRepository) {
+    public GetWarehouseUseCaseImpl(ValidationService validationService, WarehouseRepository warehouseRepository) {
+        this.validationService = validationService;
         this.warehouseRepository = warehouseRepository;
-        this.productRepository = productRepository;
     }
 
     @Override
@@ -35,8 +34,7 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
 
     @Override
     public WarehouseDetailResponseDTO getWarehouseById(Long warehouseId) {
-        Warehouse warehouse = warehouseRepository.findByIdAndDeletedAtIsNull(warehouseId)
-                .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID " + warehouseId + " not found !"));
+        Warehouse warehouse = validationService.validateWarehouseId(warehouseId, "Warehouse");
 
         return new WarehouseDetailResponseDTO(warehouse);
     }
@@ -44,12 +42,10 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
     @Override
     public List<NearbyWarehouseResponseDTO> getNearbyWarehouses(NearbyWarehouseRequestDTO req) {
 
-        if (req.getProductId() != null){
-            productRepository.findByIdAndDeletedAtIsNull(req.getProductId()).orElseThrow(()-> new ProductNotFoundException("Product with ID "+ req.getProductId() + " not found !"));
-        }
+        validationService.validateProductId(req.getProductId());
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
 
-        List<Object[]> nearbyWarehouses = warehouseRepository.findNearbyWarehouses(location.getLongitude(), location.getLatitude(), LocationConstants.MAX_DISTANCE_IN_METERS.getValue(), req.getProductId());
+        List<Object[]> nearbyWarehouses = warehouseRepository.findNearbyWarehousesByCoordinate(location.getLongitude(), location.getLatitude(), LocationConstants.MAX_DISTANCE_IN_METERS.getValue(), req.getProductId());
 
         return nearbyWarehouses.stream()
                 .map(nearbyWarehouse -> {
@@ -62,4 +58,11 @@ public class GetWarehouseUseCaseImpl implements GetWarehouseUseCase {
                     return nearbyWarehouseResponseDTO;
                 }).toList();
     }
+
+    @Override
+    public List<NearbyWarehouseQuantityResponseDTO> getNearbyWarehouseByProductId(Long warehouseId, Long productId) {
+
+        return warehouseRepository.findNearbyWarehouseByWarehouseIdAndProductId(warehouseId, productId);
+    }
+
 }

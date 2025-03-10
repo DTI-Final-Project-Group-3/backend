@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Repository
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long>, JpaSpecificationExecutor<CustomerOrder> {
@@ -41,4 +42,9 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 
     CustomerOrder findByIdAndUserId(Long customerOrderId, Long userId);
 
+    List<CustomerOrder> findByOrderStatusId(Long orderStatusId);
+
+    List<CustomerOrder> findByOrderStatusIdAndSentAtBefore(Long orderStatusId, OffsetDateTime sentAt);
+
+    List<CustomerOrder> findByPaymentMethodId(Long paymentMethodId);
 }

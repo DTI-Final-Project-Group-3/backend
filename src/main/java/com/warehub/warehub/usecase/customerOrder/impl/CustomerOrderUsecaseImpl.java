@@ -1,13 +1,12 @@
 package com.warehub.warehub.usecase.customerOrder.impl;
 
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
+import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.PaginationInfo;
-import com.warehub.warehub.entity.CustomerOrder;
-import com.warehub.warehub.entity.CustomerOrderStatus;
-import com.warehub.warehub.entity.User;
-import com.warehub.warehub.entity.WarehouseAdmin;
+import com.warehub.warehub.entity.*;
 import com.warehub.warehub.entity.enums.OrderStatuses;
 import com.warehub.warehub.entity.enums.RoleType;
+import com.warehub.warehub.infrastructure.customerOrderItems.repository.CustomerOrderItemsRepository;
 import com.warehub.warehub.infrastructure.customerOrderStatus.CustomerOrderStatusRepository;
 import com.warehub.warehub.infrastructure.customerOrders.dto.ConfirmOrderRequestDTO;
 import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderResponseDTO;
@@ -15,9 +14,12 @@ import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderDetail
 import com.warehub.warehub.infrastructure.customerOrders.dto.PaginatedCustomerOrderRequestDTO;
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.customerOrders.specification.CustomerOrderSpecification;
+import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseAdminRepository;
+import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.customerOrder.CustomerOrderUsecase;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,25 +27,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
     private final CustomerOrderRepository customerOrderRepository;
     private final UsersRepository usersRepository;
     private final CustomerOrderStatusRepository customerOrderStatusRepository;
     private final WarehouseAdminRepository warehouseAdminRepository;
-
-    public CustomerOrderUsecaseImpl(CustomerOrderRepository customerOrderRepository,
-                                    UsersRepository usersRepository,
-                                    CustomerOrderStatusRepository customerOrderStatusRepository,
-                                    WarehouseAdminRepository warehouseAdminRepository) {
-        this.customerOrderRepository = customerOrderRepository;
-        this.usersRepository = usersRepository;
-        this.customerOrderStatusRepository = customerOrderStatusRepository;
-        this.warehouseAdminRepository = warehouseAdminRepository;
-    }
+    private final CustomerOrderItemsRepository customerOrderItemsRepository;
+    private final ProductMutationRepository productMutationRepository;
+    private final WarehouseInventoryRepository warehouseInventoryRepository;
+    private final CreateProductMutationLog createProductMutationLog;
 
     @Override
     public PaginationInfo<CustomerOrderResponseDTO> getAllCustomerOrders(PaginatedCustomerOrderRequestDTO request) {
@@ -91,6 +89,7 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         // Apply additional filters from request params
         spec = spec.and(CustomerOrderSpecification.hasStatusId(request.getCustomerOrderStatusId()))
                 .and(CustomerOrderSpecification.hasSearchQuery(request.getSearchQuery()))
+                .and(CustomerOrderSpecification.hasWarehouseId(request.getWarehouseId()))
                 .and(CustomerOrderSpecification.hasStartDate(request.getStartDate()))
                 .and(CustomerOrderSpecification.hasEndDate(request.getEndDate()));
 
@@ -110,9 +109,12 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         User user = usersRepository.findById(request.getUserId())
                 .orElseThrow(() -> new DataNotFoundException("User not found."));
 
-        // Check is user verified as customer
-        if(!"CUSTOMER_VERIFIED".equals(user.getRole().getName())) {
-            throw new DataNotFoundException("Customer is not verified.");
+        // Define allowed roles
+        List<String> allowedRoles = Arrays.asList("CUSTOMER_VERIFIED", "ADMIN_WAREHOUSE", "ADMIN_SUPER");
+
+        // Check if the user has one of the allowed roles
+        if (!allowedRoles.contains(user.getRole().getName())) {
+            throw new IllegalArgumentException("You do not have permission to access this order.");
         }
 
         // Check if the order exist
@@ -138,8 +140,7 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
                 .orElseThrow(() -> new DataNotFoundException("Order not found."));
 
         // Fetch the "Shipped" status
-        CustomerOrderStatus shippedStatus = customerOrderStatusRepository.findByName(OrderStatuses.SHIPPED.getStatus())
-                .orElseThrow(() -> new DataNotFoundException("Order status 'Shipped' not found."));
+        CustomerOrderStatus shippedStatus = getOrderStatus(OrderStatuses.SHIPPED);
 
         // Check if the current order status is "Shipped"
         if (!customerOrder.getOrderStatus().equals(shippedStatus)) {
@@ -147,13 +148,79 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         }
 
         // Fetch the "Confirmed" status
-        CustomerOrderStatus confirmedStatus = customerOrderStatusRepository.findByName(OrderStatuses.CONFIRMED.getStatus())
-                .orElseThrow(() -> new DataNotFoundException("Order status 'Confirmed' not found."));
+        CustomerOrderStatus confirmedStatus = getOrderStatus(OrderStatuses.CONFIRMED);
 
         // Update order status to "Confirmed"
         customerOrder.setOrderStatus(confirmedStatus);
         customerOrderRepository.save(customerOrder);
 
         return CustomerOrderResponseDTO.mapToDTO(customerOrder);
+    }
+
+    @Override
+    public CustomerOrderResponseDTO cancelCustomerOrder(Long customerOrderId) {
+        // Find the user
+//        User user = usersRepository.findById(userId)
+//                .orElseThrow(() -> new DataNotFoundException("User not found"));
+
+        // Find the customer order
+        CustomerOrder customerOrder = customerOrderRepository.findById(customerOrderId)
+                .orElseThrow(() -> new DataNotFoundException("Customer order not found"));
+
+        // Get order items
+        List<CustomerOrderItem> orderItems = customerOrderItemsRepository.findByCustomerOrderId(customerOrderId);
+
+        if (orderItems.isEmpty()) throw new DataNotFoundException("No oder items found for this transaction");
+
+        // Reverse stock changes
+        for (CustomerOrderItem item : orderItems) {
+            Product product = item.getProduct();
+            int quantityToReturn = item.getQuantity();
+
+            // Find product mutation records (to track stock movement)
+            List<ProductMutation> mutations = productMutationRepository.findByInvoiceCodeAndProductId(
+                    customerOrder.getInvoiceCode(), product.getId());
+
+            for (ProductMutation mutation : mutations) {
+                Warehouse originWarehouse = mutation.getOriginWarehouse();
+                Warehouse destinationWarehouse = mutation.getDestinationWarehouse();
+                int mutatedQuantity = mutation.getQuantity(); // The actual quantity moved in mutation
+
+                // Stock was moved out (deducted)
+                if (mutatedQuantity < 0) {
+                    // Restore stock in the origin warehouse
+                    WarehouseInventory originInventory = warehouseInventoryRepository
+                            .findByProductIdAndWarehouseIdAndDeletedAtIsNull(product.getId(), originWarehouse.getId())
+                            .orElseThrow(() -> new DataNotFoundException("Inventory record not found"));
+
+                    // Restore only what is needed
+                    int quantityToRestore = Math.min(quantityToReturn, Math.abs(mutatedQuantity));
+                    originInventory.setQuantity(originInventory.getQuantity() + quantityToRestore);
+                    warehouseInventoryRepository.save(originInventory);
+
+                    // Log mutation (reverse stock movement)
+                    createProductMutationLog.createProductMutationRecord(
+                            product, quantityToRestore, "Order canceled : reversing transaction calcellation",
+                            customerOrder.getUser(), destinationWarehouse, originWarehouse,
+                            2L, 3L, customerOrder.getInvoiceCode()
+                    );
+
+                    // Reduce remaining quantity to return
+                    quantityToReturn -= quantityToRestore;
+                    if (quantityToReturn <= 0) break; // Stop if all stock is restored
+                }
+            }
+        }
+        // Mark order as canceled
+        CustomerOrderStatus canceledStatus = getOrderStatus(OrderStatuses.CANCELED);
+        customerOrder.setOrderStatus(canceledStatus);
+        customerOrderRepository.save(customerOrder);
+
+        return CustomerOrderResponseDTO.mapToDTO(customerOrder);
+    }
+
+    private CustomerOrderStatus getOrderStatus(OrderStatuses status) {
+        return customerOrderStatusRepository.findById(status.getId())
+                .orElseThrow(() -> new DataNotFoundException("Order status " + status.getStatus() + " not found"));
     }
 }

@@ -1,6 +1,6 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.exceptions.ProductCategoryNotFoundException;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.ProductCategory;
 import com.warehub.warehub.infrastructure.product.dto.ProductCategoryResponseDTO;
 import com.warehub.warehub.infrastructure.product.repository.ProductCategoryRepository;
@@ -12,9 +12,11 @@ import java.util.List;
 @Service
 public class GetProductCategoryUseCaseImpl implements GetProductCategoryUseCase {
 
+    private final ValidationService validationService;
     private final ProductCategoryRepository productCategoryRepository;
 
-    public GetProductCategoryUseCaseImpl(ProductCategoryRepository productCategoryRepository) {
+    public GetProductCategoryUseCaseImpl(ValidationService validationService, ProductCategoryRepository productCategoryRepository) {
+        this.validationService = validationService;
         this.productCategoryRepository = productCategoryRepository;
     }
 
@@ -28,8 +30,7 @@ public class GetProductCategoryUseCaseImpl implements GetProductCategoryUseCase 
 
     @Override
     public ProductCategoryResponseDTO getProductCategoryById(Long productCategoryId) {
-        ProductCategory productCategory = productCategoryRepository.findByIdAndDeletedAtIsNull(productCategoryId)
-                .orElseThrow(()-> new ProductCategoryNotFoundException("Product category with ID " + productCategoryId + " not found !"));
+        ProductCategory productCategory = validationService.validateProductCategoryId(productCategoryId);
 
         return new ProductCategoryResponseDTO(productCategory);
     }

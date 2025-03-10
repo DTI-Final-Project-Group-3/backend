@@ -1,13 +1,14 @@
 package com.warehub.warehub;
 
-import com.midtrans.Midtrans;
 import com.warehub.warehub.infrastructure.config.RsaKeyConfigProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableConfigurationProperties({RsaKeyConfigProperties.class})
+@EnableScheduling // enabling cron job scheduling
 public class WarehubApplication {
 
 	public static void main(String[] args) {

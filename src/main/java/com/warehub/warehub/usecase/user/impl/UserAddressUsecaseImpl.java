@@ -4,7 +4,7 @@ import com.warehub.warehub.entity.User;
 import com.warehub.warehub.entity.UserAddress;
 import com.warehub.warehub.infrastructure.users.dto.UserAddressRequestDTO;
 import com.warehub.warehub.infrastructure.users.dto.UserAddressResponseDTO;
-import com.warehub.warehub.infrastructure.users.dto.UserAuth;
+import com.warehub.warehub.infrastructure.login.dto.UserAuth;
 import com.warehub.warehub.infrastructure.users.repository.UserAddressRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.user.UserAddressUsecase;
@@ -29,7 +29,7 @@ public class UserAddressUsecaseImpl implements UserAddressUsecase {
     @Override
     public List<UserAddressResponseDTO> getAll() {
         User user = UserAuth.getCurrentUser(usersRepository);
-        List<UserAddress> addresses = userAddressRepository.findByUserId(user.getId());
+        List<UserAddress> addresses = userAddressRepository.findByUserIdOrderByCreatedAtAsc(user.getId());
 
         return addresses.stream().map(this::mapToResponse).toList();
     }
@@ -99,12 +99,17 @@ public class UserAddressUsecaseImpl implements UserAddressUsecase {
         if (address == null)
             return null;
 
-        address.setName(request.getName());
-        address.setDetailAddress(request.getDetailAddress());
-        address.setLocation(geometryFactory.createPoint(
+        if (request.getName() != null)
+            address.setName(request.getName());
+        if (request.getDetailAddress() != null)
+            address.setDetailAddress(request.getDetailAddress());
+
+        if ((request.getLongitude() != null) && (request.getLatitude() != null))
+            address.setLocation(geometryFactory.createPoint(
                 new Coordinate(request.getLongitude(), request.getLatitude())));
 
-        if (request.getIsPrimary()) {
+        System.out.println("request.getIsPrimary() = " + request.getIsPrimary());
+        if ((request.getIsPrimary() != null) && request.getIsPrimary()) {
             userAddressRepository.unsetOtherPrimaryAddresses(user.getId());
             address.setPrimary(true);
         }

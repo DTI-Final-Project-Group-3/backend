@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
+
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductController {
@@ -72,7 +74,17 @@ public class ProductController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllProduct(){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProduct());
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product by Id success", getProductUseCase.getAllProductList());
+    }
+
+    @GetMapping("/filter/include")
+    public ResponseEntity<?> getProductByWarehouseId(@RequestParam Long warehouseId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get products with include filter success", getProductUseCase.getProductsIncludeFilter(warehouseId));
+    }
+
+    @GetMapping("/filter/exclude")
+    public ResponseEntity<?> getProductExcludeFilter(@RequestParam Long warehouseId){
+        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get products with exclude filter success !", getProductUseCase.getProductsExcludeFilter(warehouseId));
     }
 
     @GetMapping("/{productId}")

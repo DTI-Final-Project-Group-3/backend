@@ -1,90 +1,75 @@
 package com.warehub.warehub.usecase.productMutation.impl;
 
-import com.warehub.warehub.common.exceptions.*;
+import com.warehub.warehub.common.enums.MutationConstant;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.*;
-import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
-import com.warehub.warehub.infrastructure.productMutation.dto.ApproveProductMutationRequestDTO;
-import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
+import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationResponseDTO;
 import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
-import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationStatusRepository;
-import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationTypeRepository;
-import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
-import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseRepository;
+import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.productMutation.UpdateProductMutationUseCase;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 
 @Service
 public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUseCase {
 
+    private final ValidationService validationService;
     private final ProductMutationRepository productMutationRepository;
-    private final ProductMutationStatusRepository productMutationStatusRepository;
-    private final ProductRepository productRepository;
-    private final WarehouseRepository warehouseRepository;
-    private final ProductMutationTypeRepository productMutationTypeRepository;
-    private final UsersRepository usersRepository;
+    private final WarehouseInventoryRepository warehouseInventoryRepository;
 
-    public UpdateProductMutationUseCaseImpl(ProductMutationRepository productMutationRepository, ProductMutationStatusRepository productMutationStatusRepository, ProductRepository productRepository, WarehouseRepository warehouseRepository, ProductMutationTypeRepository productMutationTypeRepository, UsersRepository usersRepository) {
+    public UpdateProductMutationUseCaseImpl(ValidationService validationService, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+        this.validationService = validationService;
         this.productMutationRepository = productMutationRepository;
-        this.productMutationStatusRepository = productMutationStatusRepository;
-        this.productRepository = productRepository;
-        this.warehouseRepository = warehouseRepository;
-        this.productMutationTypeRepository = productMutationTypeRepository;
-        this.usersRepository = usersRepository;
+        this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
     @Override
-    public ProductMutationResponseDTO updateProductMutationById(Long productMutationId, ProductMutationRequestDTO req) {
-        ProductMutation productMutation = productMutationRepository.findByIdAndDeletedAtIsNull(productMutationId)
-                .orElseThrow(()-> new ProductMutationNotFoundException("Product mutation with ID "+ productMutationId + " not found !"));
+    @Transactional
+    public ProductMutationResponseDTO approveManualProductMutation(Long productMutationId, ProductMutationProcessRequestDTO req) {
 
-        Product product = productRepository.findByIdAndDeletedAtIsNull(req.getProductId())
-                .orElseThrow(()-> new ProductNotFoundException("Product with ID " + req.getProductId() + " not found !"));
+        // validate request
+        User reviewer = validationService.validateUserId(req.getUserId());
+        ProductMutationStatus productMutationStatus = validationService.validateProductMutationStatusId(MutationConstant.STATUS_COMPLETED.getValue());
+        ProductMutation productMutation = validationService.validateProductMutationId(productMutationId);
+        WarehouseInventory destinationWarehouseInventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(productMutation.getProduct().getId(), productMutation.getDestinationWarehouse().getId());
 
-        User requester = usersRepository.findByIdAndDeletedAtIsNull(req.getRequesterId())
-                .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getRequesterId() + " not found !"));
+        // increase quantity from destination warehouse
+        destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() + productMutation.getQuantity());
+        warehouseInventoryRepository.save(destinationWarehouseInventory);
 
-        Warehouse originWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getOriginWarehouseId())
-                .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getOriginWarehouseId() + " not found !"));
-
-        Warehouse destinationWarehouse = warehouseRepository.findByIdAndDeletedAtIsNull(req.getDestinationWarehouseId())
-                .orElseThrow(()-> new WarehouseNotFoundException("Warehouse with ID "+ req.getDestinationWarehouseId() + " not found !"));
-
-        ProductMutationType productMutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(req.getProductMutationTypeId())
-                .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
-
-        ProductMutationStatus productMutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(req.getProductMutationStatusId())
-                .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
-
-        productMutation.setProduct(product);
-        productMutation.setNotes(req.getNotes());
-        productMutation.setRequester(requester);
-        productMutation.setOriginWarehouse(originWarehouse);
-        productMutation.setDestinationWarehouse(destinationWarehouse);
-        productMutation.setProductMutationType(productMutationType);
+        // update product mutation to completed
+        productMutation.setReviewer(reviewer);
+        productMutation.setReviewerNotes(req.getNotes());
+        productMutation.setReviewedAt(OffsetDateTime.now());
         productMutation.setProductMutationStatus(productMutationStatus);
-        productMutation.setAcceptedAt(req.getAcceptedAt());
+        productMutation.setUpdatedAt(OffsetDateTime.now());
 
-        return new ProductMutationResponseDTO(productMutation);
+        return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
     }
 
     @Override
-    public ProductMutationResponseDTO approveManualProductMutation(Long productMutationId, ApproveProductMutationRequestDTO req) {
-        ProductMutation productMutation = productMutationRepository.findByIdAndDeletedAtIsNull(productMutationId)
-                .orElseThrow(()-> new ProductMutationNotFoundException("Product mutation with ID "+ productMutationId + " not found !"));
+    @Transactional
+    public ProductMutationResponseDTO declineManualProductMutation(Long productMutationId, ProductMutationProcessRequestDTO req) {
 
-        User approver = usersRepository.findByIdAndDeletedAtIsNull(req.getApproverId())
-                .orElseThrow(()-> new UsernameNotFoundException("User with ID " + req.getApproverId() + " not found !"));
+        // validate request
+        User reviewer = validationService.validateUserId(req.getUserId());
+        ProductMutationStatus productMutationStatus = validationService.validateProductMutationStatusId(MutationConstant.STATUS_DECLINED.getValue());
+        ProductMutation productMutation = validationService.validateProductMutationId(productMutationId);
+        WarehouseInventory originWarehouseInventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(productMutation.getProduct().getId(), productMutation.getOriginWarehouse().getId());
 
-        ProductMutationStatus productMutationStatusApproved = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
-                .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
+        // roll back quantity from origin warehouse
+        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + productMutation.getQuantity());
+        warehouseInventoryRepository.save(originWarehouseInventory);
 
-        productMutation.setApprover(approver);
-        productMutation.setAcceptedAt(OffsetDateTime.now());
-        productMutation.setProductMutationStatus(productMutationStatusApproved);
+        // update product mutation to completed
+        productMutation.setReviewer(reviewer);
+        productMutation.setReviewerNotes(req.getNotes());
+        productMutation.setReviewedAt(OffsetDateTime.now());
+        productMutation.setProductMutationStatus(productMutationStatus);
+        productMutation.setUpdatedAt(OffsetDateTime.now());
 
         return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
     }

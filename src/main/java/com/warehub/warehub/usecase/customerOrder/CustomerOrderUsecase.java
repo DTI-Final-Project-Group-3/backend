@@ -11,4 +11,5 @@ public interface CustomerOrderUsecase {
     PaginationInfo<CustomerOrderResponseDTO> getAllCustomerOrders(PaginatedCustomerOrderRequestDTO request);
     CustomerOrderResponseDTO getCustomerOrder(CustomerOrderDetailRequestDTO request);
     CustomerOrderResponseDTO confirmCustomerOrder(ConfirmOrderRequestDTO request);
+    CustomerOrderResponseDTO cancelCustomerOrder(Long customerOrderId);
 }

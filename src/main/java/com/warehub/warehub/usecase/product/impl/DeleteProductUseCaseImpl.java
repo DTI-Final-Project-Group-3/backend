@@ -1,6 +1,6 @@
 package com.warehub.warehub.usecase.product.impl;
 
-import com.warehub.warehub.common.exceptions.ProductNotFoundException;
+import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.Product;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
 import com.warehub.warehub.usecase.product.DeleteProductUseCase;
@@ -10,16 +10,18 @@ import java.time.OffsetDateTime;
 
 @Service
 public class DeleteProductUseCaseImpl implements DeleteProductUseCase {
+
+    private final ValidationService validationService;
     private final ProductRepository productRepository;
 
-    public DeleteProductUseCaseImpl(ProductRepository productRepository) {
+    public DeleteProductUseCaseImpl(ValidationService validationService, ProductRepository productRepository) {
+        this.validationService = validationService;
         this.productRepository = productRepository;
     }
 
     @Override
     public void deleteProductById(Long productId) {
-        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
-                .orElseThrow(()-> new ProductNotFoundException("Product with ID " + productId + " not found !"));
+        Product product = validationService.validateProductId(productId);
 
         product.setDeletedAt(OffsetDateTime.now());
         productRepository.save(product);

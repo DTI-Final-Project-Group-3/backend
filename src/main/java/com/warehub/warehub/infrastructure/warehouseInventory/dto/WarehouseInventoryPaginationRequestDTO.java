@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 public class WarehouseInventoryPaginationRequestDTO {
     private int page;
     private int limit;
-    private Double longitude;
-    private Double latitude;
-    private Long productCategoryId;
+    private Long warehouseId;
     private String searchQuery;
+
 }

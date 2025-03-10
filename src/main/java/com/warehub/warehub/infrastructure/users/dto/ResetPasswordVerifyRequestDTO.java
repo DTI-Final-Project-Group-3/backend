@@ -1,9 +1,0 @@
-package com.warehub.warehub.infrastructure.users.dto;
-
-import lombok.Data;
-
-@Data
-public class ResetPasswordVerifyRequestDTO {
-    private String token;
-    private String password;
-}
