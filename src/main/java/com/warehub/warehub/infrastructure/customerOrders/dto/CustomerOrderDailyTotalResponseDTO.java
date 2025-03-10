@@ -13,6 +13,6 @@ import java.util.Date;
 public class CustomerOrderDailyTotalResponseDTO {
 
     private Date date;
-    private BigDecimal totalQuantity;
+    private Long totalQuantity;
     private BigDecimal totalValue;
 }

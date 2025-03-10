@@ -50,11 +50,17 @@ public class ShippingUsecaseImpl implements ShippingUsecase {
             throw new RuntimeException("Failed to retrieve postal codes from coordinates.");
         }
 
+        String weight;
+        if (requestDTO.getWeight() > 0)
+            weight = String.valueOf((int) requestDTO.getWeight());
+        else
+            weight = String.valueOf(1);
+
         // Prepare request payload
         Map<String, String> requestBody = Map.of(
                 "origin", originPostalCode,
                 "destination", destinationPostalCode,
-                "weight", String.valueOf((int) requestDTO.getWeight()), // Convert weight to integer
+                "weight", weight, // Convert weight to integer
                 "courier", requestDTO.getCourier(),
                 "price", "lowest"
         );
