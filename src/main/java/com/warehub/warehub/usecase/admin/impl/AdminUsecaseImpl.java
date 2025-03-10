@@ -8,6 +8,7 @@ import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.UserAdminDetailResponseDTO;
+import com.warehub.warehub.infrastructure.admin.dto.UserAdminUpdateRequestDTO;
 import com.warehub.warehub.infrastructure.login.dto.UserAuth;
 import com.warehub.warehub.infrastructure.security.Claims;
 import com.warehub.warehub.infrastructure.users.dto.*;
@@ -18,6 +19,8 @@ import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseReposito
 import com.warehub.warehub.usecase.security.RoleCheckUsecase;
 import com.warehub.warehub.usecase.admin.AdminUsecase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -42,6 +45,8 @@ public class AdminUsecaseImpl implements AdminUsecase {
     @Autowired
     private RoleCheckUsecase roleCheckUsecase;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseBase(boolean selectNotAssigned) {
         roleCheckUsecase.enforceAdminSuper();
@@ -164,5 +169,32 @@ public class AdminUsecaseImpl implements AdminUsecase {
         return users.stream()
                 .map(user -> new UserDetailResponseDTO().copyFromUser(user))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDetailResponseDTO updateAdminDetail(Long id, UserAdminUpdateRequestDTO req) {
+        roleCheckUsecase.enforceAdminSuper();
+
+        User user = usersRepository.findById(id).get();
+        if (req.getFullname() != null)
+            user.setFullname(req.getFullname());
+
+        if (req.getProfileImageUrl() != null)
+            user.setProfileImageUrl(req.getProfileImageUrl());
+
+        if (req.getPassword() != null) {
+            user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+        }
+
+        User savedUser = usersRepository.save(user);
+
+        return new UserDetailResponseDTO().copyFromUser(savedUser);
+    }
+
+    @Override
+    public UserDetailResponseDTO getAdminDetail(Long id) {
+        roleCheckUsecase.enforceAdminSuper();
+        User user = usersRepository.findById(id).get();
+        return new UserDetailResponseDTO().copyFromUser(user);
     }
 }
