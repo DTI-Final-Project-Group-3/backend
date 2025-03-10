@@ -84,6 +84,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     JOIN warehouses w ON wi.warehouse_id = w.id
     WHERE
         p.deleted_at IS NULL
+        AND wi.deleted_at IS NULL
         AND (:radius IS NULL
              OR ST_DWithin(w.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius))
         AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)

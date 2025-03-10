@@ -1,10 +1,9 @@
 package com.warehub.warehub.usecase.customerOrder;
 
 import com.warehub.warehub.common.utils.PaginationInfo;
-import com.warehub.warehub.infrastructure.customerOrders.dto.ConfirmOrderRequestDTO;
-import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderResponseDTO;
-import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderDetailRequestDTO;
-import com.warehub.warehub.infrastructure.customerOrders.dto.PaginatedCustomerOrderRequestDTO;
+import com.warehub.warehub.infrastructure.customerOrders.dto.*;
+
+import java.util.List;
 
 public interface CustomerOrderUsecase {
 
@@ -12,4 +11,7 @@ public interface CustomerOrderUsecase {
     CustomerOrderResponseDTO getCustomerOrder(CustomerOrderDetailRequestDTO request);
     CustomerOrderResponseDTO confirmCustomerOrder(ConfirmOrderRequestDTO request);
     CustomerOrderResponseDTO cancelCustomerOrder(Long customerOrderId);
+
+    PaginationInfo<CustomerOrderHistoryResponseDTO> getHistoryCustomerOrder(CustomerOrderHistoryRequestDTO req);
+    List<CustomerOrderDailyTotalResponseDTO> getDailyTotalCustomerOrder(CustomerOrderHistoryRequestDTO req);
 }

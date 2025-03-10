@@ -36,19 +36,20 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
         validationService.validateProductId(productId);
         ProductCategory productCategory = validationService.validateProductCategoryId(req.getProductCategoryId());
         validationService.validateMaximumSize(req.getImages().size(), 5, "images");
+        Product product = validationService.validateProductId(productId);
 
+        // update product entity
         Product requestProduct = req.toEntity(productCategory);
         requestProduct.setId(productId);
         requestProduct.setUpdatedAt(OffsetDateTime.now());
+        requestProduct.setCreatedAt(product.getCreatedAt());
         productRepository.save(requestProduct);
-
 
         List<ProductImage> existingProductImages = productImageRepository.findByProductIdAndDeletedAtIsNull(productId).stream().toList();
         List<ProductImage> requestProductImages = req.getImages().stream()
                 .map(productImageRequestDTO -> productImageRequestDTO.toEntity(requestProduct)).toList();
         List<ProductImage> updatedProductImages = new ArrayList<>();
         List<ProductImageResponseDTO> productImageResponseDTOS = new ArrayList<>();
-
 
         List<Integer> requestImageOrderNumbers = requestProductImages.stream()
                 .map(ProductImage::getPosition)
