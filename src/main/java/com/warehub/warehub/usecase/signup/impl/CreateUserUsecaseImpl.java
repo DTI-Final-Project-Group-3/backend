@@ -49,13 +49,13 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
     public UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role) {
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
 
-        if (roleType != RoleType.NOT_VERIFIED) {
-            roleCheckUsecase.enforceAdminSuper();
-        }
+        //if (roleType != RoleType.NOT_VERIFIED) {
+        //    roleCheckUsecase.enforceAdminSuper();
+        //}
 
-        if (req.getPassword().length() < 8) {
-            throw new RuntimeException("Password minimum length is 8");
-        }
+        //if ((roleType != RoleType.NOT_VERIFIED) && (req.getPassword().length() < 8)) {
+        //    throw new RuntimeException("Password minimum length is 8");
+        //}
 
         Optional<User> existingUser = usersRepository.findByEmailIgnoreCase(req.getEmail());
 
@@ -87,7 +87,10 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
 
         // Only create new user if no existing record is found
         User newUser = req.toEntity();
-        newUser.setPasswordHash(passwordEncoder.encode(""));
+        if (roleType == RoleType.NOT_VERIFIED)
+            newUser.setPasswordHash(passwordEncoder.encode(""));
+        else
+            newUser.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         newUser.setRole(rolesRepository.findByName(roleType.toString()).orElseThrow(() -> new RuntimeException("Role not found")));
         newUser.setIsEmailVerified(roleType != RoleType.NOT_VERIFIED);
 
