@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminUsecaseImpl implements AdminUsecase {
@@ -151,5 +152,17 @@ public class AdminUsecaseImpl implements AdminUsecase {
         usersRepository.delete(user);
 
         return "Success";
+    }
+
+    @Override
+    public List<UserDetailResponseDTO> getAllCustomerVerified() {
+        roleCheckUsecase.enforceAdminSuper();
+
+        Role role = rolesRepository.findByName(RoleType.CUSTOMER_VERIFIED.toString()).get();
+        List<User> users = usersRepository.findByRoleIdAndDeletedAtIsNull(role.getId());
+
+        return users.stream()
+                .map(user -> new UserDetailResponseDTO().copyFromUser(user))
+                .collect(Collectors.toList());
     }
 }

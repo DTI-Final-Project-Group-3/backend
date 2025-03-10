@@ -39,6 +39,21 @@ public class AdminController {
         return ApiResponse.successfulResponse("Get admin users successful", result);
     }
 
+    @GetMapping("/verified-customers")
+    private ResponseEntity<?> getAllCustomerVerified() {
+        List<UserDetailResponseDTO> result = null;
+        String errorMessage = "";
+        try {
+            result = adminUsecase.getAllCustomerVerified();
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to get verified customers : " + errorMessage);
+        return ApiResponse.successfulResponse("Get verified customers successful", result);
+    }
+
     @GetMapping("/assigned")
     private ResponseEntity<?> getAllAdminAssigned(@RequestParam Long warehouseId) {
         List<UserAdminDetailResponseDTO> result = null;
