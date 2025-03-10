@@ -49,13 +49,13 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
     public UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role) {
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
 
-        if (roleType != RoleType.NOT_VERIFIED) {
-            roleCheckUsecase.enforceAdminSuper();
-        }
+        //if (roleType != RoleType.NOT_VERIFIED) {
+        //    roleCheckUsecase.enforceAdminSuper();
+        //}
 
-        if ((roleType != RoleType.NOT_VERIFIED) && (req.getPassword().length() < 8)) {
-            throw new RuntimeException("Password minimum length is 8");
-        }
+        //if ((roleType != RoleType.NOT_VERIFIED) && (req.getPassword().length() < 8)) {
+        //    throw new RuntimeException("Password minimum length is 8");
+        //}
 
         Optional<User> existingUser = usersRepository.findByEmailIgnoreCase(req.getEmail());
 
