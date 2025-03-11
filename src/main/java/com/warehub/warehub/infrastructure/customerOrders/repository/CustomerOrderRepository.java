@@ -128,7 +128,7 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
         ON co.id = coi.customer_order_id
       LEFT JOIN products p
         ON coi.product_id = p.id
-        AND (:productId IS NULL OR coi.product_id = :productId)  -- Fixed typo: :product_id → :productId
+        AND (:productId IS NULL OR coi.product_id = :productId)
         AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
     GROUP BY
       ds.date
