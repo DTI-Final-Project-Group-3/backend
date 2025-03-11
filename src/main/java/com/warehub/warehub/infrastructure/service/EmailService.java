@@ -25,4 +25,12 @@ public class EmailService {
         message.setText("Click the link to reset your password: " + verificationLink);
         mailSender.send(message);
     }
+
+    public void sendEmailChangeLink(String to, String verificationLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Change email");
+        message.setText("Click here to verify your new email: " + verificationLink);
+        mailSender.send(message);
+    }
 }
