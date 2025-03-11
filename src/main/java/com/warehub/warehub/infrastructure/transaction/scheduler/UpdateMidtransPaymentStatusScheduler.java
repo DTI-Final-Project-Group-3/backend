@@ -35,39 +35,54 @@ public class UpdateMidtransPaymentStatusScheduler {
         List<CustomerOrder> customerOrders = customerOrderRepository.findByPaymentMethodId(1L);
         System.out.println("customer orders lists : "+customerOrders);
 
+        if (customerOrders.isEmpty()) {
+            System.out.println("No customer orders pending Midtrans payment.");
+            return;
+        }
+
         System.out.println("Schedule task : Checking Midtrans payment statuses...");
+
+        // Fetch statuses
+        CustomerOrderStatus waitingPayment = findStatus(OrderStatuses.WAITING_PAYMENT.getId());
+        CustomerOrderStatus paymentWaitingConfirmation = findStatus(OrderStatuses.WAITING_PAYMENT_CONFIRMATION.getId());
+        CustomerOrderStatus paymentSettled = findStatus(OrderStatuses.PROCESSED.getId());
+        CustomerOrderStatus paymentExpired = findStatus(OrderStatuses.CANCELED.getId());
 
         for (CustomerOrder order : customerOrders) {
             try {
                 // Extract response body from ResponseEntity<String>
                 String response = midtransService.getPaymentStatus(order.getInvoiceCode()).getBody();
                 JsonNode jsonResponse = objectMapper.readTree(response);
-
                 String status = jsonResponse.get("transaction_status").asText();
+
                 if (status == null) {
                     System.out.println("Midtrans response missing transaction_status for order: " + order.getInvoiceCode());
                     continue;
                 }
 
-                CustomerOrderStatus paymentSettled = customerOrderStatusRepository.findById(OrderStatuses.PROCESSED.getId())
-                        .orElseThrow(() -> new DataNotFoundException("Customer order status not found"));
-
-                CustomerOrderStatus paymentExpired = customerOrderStatusRepository.findById(OrderStatuses.CANCELED.getId())
-                        .orElseThrow(() -> new DataNotFoundException("Customer order status not found"));
-
                 if ("settlement".equals(status)) {
-                    order.setOrderStatus(paymentSettled);
-                    customerOrderRepository.save(order);
-                    System.out.println("Order " + order.getInvoiceCode() + " updated to PROCESSED");
+                    if ((order.getOrderStatus().equals(paymentWaitingConfirmation) || order.getOrderStatus().equals(waitingPayment))
+                            && !order.getOrderStatus().equals(paymentSettled)){
+                        order.setOrderStatus(paymentSettled);
+                        customerOrderRepository.save(order);
+                        System.out.println("Order " + order.getInvoiceCode() + " updated to PROCESSED");
+                    }
                 } else if ("expired".equals(status)) {
-                    order.setOrderStatus(paymentExpired);
-                    customerOrderRepository.save(order);
-                    System.out.println("Order " + order.getInvoiceCode() + " updated to CANCELED");
+                    if (order.getOrderStatus().equals(waitingPayment) && !order.getOrderStatus().equals(paymentExpired)) {
+                        order.setOrderStatus(paymentExpired);
+                        customerOrderRepository.save(order);
+                        System.out.println("Order " + order.getInvoiceCode() + " updated to CANCELED");
+                    }
                 }
             } catch (Exception e) {
 //                System.out.println("Error updating order " + order.getInvoiceCode() + ": " + e.getMessage());
             }
         }
         System.out.println("Schedule task : Checking Midtrans payment statuses completed");
+    }
+
+    private CustomerOrderStatus findStatus(Integer id) {
+        return customerOrderStatusRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Customer order status ID : "+id+" not found"));
     }
 }
