@@ -51,6 +51,9 @@ public class CustomerOrderController {
         reqDTO.setEndDate(endDate != null ? endDate.withOffsetSameInstant(ZoneOffset.UTC) : null);
         reqDTO.setWarehouseId(warehouseId);
 
+        System.out.println("Start Date : "+reqDTO.getStartDate());
+        System.out.println("End Date : "+reqDTO.getEndDate());
+
         return ApiResponse.successfulResponse("Get all customer orders success", customerOrderUsecase.getAllCustomerOrders(reqDTO));
     }
 
