@@ -77,7 +77,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
 
         configuration.setAllowedOriginPatterns(List.of("http://localhost:3001/", "http://localhost:3000/",
-                "http://0.0.0.0:3000/", "http://host.docker.internal:3000/", "https://*.vercel.app"));
+                "http://0.0.0.0:3000/", "http://host.docker.internal:3000/", "https://warehubbb.vercel.app/", "https://*.vercel.app/"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
