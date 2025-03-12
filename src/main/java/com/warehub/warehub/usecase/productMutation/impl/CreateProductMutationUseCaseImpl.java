@@ -2,11 +2,12 @@ package com.warehub.warehub.usecase.productMutation.impl;
 
 import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.*;
+import com.warehub.warehub.common.utils.CreateProductMutationCode;
+import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRequestDTO;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationResponseDTO;
-import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
 import com.warehub.warehub.usecase.productMutation.CreateProductMutationUseCase;
 import org.springframework.stereotype.Service;
@@ -16,13 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateProductMutationUseCaseImpl implements CreateProductMutationUseCase {
 
     private final ValidationService validationService;
-    private final ProductMutationRepository productMutationRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
+    private final CreateProductMutationLog createProductMutationLog;
+    private final CreateProductMutationCode createProductMutationCode;
 
-    public CreateProductMutationUseCaseImpl(ValidationService validationService, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+    public CreateProductMutationUseCaseImpl(ValidationService validationService, WarehouseInventoryRepository warehouseInventoryRepository, CreateProductMutationLog createProductMutationLog, CreateProductMutationCode createProductMutationCode) {
         this.validationService = validationService;
-        this.productMutationRepository = productMutationRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
+        this.createProductMutationLog = createProductMutationLog;
+        this.createProductMutationCode = createProductMutationCode;
     }
 
     @Override
@@ -34,8 +37,6 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
         User requester = validationService.validateUserId(req.getRequesterId());
         Warehouse originWarehouse = validationService.validateWarehouseId(req.getOriginWarehouseId(), "Origin warehouse");
         Warehouse destinationWarehouse = validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Destination warehouse");
-        ProductMutationType productMutationTypeManual = validationService.validateProductMutationTypeId(MutationConstant.TYPE_MANUAL_MUTATION.getValue());
-        ProductMutationStatus productMutationStatusPending = validationService.validateProductMutationStatusId(MutationConstant.STATUS_PENDING.getValue());
         WarehouseInventory originWarehouseInventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(req.getProductId(), req.getOriginWarehouseId());
 
         if (originWarehouseInventory.getQuantity() < req.getQuantity()){
@@ -46,40 +47,27 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
         originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() - req.getQuantity());
         warehouseInventoryRepository.save(originWarehouseInventory);
 
-        // create product mutation
-        ProductMutation productMutation = new ProductMutation();
-        productMutation.setProduct(product);
-        productMutation.setQuantity(req.getQuantity());
-        productMutation.setRequesterNotes(req.getRequesterNotes());
-        productMutation.setRequester(requester);
-        productMutation.setOriginWarehouse(originWarehouse);
-        productMutation.setDestinationWarehouse(destinationWarehouse);
-        productMutation.setProductMutationType(productMutationTypeManual);
-        productMutation.setProductMutationStatus(productMutationStatusPending);
+        // generate product mutation code
+        String productMutationCode = createProductMutationCode.generateProductMutationId();
 
-        return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
+        // create outbound mutation on origin warehouse (decrease quantity)
+       ProductMutation productMutation =  createProductMutationLog
+                .createProductMutationRecord(product, req.getQuantity() * -1,
+                        req.getRequesterNotes(), requester,
+                        originWarehouse, destinationWarehouse,
+                        MutationConstant.TYPE_OUTBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_PENDING.getValue(),
+                        null, null, null, null, productMutationCode);
+
+        // create inbound mutation on origin warehouse (increase quantity)
+        createProductMutationLog
+                .createProductMutationRecord(product, req.getQuantity(),
+                        req.getRequesterNotes(), requester,
+                        originWarehouse, destinationWarehouse,
+                        MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_PENDING.getValue(),
+                        null, null, null, null, productMutationCode);
+
+
+        return new ProductMutationResponseDTO(productMutation);
     }
 
-    @Override
-    public ProductMutationResponseDTO createAutoMutation(ProductMutationRequestDTO req) {
-
-        // validation request
-        Product product = validationService.validateProductId(req.getProductId());
-        User requester = validationService.validateUserId(req.getRequesterId());
-        Warehouse destinationWarehouse = validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Destination warehouse");
-        ProductMutationType productMutationTypeAuto = validationService.validateProductMutationTypeId(MutationConstant.TYPE_AUTO_MUTATION.getValue());
-        ProductMutationStatus productMutationStatusCompleted = validationService.validateProductMutationStatusId(MutationConstant.STATUS_COMPLETED.getValue());
-
-        // create product mutation
-        ProductMutation productMutation = new ProductMutation();
-        productMutation.setProduct(product);
-        productMutation.setQuantity(req.getQuantity());
-        productMutation.setRequesterNotes(req.getRequesterNotes());
-        productMutation.setRequester(requester);
-        productMutation.setDestinationWarehouse(destinationWarehouse);
-        productMutation.setProductMutationType(productMutationTypeAuto);
-        productMutation.setProductMutationStatus(productMutationStatusCompleted);
-
-        return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
-    }
 }

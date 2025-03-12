@@ -5,5 +5,4 @@ import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationRes
 
 public interface CreateProductMutationUseCase {
     ProductMutationResponseDTO createManualMutation(ProductMutationRequestDTO req);
-    ProductMutationResponseDTO createAutoMutation(ProductMutationRequestDTO req);
 }

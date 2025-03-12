@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -132,57 +133,69 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     FROM product_mutations pm
     WHERE
         pm.deleted_at IS NULL
+        AND pm.reviewed_at IS NULL
         AND pm.product_mutation_status_id = 1
-        AND pm.product_mutation_type_id = 1
+        AND (pm.product_mutation_type_id = 1 OR pm.product_mutation_type_id = 6)
         AND pm.created_at + CAST(:expiryInterval AS INTERVAL) < :now
     """, nativeQuery = true)
     List<ProductMutation> findPendingExpired(@Param("now") OffsetDateTime now, @Param("expiryInterval") String expiryInterval);
 
-
     @Query(value = """
-                SELECT 
-                    pm.id AS productMutationId,
-                    p.id AS productId,
-                    p.name AS productName,
-                    pi.url AS productThumbnail,
-                    pm.quantity AS quantity,
-                    u1.id AS requesterId,
-                    u1.fullname AS requesterName,
-                    pm.requester_notes AS requesterNotes,
-                    u2.id AS reviewerId,
-                    u2.fullname AS reviewerName,
-                    pm.reviewer_notes AS reviewerNotes,
-                    w1.id AS originWarehouseId,
-                    w1.name AS originWarehouseName,
-                    w2.id AS destinationWarehouseId,
-                    w2.name AS destinationWarehouseName,
-                    pmt.id AS productMutationTypeId,
-                    pmt.name AS productMutationTypeName,
-                    pms.id AS productMutationStatusId,
-                    pms.name AS productMutationStatusName,
-                    pm.invoice_code AS invoiceCode,
-                    pm.created_at AS createdAt,
-                    pm.reviewed_at AS reviewedAt
-                FROM product_mutations pm
-                JOIN products p ON pm.product_id = p.id
-                LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.position = 1
-                LEFT JOIN users u1 ON pm.requester_id = u1.id
-                LEFT JOIN users u2 ON pm.reviewer_id = u2.id
-                LEFT JOIN warehouses w1 ON pm.origin_warehouse_id = w1.id
-                LEFT JOIN warehouses w2 ON pm.destination_warehouse_id = w2.id
-                JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
-                JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
-                WHERE pm.deleted_at IS NULL 
-                  AND pm.product_mutation_type_id IN :productMutationTypeId
-                  AND (:originWarehouseId IS NULL OR pm.origin_warehouse_id = :originWarehouseId)
-                  AND (:destinationWarehouseId IS NULL OR pm.destination_warehouse_id = :destinationWarehouseId)
-                ORDER BY pm.created_at DESC
-            """, nativeQuery = true)
-    Page<ProductMutationDetailResponseDTO> findByWarehouseIdDTO(@Param("originWarehouseId") Long originWarehouseId,
-                                                                @Param("destinationWarehouseId") Long destinationWarehouseId,
-                                                                @Param("productMutationTypeId") List<Long> productMutationTypeId,
-                                                                Pageable pageable);
-
+    SELECT
+        pm.id AS productMutationId,
+        p.id AS productId,
+        p.name AS productName,
+        pi.url AS productThumbnail,
+        pm.quantity AS quantity,
+        u1.id AS requesterId,
+        u1.fullname AS requesterName,
+        pm.requester_notes AS requesterNotes,
+        u2.id AS reviewerId,
+        u2.fullname AS reviewerName,
+        pm.reviewer_notes AS reviewerNotes,
+        w1.id AS originWarehouseId,
+        w1.name AS originWarehouseName,
+        w2.id AS destinationWarehouseId,
+        w2.name AS destinationWarehouseName,
+        pmt.id AS productMutationTypeId,
+        pmt.name AS productMutationTypeName,
+        pms.id AS productMutationStatusId,
+        pms.name AS productMutationStatusName,
+        pm.invoice_code AS invoiceCode,
+        pm.created_at AS createdAt,
+        pm.reviewed_at AS reviewedAt
+    FROM product_mutations pm
+    JOIN products p ON pm.product_id = p.id
+    LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.position = 1
+    LEFT JOIN users u1 ON pm.requester_id = u1.id
+    LEFT JOIN users u2 ON pm.reviewer_id = u2.id
+    LEFT JOIN warehouses w1 ON pm.origin_warehouse_id = w1.id
+    LEFT JOIN warehouses w2 ON pm.destination_warehouse_id = w2.id
+    JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
+    JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
+    WHERE pm.deleted_at IS NULL
+      AND ((:startDate IS NULL OR :endDate IS NULL)
+           OR (pm.created_at BETWEEN :startDate AND :endDate))
+      AND (:isRequest = FALSE OR pm.reviewed_at IS NULL)
+      AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id IN :productMutationTypeId)
+      AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+      AND (:originWarehouseId IS NULL OR pm.origin_warehouse_id = :originWarehouseId)
+      AND (:destinationWarehouseId IS NULL OR pm.destination_warehouse_id = :destinationWarehouseId)
+      AND (:productId IS NULL OR pm.product_id = :productId)
+      AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+    ORDER BY pm.created_at DESC
+    """, nativeQuery = true)
+    Page<ProductMutationDetailResponseDTO> findByWarehouseIdDTO(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("isRequest") boolean isRequest,
+            @Param("productId") Long productId,
+            @Param("productCategoryId") Long productCategoryId,
+            @Param("originWarehouseId") Long originWarehouseId,
+            @Param("destinationWarehouseId") Long destinationWarehouseId,
+            @Param("productMutationTypeId") List<Long> productMutationTypeId,
+            @Param("productMutationStatusId") Long productMutationStatusId,
+            Pageable pageable);
     List<ProductMutation> findByInvoiceCodeAndProductId(String invoiceCode, Long productId);
 
     @Query(value = """
@@ -211,6 +224,9 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
         """, nativeQuery = true)
     boolean existPendingMutationByProductId(@Param("productMutationStatusId")Long productMutationStatusId,
                                                     @Param("productId") Long productId);
+
+
+    List<ProductMutation> findByProductMutationCodeAndDeletedAtIsNull(String productMutationCode);
 
 
 }

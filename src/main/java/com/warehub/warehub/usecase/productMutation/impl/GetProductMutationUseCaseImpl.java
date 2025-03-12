@@ -43,11 +43,17 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
 
         validationService.validateWarehouseId(req.getOriginWarehouseId(), "Origin warehouse");
         validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Destination warehouse");
+        validationService.validateDateRange(req.getStartDate(), req.getEndDate());
         for (Long id : req.getProductMutationTypeId()){
             validationService.validateProductMutationTypeId(id);
         }
 
-        Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository.findByWarehouseIdDTO(req.getOriginWarehouseId(), req.getDestinationWarehouseId(), req.getProductMutationTypeId(), pageRequest);
+        Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository
+                .findByWarehouseIdDTO(req.getStartDate(), req.getEndDate(), req.isRequest(),
+                        req.getProductId(), req. getProductCategoryId(),
+                        req.getOriginWarehouseId(), req.getDestinationWarehouseId(),
+                        req.getProductMutationTypeId(), req.getProductMutationStatusId(),
+                        pageRequest);
 
         return new PaginationInfo<>(responseDTOS, responseDTOS.getContent());
     }

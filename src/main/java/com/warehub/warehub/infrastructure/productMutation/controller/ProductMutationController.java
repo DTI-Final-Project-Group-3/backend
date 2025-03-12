@@ -38,18 +38,19 @@ public class ProductMutationController {
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create manual product mutation success", createProductMutationUseCase.createManualMutation(req));
     }
 
-    @PostMapping("/auto")
-    public ResponseEntity<?> createAutoProductMutation(@RequestBody ProductMutationRequestDTO req){
-        return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Create auto product mutation success", createProductMutationUseCase.createAutoMutation(req));
-    }
-
     @GetMapping
     public ResponseEntity<?> getPaginatedProductMutation(@RequestParam int page,
                                                          @RequestParam int limit,
+                                                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                                         @RequestParam(required = false) Long productId,
+                                                         @RequestParam(required = false) Long productCategoryId,
+                                                         @RequestParam boolean isRequest,
                                                          @RequestParam(required = false) Long originWarehouseId,
                                                          @RequestParam(required = false) Long destinationWarehouseId,
-                                                         @RequestParam List<Long> productMutationTypeId){
-        ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, originWarehouseId, destinationWarehouseId, productMutationTypeId);
+                                                         @RequestParam List<Long> productMutationTypeId,
+                                                         @RequestParam(required = false) Long productMutationStatusId){
+        ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, startDate, endDate, isRequest, productId, productCategoryId, originWarehouseId, destinationWarehouseId, productMutationTypeId, productMutationStatusId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getPaginatedProductMutationByWarehouseId(requestDTO));
     }
 
