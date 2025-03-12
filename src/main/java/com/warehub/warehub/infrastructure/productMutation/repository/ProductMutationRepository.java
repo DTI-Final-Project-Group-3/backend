@@ -42,7 +42,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     WHERE
         pm.deleted_at IS NULL
         AND (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL OR (pm.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE)))
-        AND (CAST(:warehouseId AS BIGINT) IS NULL OR pm.destination_warehouse_id = CAST(:warehouseId AS BIGINT))
+        AND (CAST(:warehouseId AS BIGINT) IS NULL OR pm.destination_warehouse_id = CAST(:warehouseId AS BIGINT) OR pm.origin_warehouse_id = CAST(:warehouseId AS BIGINT))
         AND (CAST(:productId AS BIGINT) IS NULL OR pm.product_id = CAST(:productId AS BIGINT))
         AND (CAST(:productCategoryId AS BIGINT) IS NULL OR p.product_category_id = CAST(:productCategoryId AS BIGINT))
         AND (CAST(:productMutationTypeId AS BIGINT) IS NULL OR pm.product_mutation_type_id = CAST(:productMutationTypeId AS BIGINT))
@@ -78,7 +78,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
         LEFT JOIN
           product_mutations pm 
           ON ds.date = pm.created_at::date
-          AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId)
+          AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId OR pm.origin_warehouse_id = :warehouseId)
           AND (:productId IS NULL OR pm.product_id = :productId)
           AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
           AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
@@ -113,7 +113,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     JOIN products p ON pm.product_id = p.id
     WHERE
         pm.deleted_at IS NULL
-        AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId)
+        AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId OR pm.origin_warehouse_id = :warehouseId)
         AND (:productId IS NULL OR pm.product_id = :productId)
         AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
         AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
