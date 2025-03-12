@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -189,8 +188,11 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
     JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
     WHERE pm.deleted_at IS NULL
-      AND ((:startDate IS NULL OR :endDate IS NULL)
-           OR (pm.created_at BETWEEN :startDate AND :endDate))
+            AND (
+                (CAST(:startDate AS DATE) IS NULL OR CAST(:endDate AS DATE) IS NULL)
+                OR
+                (pm.created_at::timestamptz::date BETWEEN CAST(:startDate AS DATE) AND CAST(:endDate AS DATE))
+            )
       AND (:isRequest = FALSE OR pm.reviewed_at IS NULL)
       AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id IN :productMutationTypeId)
       AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
@@ -212,6 +214,7 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
             @Param("productMutationStatusId") Long productMutationStatusId,
             Pageable pageable);
     List<ProductMutation> findByInvoiceCodeAndProductId(String invoiceCode, Long productId);
+
 
     @Query(value = """
         SELECT CASE

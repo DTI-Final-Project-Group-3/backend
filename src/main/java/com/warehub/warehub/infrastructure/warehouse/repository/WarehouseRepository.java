@@ -72,11 +72,10 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
             JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
             WHERE
                 w.deleted_at IS NULL
-            AND ST_DWithin(
+            AND (:radius IS NULL OR ST_DWithin(
                 w.location::geography, 
                 ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, 
-                :radius
-            )
+                :radius))
             AND wi.deleted_at IS NULL
             AND wi.product_id = :productId
             AND wi.quantity > 0

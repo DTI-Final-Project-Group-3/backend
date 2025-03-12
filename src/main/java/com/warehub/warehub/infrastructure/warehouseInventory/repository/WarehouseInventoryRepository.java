@@ -30,11 +30,11 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
     WHERE
         wi.deleted_at IS NULL
         AND wi.product_id = :productId
-        AND ST_DWithin(
+        AND (:radius IS NULL OR ST_DWithin(
             w.location::geography, 
             ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, 
             :radius
-        )
+        ))
     """, nativeQuery = true)
     Integer findTotalStockNearby(@Param("longitude") Double longitude,
                                  @Param("latitude") Double latitude,
