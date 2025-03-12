@@ -100,7 +100,7 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
                 .createProductMutationRecord(productMutation.getProduct(), changeQuantity,
                         productMutation.getRequesterNotes(), productMutation.getRequester(),
                         productMutation.getOriginWarehouse(), productMutation.getDestinationWarehouse(),
-                        MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(), null,
+                        MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_DECLINED.getValue(), null,
                         req.getNotes(), reviewer, OffsetDateTime.now(), productMutation.getProductMutationCode());
 
         // Create new outbound mutation on destination warehouse (decrease quantity)
@@ -108,7 +108,7 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
                 .createProductMutationRecord(productMutation.getProduct(), changeQuantity * -1,
                         productMutation.getRequesterNotes(), productMutation.getRequester(),
                         productMutation.getOriginWarehouse(), productMutation.getDestinationWarehouse(),
-                        MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(), null,
+                        MutationConstant.TYPE_OUTBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_DECLINED.getValue(), null,
                         req.getNotes(), reviewer, OffsetDateTime.now(), productMutation.getProductMutationCode());
 
         return new ProductMutationResponseDTO(productMutation);
