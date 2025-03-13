@@ -7,4 +7,7 @@ public class GoogleLoginRequestDTO {
     private String email;
     private String name;
     private String profilePictureUrl;
+    private String accessToken;
+    private String provider;
+    private String providerUserId;
 }
