@@ -1,7 +1,6 @@
 package com.warehub.warehub.usecase.productMutation.impl;
 
 import com.warehub.warehub.common.enums.MutationConstant;
-import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.productMutation.dto.ProductMutationProcessRequestDTO;
@@ -20,13 +19,11 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
 
     private final ValidationService validationService;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
-    private final CreateProductMutationLog createProductMutationLog;
     private final ProductMutationRepository productMutationRepository;
 
-    public UpdateProductMutationUseCaseImpl(ValidationService validationService, WarehouseInventoryRepository warehouseInventoryRepository, CreateProductMutationLog createProductMutationLog, ProductMutationRepository productMutationRepository) {
+    public UpdateProductMutationUseCaseImpl(ValidationService validationService, WarehouseInventoryRepository warehouseInventoryRepository, ProductMutationRepository productMutationRepository) {
         this.validationService = validationService;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
-        this.createProductMutationLog = createProductMutationLog;
         this.productMutationRepository = productMutationRepository;
     }
 
@@ -46,28 +43,16 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
         destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() + changeQuantity);
         warehouseInventoryRepository.save(destinationWarehouseInventory);
 
+        ProductMutationStatus statusAccept = validationService.validateProductMutationStatusId(MutationConstant.STATUS_COMPLETED.getValue());
+
         // find existing productMutation and update it
         List<ProductMutation> prevLogs = productMutationRepository.findByProductMutationCodeAndDeletedAtIsNull(productMutation.getProductMutationCode());
         for (ProductMutation mutation : prevLogs){
+            mutation.setReviewer(reviewer);
             mutation.setReviewedAt(OffsetDateTime.now());
+            mutation.setProductMutationStatus(statusAccept);
             productMutationRepository.save(mutation);
         }
-
-        // Create new outbound mutation on origin warehouse (decrease quantity)
-        createProductMutationLog
-                .createProductMutationRecord(productMutation.getProduct(), changeQuantity * -1,
-                        productMutation.getRequesterNotes(), productMutation.getRequester(),
-                        productMutation.getOriginWarehouse(), productMutation.getDestinationWarehouse(),
-                        MutationConstant.TYPE_OUTBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(), null,
-                        req.getNotes(), reviewer, OffsetDateTime.now(), productMutation.getProductMutationCode());
-
-        // Create new inbound mutation on destination warehouse (increase quantity)
-        createProductMutationLog
-                .createProductMutationRecord(productMutation.getProduct(), changeQuantity,
-                        productMutation.getRequesterNotes(), productMutation.getRequester(),
-                        productMutation.getOriginWarehouse(), productMutation.getDestinationWarehouse(),
-                        MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(), null,
-                        req.getNotes(), reviewer, OffsetDateTime.now(), productMutation.getProductMutationCode());
 
         return new ProductMutationResponseDTO(productMutation);
     }
@@ -88,28 +73,16 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
         originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + changeQuantity);
         warehouseInventoryRepository.save(originWarehouseInventory);
 
+        ProductMutationStatus statusDecline = validationService.validateProductMutationStatusId(MutationConstant.STATUS_DECLINED.getValue());
+
         // find existing productMutation and update it
         List<ProductMutation> prevLogs = productMutationRepository.findByProductMutationCodeAndDeletedAtIsNull(productMutation.getProductMutationCode());
         for (ProductMutation mutation : prevLogs){
+            mutation.setReviewer(reviewer);
             mutation.setReviewedAt(OffsetDateTime.now());
+            mutation.setProductMutationStatus(statusDecline);
             productMutationRepository.save(mutation);
         }
-
-        // Create new inbound mutation on origin warehouse (increase quantity)
-        createProductMutationLog
-                .createProductMutationRecord(productMutation.getProduct(), changeQuantity,
-                        productMutation.getRequesterNotes(), productMutation.getRequester(),
-                        productMutation.getOriginWarehouse(), productMutation.getDestinationWarehouse(),
-                        MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_DECLINED.getValue(), null,
-                        req.getNotes(), reviewer, OffsetDateTime.now(), productMutation.getProductMutationCode());
-
-        // Create new outbound mutation on destination warehouse (decrease quantity)
-        createProductMutationLog
-                .createProductMutationRecord(productMutation.getProduct(), changeQuantity * -1,
-                        productMutation.getRequesterNotes(), productMutation.getRequester(),
-                        productMutation.getOriginWarehouse(), productMutation.getDestinationWarehouse(),
-                        MutationConstant.TYPE_OUTBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_DECLINED.getValue(), null,
-                        req.getNotes(), reviewer, OffsetDateTime.now(), productMutation.getProductMutationCode());
 
         return new ProductMutationResponseDTO(productMutation);
     }

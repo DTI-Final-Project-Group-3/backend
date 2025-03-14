@@ -38,6 +38,7 @@ public class ProductMutationDetailResponseDTO {
     private String productMutationStatusName;
 
     private String invoiceCode;
+    private String mutationCode;
 
     private Instant createdAt;
     private Instant reviewedAt;

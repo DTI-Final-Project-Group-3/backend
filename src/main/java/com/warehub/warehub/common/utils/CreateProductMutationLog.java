@@ -60,9 +60,7 @@ public class CreateProductMutationLog {
     public ProductMutation createProductMutationRecord(
             Product product, int quantity, String requesterNotes, User requester,
             Warehouse fromWarehouse, Warehouse toWarehouse,
-            Long mutationTypeId, Long mutationStatusId, String invoiceCode,
-            String reviewerNotes, User reviewer,
-            OffsetDateTime reviewAt, String productMutationCode) {
+            Long mutationTypeId, Long mutationStatusId, String invoiceCode, String productMutationCode) {
 
         ProductMutationType mutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(mutationTypeId)
                 .orElseThrow(() -> new ProductMutationTypeNotFoundException("Product mutation type not found"));
@@ -80,11 +78,6 @@ public class CreateProductMutationLog {
         mutation.setProductMutationType(mutationType);
         mutation.setProductMutationStatus(mutationStatus);
         mutation.setInvoiceCode(invoiceCode);
-
-        mutation.setReviewerNotes(reviewerNotes);
-        mutation.setReviewer(reviewer);
-        mutation.setReviewedAt(reviewAt);
-
         mutation.setProductMutationCode(productMutationCode);
 
         return productMutationRepository.save(mutation);

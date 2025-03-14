@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.customerOrder.impl;
 
+import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
 import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.PaginationInfo;
@@ -195,11 +196,21 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
                     originInventory.setQuantity(originInventory.getQuantity() + quantityToRestore);
                     warehouseInventoryRepository.save(originInventory);
 
+
                     // Log mutation (reverse stock movement)
                     createProductMutationLog.createProductMutationRecord(
-                            product, quantityToRestore, "Order canceled : reversing transaction calcellation",
-                            customerOrder.getUser(), destinationWarehouse, originWarehouse,
-                            2L, 3L, customerOrder.getInvoiceCode()
+                            product, quantityToRestore, "Order canceled : reversing transaction cancellation", customerOrder.getUser(),
+                            originWarehouse, destinationWarehouse,
+                            MutationConstant.TYPE_INBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_CANCELLED.getValue(),
+                            customerOrder.getInvoiceCode()
+                    );
+
+                    // Log mutation (reverse stock movement)
+                    createProductMutationLog.createProductMutationRecord(
+                            product, -quantityToRestore, "Order canceled : reversing transaction cancellation", customerOrder.getUser(),
+                            originWarehouse, destinationWarehouse,
+                            MutationConstant.TYPE_OUTBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_CANCELLED.getValue(),
+                            customerOrder.getInvoiceCode()
                     );
 
                     // Reduce remaining quantity to return

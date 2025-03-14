@@ -4,6 +4,7 @@ import com.midtrans.Midtrans;
 import com.midtrans.httpclient.SnapApi;
 import com.midtrans.httpclient.error.MidtransError;
 import com.warehub.warehub.common.enums.LocationConstants;
+import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
 import com.warehub.warehub.common.exceptions.ProductMutationStatusNotFoundException;
 import com.warehub.warehub.common.exceptions.ProductMutationTypeNotFoundException;
@@ -156,10 +157,16 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
 
                     // Create product mutation records
                     createProductMutationLog.createProductMutationRecord(
-                            product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode
+                            product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user,
+                            alternateWarehouse, nearestWarehouse,
+                            MutationConstant.TYPE_OUTBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(),
+                            invoiceCode
                     );
                     createProductMutationLog.createProductMutationRecord(
-                            product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode
+                            product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user,
+                            alternateWarehouse, nearestWarehouse,
+                            MutationConstant.TYPE_INBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(),
+                            invoiceCode
                     );
                 }
 

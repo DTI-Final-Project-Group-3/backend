@@ -49,7 +49,7 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
         }
 
         Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository
-                .findByWarehouseIdDTO(req.getStartDate(), req.getEndDate(), req.isRequest(),
+                .findByWarehouseIdDTO(req.getStartDate(), req.getEndDate(),
                         req.getProductId(), req. getProductCategoryId(),
                         req.getOriginWarehouseId(), req.getDestinationWarehouseId(),
                         req.getProductMutationTypeId(), req.getProductMutationStatusId(),

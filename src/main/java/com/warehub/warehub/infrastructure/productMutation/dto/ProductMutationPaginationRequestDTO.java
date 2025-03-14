@@ -22,8 +22,6 @@ public class ProductMutationPaginationRequestDTO {
 
     private LocalDate endDate;
 
-    private boolean isRequest;
-
     private Long productId;
 
     private Long productCategoryId;

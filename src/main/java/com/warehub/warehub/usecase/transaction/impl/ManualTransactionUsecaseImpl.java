@@ -1,6 +1,7 @@
 package com.warehub.warehub.usecase.transaction.impl;
 
 import com.warehub.warehub.common.enums.LocationConstants;
+import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.*;
 import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.Location;
@@ -140,10 +141,16 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
 
                 // Create product mutation records
                 createProductMutationLog.createProductMutationRecord(
-                        product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode
+                        product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user,
+                        alternateWarehouse, nearestWarehouse,
+                        MutationConstant.TYPE_OUTBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(),
+                        invoiceCode
                 );
                 createProductMutationLog.createProductMutationRecord(
-                        product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode
+                        product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user,
+                        alternateWarehouse, nearestWarehouse,
+                        MutationConstant.TYPE_INBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_COMPLETED.getValue(),
+                        invoiceCode
                 );
             }
 
@@ -321,9 +328,18 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
 
                     // Log mutation (reverse stock movement)
                     createProductMutationLog.createProductMutationRecord(
-                            product, quantityToRestore, "Order canceled : reversing transaction calcellation",
-                            customerOrder.getUser(), destinationWarehouse, originWarehouse,
-                            2L, 3L, customerOrder.getInvoiceCode()
+                            product, quantityToRestore, "Order canceled : reversing transaction cancellation", customerOrder.getUser(),
+                            originWarehouse, destinationWarehouse,
+                            MutationConstant.TYPE_INBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_CANCELLED.getValue(),
+                            customerOrder.getInvoiceCode()
+                    );
+
+                    // Log mutation (reverse stock movement)
+                    createProductMutationLog.createProductMutationRecord(
+                            product, -quantityToRestore, "Order canceled : reversing transaction cancellation", customerOrder.getUser(),
+                            originWarehouse, destinationWarehouse,
+                            MutationConstant.TYPE_OUTBOUND_AUTO_MUTATION.getValue(), MutationConstant.STATUS_CANCELLED.getValue(),
+                            customerOrder.getInvoiceCode()
                     );
 
                     // Reduce remaining quantity to return

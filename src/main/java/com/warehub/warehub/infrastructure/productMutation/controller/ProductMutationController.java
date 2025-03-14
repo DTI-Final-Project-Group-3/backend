@@ -45,12 +45,11 @@ public class ProductMutationController {
                                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                                                          @RequestParam(required = false) Long productId,
                                                          @RequestParam(required = false) Long productCategoryId,
-                                                         @RequestParam boolean isRequest,
                                                          @RequestParam(required = false) Long originWarehouseId,
                                                          @RequestParam(required = false) Long destinationWarehouseId,
                                                          @RequestParam List<Long> productMutationTypeId,
                                                          @RequestParam(required = false) Long productMutationStatusId){
-        ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, startDate, endDate, isRequest, productId, productCategoryId, originWarehouseId, destinationWarehouseId, productMutationTypeId, productMutationStatusId);
+        ProductMutationPaginationRequestDTO requestDTO = new ProductMutationPaginationRequestDTO(page, limit, startDate, endDate, productId, productCategoryId, originWarehouseId, destinationWarehouseId, productMutationTypeId, productMutationStatusId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get product mutation success", getProductMutationUseCase.getPaginatedProductMutationByWarehouseId(requestDTO));
     }
 

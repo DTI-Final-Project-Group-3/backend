@@ -56,7 +56,7 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
                         req.getRequesterNotes(), requester,
                         originWarehouse, destinationWarehouse,
                         MutationConstant.TYPE_OUTBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_PENDING.getValue(),
-                        null, null, null, null, productMutationCode);
+                        null, productMutationCode);
 
         // create inbound mutation on origin warehouse (increase quantity)
         createProductMutationLog
@@ -64,8 +64,7 @@ public class CreateProductMutationUseCaseImpl implements CreateProductMutationUs
                         req.getRequesterNotes(), requester,
                         originWarehouse, destinationWarehouse,
                         MutationConstant.TYPE_INBOUND_MANUAL_MUTATION.getValue(), MutationConstant.STATUS_PENDING.getValue(),
-                        null, null, null, null, productMutationCode);
-
+                        null, productMutationCode);
 
         return new ProductMutationResponseDTO(productMutation);
     }
