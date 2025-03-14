@@ -8,7 +8,6 @@ import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.infrastructure.customerOrderItems.repository.CustomerOrderItemsRepository;
 import com.warehub.warehub.infrastructure.customerOrderStatus.CustomerOrderStatusRepository;
-import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderResponseDTO;
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.paymentMethod.repository.PaymentMethodRepository;
 import com.warehub.warehub.infrastructure.product.repository.ProductRepository;
@@ -62,15 +61,20 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         /*
          * Find nearby warehouse from shipping address
          * */
+        System.out.println("Manual transaction latitude " + request.getLatitude());
+        System.out.println("Manual transaction longitude " + request.getLongitude());
+
         Location location = LocationService.validateLocation(request.getLongitude(), request.getLatitude());
         List<WarehouseResponseDTO> nearbyWarehouses = warehouseRepository.findNearestWarehouses(
                 location.getLongitude(),
                 location.getLatitude(),
-                LocationConstants.MAX_DISTANCE_IN_METERS.getValue()
+                Optional.ofNullable(null)
         ).stream().map(obj -> new WarehouseResponseDTO(
                 ((Number) obj[0]).longValue(),  // ID
                 (String) obj[1]               // Name
         )).toList();
+
+        System.out.println("Manual transaction nearest warehouse "+nearbyWarehouses);
 
         if (nearbyWarehouses.isEmpty()) throw new DataNotFoundException("No warehouses found nearby");
 
@@ -140,10 +144,10 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
 
                 // Create product mutation records
                 createProductMutationLog.createProductMutationRecord(
-                        product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode
+                        product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 7L, 1L, invoiceCode
                 );
                 createProductMutationLog.createProductMutationRecord(
-                        product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode
+                        product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 1L, invoiceCode
                 );
             }
 
@@ -159,7 +163,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
         // Product status type
-        ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+        ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(1L)
                 .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
         /*
@@ -183,7 +187,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
             ProductMutation productMutation = new ProductMutation();
             productMutation.setProduct(productItem);
             productMutation.setQuantity(-totalQuantity); // Negative to indicate stock decrease
-            productMutation.setRequesterNotes("Product sent to customer with payment using manual transfer");
+            productMutation.setRequesterNotes("Product sent to customer ID : "+user.getId()+", Name : "+user.getFullname()+" using Payment manual transfer");
             productMutation.setRequester(user);
             productMutation.setOriginWarehouse(nearestWarehouse);
             productMutation.setProductMutationType(productMutationTypeAuto);
@@ -276,68 +280,5 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         return new UpdatePaymentProofResponseDTO(
                 customerOrder.getPaymentProofImageUrl()
         );
-    }
-
-    @Override
-    public CustomerOrderResponseDTO cancelManualTransaction(Long customerOrderId) {
-        // Find the user
-//        User user = usersRepository.findById(userId)
-//                .orElseThrow(() -> new DataNotFoundException("User not found"));
-
-        // Find the customer order
-        CustomerOrder customerOrder = customerOrderRepository.findById(customerOrderId)
-                .orElseThrow(() -> new DataNotFoundException("Customer order not found"));
-
-        // Get order items
-        List<CustomerOrderItem> orderItems = customerOrderItemsRepository.findByCustomerOrderId(customerOrderId);
-
-        if (orderItems.isEmpty()) throw new DataNotFoundException("No oder items found for this transaction");
-
-        // Reverse stock changes
-        for (CustomerOrderItem item : orderItems) {
-            Product product = item.getProduct();
-            int quantityToReturn = item.getQuantity();
-
-            // Find product mutation records (to track stock movement)
-            List<ProductMutation> mutations = productMutationRepository.findByInvoiceCodeAndProductId(
-                    customerOrder.getInvoiceCode(), product.getId());
-
-            for (ProductMutation mutation : mutations) {
-                Warehouse originWarehouse = mutation.getOriginWarehouse();
-                Warehouse destinationWarehouse = mutation.getDestinationWarehouse();
-                int mutatedQuantity = mutation.getQuantity(); // The actual quantity moved in mutation
-
-                // Stock was moved out (deducted)
-                if (mutatedQuantity < 0) {
-                    // Restore stock in the origin warehouse
-                    WarehouseInventory originInventory = warehouseInventoryRepository
-                            .findByProductIdAndWarehouseIdAndDeletedAtIsNull(product.getId(), originWarehouse.getId())
-                            .orElseThrow(() -> new DataNotFoundException("Inventory record not found"));
-
-                    // Restore only what is needed
-                    int quantityToRestore = Math.min(quantityToReturn, Math.abs(mutatedQuantity));
-                    originInventory.setQuantity(originInventory.getQuantity() + quantityToRestore);
-                    warehouseInventoryRepository.save(originInventory);
-
-                    // Log mutation (reverse stock movement)
-                    createProductMutationLog.createProductMutationRecord(
-                            product, quantityToRestore, "Order canceled : reversing transaction calcellation",
-                            customerOrder.getUser(), destinationWarehouse, originWarehouse,
-                            2L, 3L, customerOrder.getInvoiceCode()
-                    );
-
-                    // Reduce remaining quantity to return
-                    quantityToReturn -= quantityToRestore;
-                    if (quantityToReturn <= 0) break; // Stop if all stock is restored
-                }
-            }
-        }
-        // Mark order as canceled
-        CustomerOrderStatus canceledStatus = customerOrderStatusRepository.findById(6)
-                .orElseThrow(() -> new DataNotFoundException("Order status not found"));
-        customerOrder.setOrderStatus(canceledStatus);
-        customerOrderRepository.save(customerOrder);
-
-        return CustomerOrderResponseDTO.mapToDTO(customerOrder);
     }
 }

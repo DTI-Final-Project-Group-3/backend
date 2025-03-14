@@ -1,6 +1,7 @@
 package com.warehub.warehub.usecase.customerOrder.impl;
 
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
+import com.warehub.warehub.common.exceptions.ProductMutationStatusNotFoundException;
 import com.warehub.warehub.common.utils.CreateProductMutationLog;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.*;
@@ -12,6 +13,7 @@ import com.warehub.warehub.infrastructure.customerOrders.dto.*;
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
 import com.warehub.warehub.infrastructure.customerOrders.specification.CustomerOrderSpecification;
 import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
+import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationStatusRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.infrastructure.warehouse.repository.WarehouseAdminRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
@@ -39,6 +41,7 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
     private final ProductMutationRepository productMutationRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
     private final CreateProductMutationLog createProductMutationLog;
+    private final ProductMutationStatusRepository productMutationStatusRepository;
 
     @Override
     public PaginationInfo<CustomerOrderResponseDTO> getAllCustomerOrders(PaginatedCustomerOrderRequestDTO request) {
@@ -156,9 +159,6 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
 
     @Override
     public CustomerOrderResponseDTO cancelCustomerOrder(Long customerOrderId) {
-        // Find the user
-//        User user = usersRepository.findById(userId)
-//                .orElseThrow(() -> new DataNotFoundException("User not found"));
 
         // Find the customer order
         CustomerOrder customerOrder = customerOrderRepository.findById(customerOrderId)
@@ -195,13 +195,6 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
                     originInventory.setQuantity(originInventory.getQuantity() + quantityToRestore);
                     warehouseInventoryRepository.save(originInventory);
 
-                    // Log mutation (reverse stock movement)
-                    createProductMutationLog.createProductMutationRecord(
-                            product, quantityToRestore, "Order canceled : reversing transaction calcellation",
-                            customerOrder.getUser(), destinationWarehouse, originWarehouse,
-                            2L, 3L, customerOrder.getInvoiceCode()
-                    );
-
                     // Reduce remaining quantity to return
                     quantityToReturn -= quantityToRestore;
                     if (quantityToReturn <= 0) break; // Stop if all stock is restored
@@ -212,6 +205,18 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
         CustomerOrderStatus canceledStatus = getOrderStatus(OrderStatuses.CANCELED);
         customerOrder.setOrderStatus(canceledStatus);
         customerOrderRepository.save(customerOrder);
+
+        // Retrieve product mutation logs related to this order
+        List<ProductMutation> mutations = productMutationRepository.findByInvoiceCode(customerOrder.getInvoiceCode());
+
+        // Product status type CANCELED (3L)
+        ProductMutationStatus productMutationStatusCanceled = productMutationStatusRepository.findByIdAndDeletedAtIsNull(3L)
+                .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
+
+        // Update mutation status to Completed
+        for (ProductMutation mutation : mutations) mutation.setProductMutationStatus(productMutationStatusCanceled);
+
+        productMutationRepository.saveAll(mutations);
 
         return CustomerOrderResponseDTO.mapToDTO(customerOrder);
     }

@@ -16,11 +16,6 @@ public class AdminOrderController {
         this.adminCustomerOrderUsecase = adminCustomerOrderUsecase;
     }
 
-    // TODO 1 - Approve or decline customer orders by their payment proof image:
-    // check customer order payment image proof (if using manual)
-    // while customer order createdAt < createdAt + 1 hr
-    // if more than 1hr from createdAt automatically canceled the order
-    // if payment approved, change the order status to (order processed)
     @PutMapping("/{orderId}/order-approval")
     public ResponseEntity<?> updateCustomerOrderStatus(@PathVariable Long orderId,
                                                        @RequestBody UpdateOrderRequestDTO requestDTO) {
