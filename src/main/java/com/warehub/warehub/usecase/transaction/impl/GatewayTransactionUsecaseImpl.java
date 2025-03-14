@@ -82,7 +82,8 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
             List<WarehouseResponseDTO> nearbyWarehouses = warehouseRepository.findNearestWarehouses(
                     location.getLongitude(),
                     location.getLatitude(),
-                    LocationConstants.MAX_DISTANCE_IN_METERS.getValue()
+                    Optional.ofNullable(null)  // Pass Optional.empty() instead of null
+
             ).stream().map(obj -> new WarehouseResponseDTO(
                     ((Number) obj[0]).longValue(),  // ID
                     (String) obj[1]               // Name
@@ -156,10 +157,10 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
 
                     // Create product mutation records
                     createProductMutationLog.createProductMutationRecord(
-                            product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 2L, invoiceCode
+                            product, -missingQuantity, "Auto mutation: stock moved to nearest warehouse", user, alternateWarehouse, nearestWarehouse, 7L, 1L, invoiceCode
                     );
                     createProductMutationLog.createProductMutationRecord(
-                            product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, nearestWarehouse, alternateWarehouse, 2L, 2L, invoiceCode
+                            product, missingQuantity, "Auto mutation: stock received from alternate warehouse", user, alternateWarehouse, nearestWarehouse, 2L, 1L, invoiceCode
                     );
                 }
 
@@ -167,8 +168,6 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
                 assert inventory != null;
                 inventory.setQuantity(inventory.getQuantity() - requiredQuantity);
                 warehouseInventoryRepository.save(inventory);
-
-
             }
             
             // Product auto mutation type
@@ -176,7 +175,7 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
                     .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
             // Product status type
-            ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+            ProductMutationStatus productMutationStatusPending = productMutationStatusRepository.findByIdAndDeletedAtIsNull(1L)
                     .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
 
             /*
@@ -189,7 +188,7 @@ public class GatewayTransactionUsecaseImpl implements GatewayTransactionUsecase 
                 ProductMutation productMutation = new ProductMutation();
                 productMutation.setProduct(productItem);
                 productMutation.setQuantity(-orderItem.getQuantity()); // Negative to indicate stock decrease
-                productMutation.setRequesterNotes("Product sent to customer with payment using Midtrans transfer");
+                productMutation.setRequesterNotes("Product sent to customer ID : "+user.getId()+", Name : "+user.getFullname()+" using Payment midtrans gateway");
                 productMutation.setRequester(user);
                 productMutation.setOriginWarehouse(nearestWarehouse);
                 productMutation.setProductMutationType(productMutationTypeAuto);
