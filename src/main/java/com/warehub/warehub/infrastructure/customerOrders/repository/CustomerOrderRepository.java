@@ -136,8 +136,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
       ds.date ASC;
     """, nativeQuery = true)
     List<CustomerOrderDailyTotalResponseDTO> findDailyTotalByFilter(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate,
             @Param("warehouseId") Long warehouseId,
             @Param("customerOrderStatusId") Long customerOrderStatusId,
             @Param("productId") Long productId,

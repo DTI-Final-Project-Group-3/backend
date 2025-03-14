@@ -25,6 +25,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -243,8 +245,13 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
 
     @Override
     public List<CustomerOrderDailyTotalResponseDTO> getDailyTotalCustomerOrder(CustomerOrderHistoryRequestDTO req) {
+
+        ZoneOffset utc7Offset = ZoneOffset.ofHours(7);
+        OffsetDateTime startDate = req.getStartDate().atStartOfDay().atOffset(utc7Offset);
+        OffsetDateTime endDate = req.getEndDate().plusDays(1).atStartOfDay().atOffset(utc7Offset);
+
         return customerOrderRepository
-                .findDailyTotalByFilter(req.getStartDate(), req.getEndDate(),
+                .findDailyTotalByFilter(startDate, endDate,
                         req.getWarehouseId(),
                         req.getCustomerOrderStatusId(),
                         req.getProductId(), req.getProductCategoryId());

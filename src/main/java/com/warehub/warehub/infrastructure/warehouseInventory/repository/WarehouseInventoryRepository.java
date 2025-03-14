@@ -60,9 +60,14 @@ public interface WarehouseInventoryRepository extends JpaRepository<WarehouseInv
             WHERE
                 wi.deleted_at IS NULL
                 AND wi.warehouse_id = :warehouseId
+                AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+                AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
             ORDER BY wi.id
             """, nativeQuery = true)
-    Page<WarehouseInventoryPaginationResponseDTO> findByWarehouseId(@Param("warehouseId") Long warehouseId, Pageable pageable);
+    Page<WarehouseInventoryPaginationResponseDTO> findByWarehouseId(@Param("warehouseId") Long warehouseId,
+                                                                    @Param("productCategoryId") Long productCategoryId,
+                                                                    @Param("searchQuery") String searchQuery,
+                                                                    Pageable pageable);
 
     @Query("SELECT wi FROM WarehouseInventory wi " +
             "JOIN wi.product p " +

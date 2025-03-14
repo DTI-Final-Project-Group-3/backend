@@ -79,6 +79,7 @@ public class CustomerOrderController {
                                                      @RequestParam(required = false) Long productId,
                                                      @RequestParam(required = false) Long productCategoryId
     ){
+
         CustomerOrderHistoryRequestDTO requestDTO = new CustomerOrderHistoryRequestDTO(startDate, endDate, warehouseId, customerOrderStatusId, productId, productCategoryId);
         return ApiResponse.successfulResponse("Get history customer orders success", customerOrderUsecase.getDailyTotalCustomerOrder(requestDTO));
     }

@@ -28,7 +28,10 @@ public class GetWarehouseInventoryUseCaseImpl implements GetWarehouseInventoryUs
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
         validationService.validateWarehouseId(req.getWarehouseId(), "Warehouse");
 
-        Page<WarehouseInventoryPaginationResponseDTO> inventories = warehouseInventoryRepository.findByWarehouseId(req.getWarehouseId(), pageRequest);
+        Page<WarehouseInventoryPaginationResponseDTO> inventories = warehouseInventoryRepository
+                .findByWarehouseId(req.getWarehouseId(),
+                req.getProductCategoryId(), req.getSearchQuery(),
+                        pageRequest);
 
         return new PaginationInfo<>(inventories, inventories.getContent());
     }
