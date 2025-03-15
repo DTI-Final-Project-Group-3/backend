@@ -89,21 +89,18 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
 
     @Query(value = """
             SELECT w.id, w.name, 
-                ST_X(w.location) AS longitude, 
-                ST_Y(w.location) AS latitude, 
-                ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) AS distance
+                   ST_X(w.location) AS longitude, 
+                   ST_Y(w.location) AS latitude, 
+                   ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) AS distance
             FROM warehouses w
-            JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
-            WHERE ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius 
-                AND w.deleted_at IS NULL 
-            GROUP BY w.id, w.name, longitude, latitude, distance
+            WHERE w.deleted_at IS NULL 
+                  AND (:radius IS NULL OR ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius)
             ORDER BY distance ASC
-        """, nativeQuery = true)
+            """, nativeQuery = true)
     List<Object[]> findNearestWarehouses(
             @Param("longitude") double longitude,
             @Param("latitude") double latitude,
-            @Param("radius") double radius);
-
+            @Param("radius") Optional<Double> radius);
 
     List<Warehouse> findAllByDeletedAtIsNull();
 

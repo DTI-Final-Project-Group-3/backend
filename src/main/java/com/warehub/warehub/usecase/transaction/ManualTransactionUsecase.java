@@ -11,6 +11,4 @@ public interface ManualTransactionUsecase {
 
     UpdatePaymentProofResponseDTO updateManualPaymentProof(Long customerOrderId, UpdatePaymentProofRequestDTO request);
 
-    CustomerOrderResponseDTO cancelManualTransaction(Long customerOrderId);
-
 }

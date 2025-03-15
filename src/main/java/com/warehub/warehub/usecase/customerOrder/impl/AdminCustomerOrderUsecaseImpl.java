@@ -1,15 +1,16 @@
 package com.warehub.warehub.usecase.customerOrder.impl;
 
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
-import com.warehub.warehub.entity.CustomerOrder;
-import com.warehub.warehub.entity.CustomerOrderStatus;
-import com.warehub.warehub.entity.User;
+import com.warehub.warehub.common.exceptions.ProductMutationStatusNotFoundException;
+import com.warehub.warehub.entity.*;
 import com.warehub.warehub.entity.enums.OrderStatuses;
 import com.warehub.warehub.entity.enums.PaymentMethods;
 import com.warehub.warehub.infrastructure.customerOrderStatus.CustomerOrderStatusRepository;
 import com.warehub.warehub.infrastructure.customerOrders.dto.CustomerOrderResponseDTO;
 import com.warehub.warehub.infrastructure.customerOrders.dto.UpdateOrderRequestDTO;
 import com.warehub.warehub.infrastructure.customerOrders.repository.CustomerOrderRepository;
+import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
+import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationStatusRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
 import com.warehub.warehub.usecase.customerOrder.AdminCustomerOrderUsecase;
 import com.warehub.warehub.usecase.customerOrder.CustomerOrderUsecase;
@@ -29,6 +30,8 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
     private final CustomerOrderRepository customerOrderRepository;
     private final CustomerOrderStatusRepository customerOrderStatusRepository;
     private final CustomerOrderUsecase customerOrderUsecase;
+    private final ProductMutationRepository productMutationRepository;
+    private final ProductMutationStatusRepository productMutationStatusRepository;
 
     @Override
     public CustomerOrderResponseDTO updateCustomerOrder(UpdateOrderRequestDTO requestDTO) {
@@ -135,6 +138,24 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
             customerOrder.setOrderStatus(shippedPaymentStatus);
             customerOrder.setSentAt(OffsetDateTime.now());
             customerOrderRepository.save(customerOrder);
+
+            // Update product mutations  status to CONFIRMED (2L)
+            // Retrieve product mutations related to this order
+            List<ProductMutation> mutations = productMutationRepository.findByInvoiceCode(customerOrder.getInvoiceCode());
+
+            if (mutations.isEmpty()) {
+                throw new DataNotFoundException("No product mutations found for this order.");
+            }
+
+            // Fetch the "COMPLETED" product mutation status (2L)
+            ProductMutationStatus completedStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+                    .orElseThrow(() -> new ProductMutationStatusNotFoundException("Product mutation status with ID 2 not found!"));
+
+            // Update each mutation's status
+            for (ProductMutation mutation : mutations) mutation.setProductMutationStatus(completedStatus);
+
+            // Save all updated product mutations
+            productMutationRepository.saveAll(mutations);
         }
 
         return CustomerOrderResponseDTO.mapToDTO(customerOrder);
@@ -181,7 +202,21 @@ public class AdminCustomerOrderUsecaseImpl implements AdminCustomerOrderUsecase 
         List<CustomerOrder> ordersToConfirm = customerOrderRepository.findByOrderStatusIdAndSentAtBefore(shippedStatus.getId(), twoDaysAgo);
 
         if (!ordersToConfirm.isEmpty()) {
-            ordersToConfirm.forEach(order -> order.setOrderStatus(confirmedStatus));
+            ordersToConfirm.forEach(order -> {
+                order.setOrderStatus(confirmedStatus);
+
+                // Fetch related product mutation logs for this order
+                List<ProductMutation> mutations = productMutationRepository.findByInvoiceCode(order.getInvoiceCode());
+
+                // Product status type COMPLETED (2L)
+                ProductMutationStatus productMutationStatusCompleted = productMutationStatusRepository.findByIdAndDeletedAtIsNull(2L)
+                        .orElseThrow(()-> new ProductMutationStatusNotFoundException("Product mutation status with ID not found !"));
+
+                // Update mutation status to Completed (2L)
+                mutations.forEach(mutation -> mutation.setProductMutationStatus(productMutationStatusCompleted));
+                productMutationRepository.saveAll(mutations);
+            });
+
             customerOrderRepository.saveAll(ordersToConfirm);
             System.out.println("Shipped orders were auto confirmed " +ordersToConfirm.size());
         } else {
