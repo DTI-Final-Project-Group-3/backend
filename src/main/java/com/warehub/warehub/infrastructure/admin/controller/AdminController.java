@@ -55,6 +55,21 @@ public class AdminController {
         return ApiResponse.successfulResponse("Get verified customers successful", result);
     }
 
+    @DeleteMapping("/delete-user-by-email")
+    private ResponseEntity<?> deleteUserByEmail(@RequestParam String email) {
+        String result = null;
+        String errorMessage = "";
+        try {
+            result = adminUsecase.deleteUserByEmail(email);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to delete user : " + errorMessage);
+        return ApiResponse.successfulResponse("User deleted successfully.", result);
+    }
+
     @GetMapping("/assigned")
     private ResponseEntity<?> getAllAdminAssigned(@RequestParam Long warehouseId) {
         List<UserAdminDetailResponseDTO> result = null;
