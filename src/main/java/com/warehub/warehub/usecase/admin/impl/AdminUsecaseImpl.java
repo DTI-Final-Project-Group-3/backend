@@ -1,9 +1,6 @@
 package com.warehub.warehub.usecase.admin.impl;
 
-import com.warehub.warehub.entity.Role;
-import com.warehub.warehub.entity.User;
-import com.warehub.warehub.entity.Warehouse;
-import com.warehub.warehub.entity.WarehouseAdmin;
+import com.warehub.warehub.entity.*;
 import com.warehub.warehub.entity.enums.RoleType;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseRequestDTO;
 import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseResponseDTO;
@@ -11,6 +8,7 @@ import com.warehub.warehub.infrastructure.admin.dto.UserAdminDetailResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.UserAdminUpdateRequestDTO;
 import com.warehub.warehub.infrastructure.login.dto.UserAuth;
 import com.warehub.warehub.infrastructure.security.Claims;
+import com.warehub.warehub.infrastructure.signup.repository.EmailVerificationTokenRepository;
 import com.warehub.warehub.infrastructure.users.dto.*;
 import com.warehub.warehub.infrastructure.users.repository.RolesRepository;
 import com.warehub.warehub.infrastructure.users.repository.UsersRepository;
@@ -23,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +46,9 @@ public class AdminUsecaseImpl implements AdminUsecase {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseBase(boolean selectNotAssigned) {
         roleCheckUsecase.enforceAdminSuper();
@@ -196,5 +198,25 @@ public class AdminUsecaseImpl implements AdminUsecase {
         roleCheckUsecase.enforceAdminSuper();
         User user = usersRepository.findById(id).get();
         return new UserDetailResponseDTO().copyFromUser(user);
+    }
+
+    @Override
+    public String deleteUserByEmail(String email) {
+        roleCheckUsecase.enforceAdminSuper();
+
+        Optional<User> user = usersRepository.findByEmailIgnoreCase(email);
+
+        if (user.isEmpty()) {
+            throw new RuntimeException("User with email " + email + " not found");
+        }
+
+        Optional<EmailVerificationToken> emailVerificationToken = emailVerificationTokenRepository.findByUserId(user.get().getId());
+        if (emailVerificationToken.isPresent()) {
+            emailVerificationTokenRepository.delete(emailVerificationToken.get());
+        }
+
+        usersRepository.delete(user.get());
+
+        return "Success delete user " + email;
     }
 }
