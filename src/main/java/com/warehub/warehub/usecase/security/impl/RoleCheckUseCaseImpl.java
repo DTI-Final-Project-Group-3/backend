@@ -14,11 +14,18 @@ public class RoleCheckUseCaseImpl implements RoleCheckUsecase {
     private UsersRepository usersRepository;
 
     public void enforceAdminSuper() {
-        Long userId = Claims.getUserIdFromJwt();
-        Role currentRole = usersRepository.findById(userId).get().getRole();
+        Long userId;
+        Role currentRole;
+        try {
+            userId = Claims.getUserIdFromJwt();
+            currentRole = usersRepository.findById(userId).get().getRole();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Bearer token not found, please use super admin token to perform this. Or use /api/v1/signup/dev?role=");
+        }
         if (!currentRole.getName().equals(RoleType.ADMIN_SUPER.toString())) {
             System.out.println(currentRole.getName());
-            throw new RuntimeException("Not a super admin role");
+            throw new RuntimeException("Bearer token valid, but only super admin role can perform this. Or use /api/v1/signup/dev?role=");
         }
     }
 }
