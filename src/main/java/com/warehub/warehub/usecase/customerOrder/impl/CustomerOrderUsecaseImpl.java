@@ -3,6 +3,7 @@ package com.warehub.warehub.usecase.customerOrder.impl;
 import com.warehub.warehub.common.enums.MutationConstant;
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
 import com.warehub.warehub.common.utils.CreateProductMutationLog;
+import com.warehub.warehub.common.utils.DateConverter;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.entity.enums.OrderStatuses;
@@ -233,8 +234,11 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
     public PaginationInfo<CustomerOrderHistoryResponseDTO> getHistoryCustomerOrder(CustomerOrderHistoryRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
         Page<CustomerOrderHistoryResponseDTO> responseDTO = customerOrderRepository
-                .findHistoryCustomerOrderByFilter(req.getStartDate(), req.getEndDate(),
+                .findHistoryCustomerOrderByFilter(startDate, endDate,
                         req.getWarehouseId(),
                         req.getCustomerOrderStatusId(),
                         req.getProductId(), req.getProductCategoryId(),
@@ -246,9 +250,8 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
     @Override
     public List<CustomerOrderDailyTotalResponseDTO> getDailyTotalCustomerOrder(CustomerOrderHistoryRequestDTO req) {
 
-        ZoneOffset utc7Offset = ZoneOffset.ofHours(7);
-        OffsetDateTime startDate = req.getStartDate().atStartOfDay().atOffset(utc7Offset);
-        OffsetDateTime endDate = req.getEndDate().plusDays(1).atStartOfDay().atOffset(utc7Offset);
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
 
         return customerOrderRepository
                 .findDailyTotalByFilter(startDate, endDate,

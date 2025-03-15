@@ -72,8 +72,7 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
         JOIN products p ON p.id = coi.product_id
         JOIN product_categories pc ON pc.id = p.product_category_id
         WHERE
-          (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL 
-            OR co.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE))
+          (CAST(:startDate AS timestamptz) IS NULL OR CAST(:endDate AS timestamptz)IS NULL OR (co.created_at BETWEEN CAST(:startDate AS timestamptz) AND CAST(:endDate AS timestamptz)))
           AND (:warehouseId IS NULL OR co.warehouse_id = :warehouseId)
           AND (:customerOrderStatusId IS NULL OR co.order_status_id = :customerOrderStatusId)
           AND (:productId IS NULL OR coi.product_id = :productId)
@@ -86,8 +85,7 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
         JOIN customer_order_items coi ON coi.customer_order_id = co.id
         JOIN products p ON p.id = coi.product_id
         WHERE
-          (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL 
-            OR co.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE))
+          (CAST(:startDate AS timestamptz) IS NULL OR CAST(:endDate AS timestamptz)IS NULL OR (co.created_at BETWEEN CAST(:startDate AS timestamptz) AND CAST(:endDate AS timestamptz)))
           AND (:warehouseId IS NULL OR co.warehouse_id = :warehouseId)
           AND (:customerOrderStatusId IS NULL OR co.order_status_id = :customerOrderStatusId)
           AND (:productId IS NULL OR coi.product_id = :productId)
@@ -96,8 +94,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
             nativeQuery = true
     )
     Page<CustomerOrderHistoryResponseDTO> findHistoryCustomerOrderByFilter(
-            @Param("startedAt") LocalDate startedAt,
-            @Param("endedAt") LocalDate endedAt,
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate,
             @Param("warehouseId") Long warehouseId,
             @Param("customerOrderStatusId") Long customerOrderStatusId,
             @Param("productId") Long productId,
