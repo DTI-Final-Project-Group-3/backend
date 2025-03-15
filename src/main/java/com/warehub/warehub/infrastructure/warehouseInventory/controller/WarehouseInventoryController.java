@@ -37,8 +37,9 @@ public class WarehouseInventoryController {
     public ResponseEntity<?> getPaginatedWarehouseInventoryByWarehouseId(@RequestParam("page") int page,
                                                                          @RequestParam("limit") int limit,
                                                                          @RequestParam("warehouseId") Long warehouseId,
-                                                                         @RequestParam(value = "searchParam", required = false) String searchParam){
-        WarehouseInventoryPaginationRequestDTO requestDTO = new WarehouseInventoryPaginationRequestDTO(page, limit, warehouseId, searchParam);
+                                                                         @RequestParam(value = "searchQuery", required = false) String searchQuery,
+                                                                         @RequestParam(value = "productCategoryId", required = false) Long productCategoryId){
+        WarehouseInventoryPaginationRequestDTO requestDTO = new WarehouseInventoryPaginationRequestDTO(page, limit, warehouseId, searchQuery, productCategoryId);
         return ApiResponse.successfulResponse(HttpStatus.OK.value(), "Get warehouse inventory by warehouse id success", getWarehouseInventoryUseCase.getPaginatedWarehouseInventoryByWarehouseId(requestDTO));
     }
 

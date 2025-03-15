@@ -22,7 +22,9 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
                 ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) AS distance
             FROM warehouses w
             JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
-            WHERE ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius 
+            WHERE 
+                (:radius IS NULL OR ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)) <= :radius)
+                AND w.deleted_at IS NULL
                 AND w.deleted_at IS NULL 
                 AND (:productId IS NULL OR wi.product_id = :productId)
             GROUP BY w.id, w.name, longitude, latitude, distance
@@ -72,11 +74,10 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
             JOIN warehouse_inventories wi ON wi.warehouse_id = w.id
             WHERE
                 w.deleted_at IS NULL
-            AND ST_DWithin(
+            AND (:radius IS NULL OR ST_DWithin(
                 w.location::geography, 
                 ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, 
-                :radius
-            )
+                :radius))
             AND wi.deleted_at IS NULL
             AND wi.product_id = :productId
             AND wi.quantity > 0

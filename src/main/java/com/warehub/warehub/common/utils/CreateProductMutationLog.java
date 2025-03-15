@@ -9,6 +9,8 @@ import com.warehub.warehub.infrastructure.productMutation.repository.ProductMuta
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class CreateProductMutationLog {
@@ -53,5 +55,31 @@ public class CreateProductMutationLog {
         mutation.setInvoiceCode(invoiceCode);
 
         productMutationRepository.save(mutation);
+    }
+
+    public ProductMutation createProductMutationRecord(
+            Product product, int quantity, String requesterNotes, User requester,
+            Warehouse fromWarehouse, Warehouse toWarehouse,
+            Long mutationTypeId, Long mutationStatusId, String invoiceCode, String productMutationCode) {
+
+        ProductMutationType mutationType = productMutationTypeRepository.findByIdAndDeletedAtIsNull(mutationTypeId)
+                .orElseThrow(() -> new ProductMutationTypeNotFoundException("Product mutation type not found"));
+
+        ProductMutationStatus mutationStatus = productMutationStatusRepository.findByIdAndDeletedAtIsNull(mutationStatusId)
+                .orElseThrow(() -> new ProductMutationStatusNotFoundException("Product mutation status not found"));
+
+        ProductMutation mutation = new ProductMutation();
+        mutation.setProduct(product);
+        mutation.setQuantity(quantity);
+        mutation.setRequesterNotes(requesterNotes);
+        mutation.setRequester(requester);
+        mutation.setOriginWarehouse(fromWarehouse);
+        mutation.setDestinationWarehouse(toWarehouse);
+        mutation.setProductMutationType(mutationType);
+        mutation.setProductMutationStatus(mutationStatus);
+        mutation.setInvoiceCode(invoiceCode);
+        mutation.setProductMutationCode(productMutationCode);
+
+        return productMutationRepository.save(mutation);
     }
 }

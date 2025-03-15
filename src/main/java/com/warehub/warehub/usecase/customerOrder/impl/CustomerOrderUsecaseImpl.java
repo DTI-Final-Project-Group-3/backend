@@ -3,6 +3,7 @@ package com.warehub.warehub.usecase.customerOrder.impl;
 import com.warehub.warehub.common.exceptions.DataNotFoundException;
 import com.warehub.warehub.common.exceptions.ProductMutationStatusNotFoundException;
 import com.warehub.warehub.common.utils.CreateProductMutationLog;
+import com.warehub.warehub.common.utils.DateConverter;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.entity.*;
 import com.warehub.warehub.entity.enums.OrderStatuses;
@@ -26,6 +27,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -225,8 +228,11 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
     public PaginationInfo<CustomerOrderHistoryResponseDTO> getHistoryCustomerOrder(CustomerOrderHistoryRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
         Page<CustomerOrderHistoryResponseDTO> responseDTO = customerOrderRepository
-                .findHistoryCustomerOrderByFilter(req.getStartDate(), req.getEndDate(),
+                .findHistoryCustomerOrderByFilter(startDate, endDate,
                         req.getWarehouseId(),
                         req.getCustomerOrderStatusId(),
                         req.getProductId(), req.getProductCategoryId(),
@@ -237,8 +243,12 @@ public class CustomerOrderUsecaseImpl implements CustomerOrderUsecase {
 
     @Override
     public List<CustomerOrderDailyTotalResponseDTO> getDailyTotalCustomerOrder(CustomerOrderHistoryRequestDTO req) {
+
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
         return customerOrderRepository
-                .findDailyTotalByFilter(req.getStartDate(), req.getEndDate(),
+                .findDailyTotalByFilter(startDate, endDate,
                         req.getWarehouseId(),
                         req.getCustomerOrderStatusId(),
                         req.getProductId(), req.getProductCategoryId());

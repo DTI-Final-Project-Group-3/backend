@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.productMutation.impl;
 
+import com.warehub.warehub.common.utils.DateConverter;
 import com.warehub.warehub.common.utils.PaginationInfo;
 import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.ProductMutation;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -41,13 +43,23 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
     public PaginationInfo<ProductMutationDetailResponseDTO> getPaginatedProductMutationByWarehouseId(ProductMutationPaginationRequestDTO req) {
         PageRequest pageRequest = PageRequest.of(req.getPage(), req.getLimit());
 
+        validationService.validateDateRange(req.getStartDate(), req.getEndDate());
         validationService.validateWarehouseId(req.getOriginWarehouseId(), "Origin warehouse");
         validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Destination warehouse");
+        validationService.validateDateRange(req.getStartDate(), req.getEndDate());
         for (Long id : req.getProductMutationTypeId()){
             validationService.validateProductMutationTypeId(id);
         }
 
-        Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository.findByWarehouseIdDTO(req.getOriginWarehouseId(), req.getDestinationWarehouseId(), req.getProductMutationTypeId(), pageRequest);
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
+        Page<ProductMutationDetailResponseDTO> responseDTOS = productMutationRepository
+                .findByWarehouseIdDTO(startDate, endDate,
+                        req.getProductId(), req. getProductCategoryId(),
+                        req.getOriginWarehouseId(), req.getDestinationWarehouseId(),
+                        req.getProductMutationTypeId(), req.getProductMutationStatusId(),
+                        pageRequest);
 
         return new PaginationInfo<>(responseDTOS, responseDTOS.getContent());
     }
@@ -64,9 +76,12 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
         validationService.validateProductMutationStatusId(req.getProductMutationStatusId());
         validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Warehouse");
 
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
         Page<ProductMutationHistoryResponseDTO> responseDTOS = productMutationRepository
                 .findProductMutationDetailsByDateRange(
-                        req.getStartDate(), req.getEndDate(),
+                        startDate, endDate,
                         req.getProductId(), req.getProductCategoryId(),
                         req.getProductMutationTypeId(), req.getProductMutationStatusId(),
                         req.getDestinationWarehouseId(),
@@ -85,9 +100,12 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
         validationService.validateProductMutationStatusId(req.getProductMutationStatusId());
         validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Warehouse");
 
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
         return productMutationRepository
                 .calculateProductQuantityMetricsByDateRange(
-                        req.getStartDate(), req.getEndDate(),
+                        startDate, endDate,
                         req.getProductId(), req.getProductCategoryId(),
                         req.getProductMutationTypeId(), req.getProductMutationStatusId(),
                         req.getDestinationWarehouseId());
@@ -103,8 +121,11 @@ public class GetProductMutationUseCaseImpl implements GetProductMutationUseCase 
         validationService.validateProductMutationStatusId(req.getProductMutationStatusId());
         validationService.validateWarehouseId(req.getDestinationWarehouseId(), "Warehouse");
 
+        OffsetDateTime startDate = DateConverter.convertStarDate(req.getStartDate());
+        OffsetDateTime endDate = DateConverter.convertEndDate(req.getEndDate());
+
         return productMutationRepository
-                .findDailyMutationSummary(req.getStartDate(), req.getEndDate(),
+                .findDailyMutationSummary(startDate, endDate,
                         req.getProductId(), req.getProductCategoryId(),
                         req.getProductMutationTypeId(), req.getProductMutationStatusId(),
                         req.getDestinationWarehouseId());

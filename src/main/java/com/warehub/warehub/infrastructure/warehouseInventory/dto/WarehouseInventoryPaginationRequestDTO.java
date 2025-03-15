@@ -12,5 +12,6 @@ public class WarehouseInventoryPaginationRequestDTO {
     private int limit;
     private Long warehouseId;
     private String searchQuery;
+    private Long productCategoryId;
 
 }

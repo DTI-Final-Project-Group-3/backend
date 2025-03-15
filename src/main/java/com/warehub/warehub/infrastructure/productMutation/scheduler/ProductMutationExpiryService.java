@@ -1,25 +1,19 @@
 package com.warehub.warehub.infrastructure.productMutation.scheduler;
 
 import com.warehub.warehub.common.enums.MutationConstant;
-import com.warehub.warehub.common.exceptions.ProductMutationStatusNotFoundException;
-import com.warehub.warehub.common.exceptions.WarehouseInventoryNotFoundException;
 import com.warehub.warehub.common.utils.ValidationService;
 import com.warehub.warehub.entity.ProductMutation;
 import com.warehub.warehub.entity.ProductMutationStatus;
 import com.warehub.warehub.entity.WarehouseInventory;
 import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationRepository;
-import com.warehub.warehub.infrastructure.productMutation.repository.ProductMutationStatusRepository;
 import com.warehub.warehub.infrastructure.warehouseInventory.repository.WarehouseInventoryRepository;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.*;
 
-@Service
-@EnableScheduling
+@Component
 public class ProductMutationExpiryService {
 
     private final ValidationService validationService;
@@ -32,30 +26,31 @@ public class ProductMutationExpiryService {
         this.warehouseInventoryRepository = warehouseInventoryRepository;
     }
 
-    @Scheduled(fixedDelay = 300000)
+    @Scheduled(cron = "0 */2 * * * *") // every 2 minutes
     @Transactional
     public void processExpiredMutations(){
+        System.out.println("Scheduled : Started CRON JOB for expired product mutation");
 
-        OffsetDateTime now = OffsetDateTime.now();
-        String expiryInterval = "1 MINUTE";
+        List<ProductMutation> expiredMutations = productMutationRepository.findPendingExpired();
 
-        List<ProductMutation> expiredMutations = productMutationRepository.findPendingExpired(now, expiryInterval);
+        for (ProductMutation expiredMutation : expiredMutations){
 
-        ProductMutationStatus expiredStatus = validationService.validateProductMutationStatusId(MutationConstant.STATUS_EXPIRED.getValue());
+            // restore quantity on outbound mutation
+            if (expiredMutation.getProductMutationType().getId().equals(MutationConstant.TYPE_OUTBOUND_MANUAL_MUTATION.getValue())) {
+                WarehouseInventory inventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(
+                        expiredMutation.getProduct().getId(),
+                        expiredMutation.getOriginWarehouse().getId()
+                );
+                inventory.setQuantity(inventory.getQuantity() + -expiredMutation.getQuantity());
+                warehouseInventoryRepository.save(inventory);
+            }
 
-        for (ProductMutation mutation : expiredMutations){
-
-            WarehouseInventory inventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(mutation.getProduct().getId(), mutation.getOriginWarehouse().getId());
-
-            // restore quantity
-            inventory.setQuantity(inventory.getQuantity() + mutation.getQuantity());
-            warehouseInventoryRepository.save(inventory);
-
-            // update mutation status
-            mutation.setProductMutationStatus(expiredStatus);
-            mutation.setUpdatedAt(now);
-            productMutationRepository.save(mutation);
+            // update status
+            ProductMutationStatus statusExpired = validationService.validateProductMutationStatusId(MutationConstant.STATUS_EXPIRED.getValue());
+            expiredMutation.setProductMutationStatus(statusExpired);
+            productMutationRepository.save(expiredMutation);
         }
 
+        System.out.println("Ended CRON JOB for expired product mutation");
     }
 }

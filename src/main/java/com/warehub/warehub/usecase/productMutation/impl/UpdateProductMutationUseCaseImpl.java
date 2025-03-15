@@ -12,18 +12,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUseCase {
 
     private final ValidationService validationService;
-    private final ProductMutationRepository productMutationRepository;
     private final WarehouseInventoryRepository warehouseInventoryRepository;
+    private final ProductMutationRepository productMutationRepository;
 
-    public UpdateProductMutationUseCaseImpl(ValidationService validationService, ProductMutationRepository productMutationRepository, WarehouseInventoryRepository warehouseInventoryRepository) {
+    public UpdateProductMutationUseCaseImpl(ValidationService validationService, WarehouseInventoryRepository warehouseInventoryRepository, ProductMutationRepository productMutationRepository) {
         this.validationService = validationService;
-        this.productMutationRepository = productMutationRepository;
         this.warehouseInventoryRepository = warehouseInventoryRepository;
+        this.productMutationRepository = productMutationRepository;
     }
 
     @Override
@@ -32,22 +33,28 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
 
         // validate request
         User reviewer = validationService.validateUserId(req.getUserId());
-        ProductMutationStatus productMutationStatus = validationService.validateProductMutationStatusId(MutationConstant.STATUS_COMPLETED.getValue());
         ProductMutation productMutation = validationService.validateProductMutationId(productMutationId);
         WarehouseInventory destinationWarehouseInventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(productMutation.getProduct().getId(), productMutation.getDestinationWarehouse().getId());
 
-        // increase quantity from destination warehouse
-        destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() + productMutation.getQuantity());
+        // every request have negative value
+        int changeQuantity = productMutation.getQuantity() * -1;
+
+        // increase quantity on destination warehouse
+        destinationWarehouseInventory.setQuantity(destinationWarehouseInventory.getQuantity() + changeQuantity);
         warehouseInventoryRepository.save(destinationWarehouseInventory);
 
-        // update product mutation to completed
-        productMutation.setReviewer(reviewer);
-        productMutation.setReviewerNotes(req.getNotes());
-        productMutation.setReviewedAt(OffsetDateTime.now());
-        productMutation.setProductMutationStatus(productMutationStatus);
-        productMutation.setUpdatedAt(OffsetDateTime.now());
+        ProductMutationStatus statusAccept = validationService.validateProductMutationStatusId(MutationConstant.STATUS_COMPLETED.getValue());
 
-        return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
+        // find existing productMutation and update it
+        List<ProductMutation> prevLogs = productMutationRepository.findByProductMutationCodeAndDeletedAtIsNull(productMutation.getProductMutationCode());
+        for (ProductMutation mutation : prevLogs){
+            mutation.setReviewer(reviewer);
+            mutation.setReviewedAt(OffsetDateTime.now());
+            mutation.setProductMutationStatus(statusAccept);
+            productMutationRepository.save(mutation);
+        }
+
+        return new ProductMutationResponseDTO(productMutation);
     }
 
     @Override
@@ -56,21 +63,27 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
 
         // validate request
         User reviewer = validationService.validateUserId(req.getUserId());
-        ProductMutationStatus productMutationStatus = validationService.validateProductMutationStatusId(MutationConstant.STATUS_DECLINED.getValue());
         ProductMutation productMutation = validationService.validateProductMutationId(productMutationId);
         WarehouseInventory originWarehouseInventory = validationService.validateWarehouseInventoryByProductIdAndWarehouseId(productMutation.getProduct().getId(), productMutation.getOriginWarehouse().getId());
 
+        // every request have negative value
+        int changeQuantity = productMutation.getQuantity() * -1;
+
         // roll back quantity from origin warehouse
-        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + productMutation.getQuantity());
+        originWarehouseInventory.setQuantity(originWarehouseInventory.getQuantity() + changeQuantity);
         warehouseInventoryRepository.save(originWarehouseInventory);
 
-        // update product mutation to completed
-        productMutation.setReviewer(reviewer);
-        productMutation.setReviewerNotes(req.getNotes());
-        productMutation.setReviewedAt(OffsetDateTime.now());
-        productMutation.setProductMutationStatus(productMutationStatus);
-        productMutation.setUpdatedAt(OffsetDateTime.now());
+        ProductMutationStatus statusDecline = validationService.validateProductMutationStatusId(MutationConstant.STATUS_DECLINED.getValue());
 
-        return new ProductMutationResponseDTO(productMutationRepository.save(productMutation));
+        // find existing productMutation and update it
+        List<ProductMutation> prevLogs = productMutationRepository.findByProductMutationCodeAndDeletedAtIsNull(productMutation.getProductMutationCode());
+        for (ProductMutation mutation : prevLogs){
+            mutation.setReviewer(reviewer);
+            mutation.setReviewedAt(OffsetDateTime.now());
+            mutation.setProductMutationStatus(statusDecline);
+            productMutationRepository.save(mutation);
+        }
+
+        return new ProductMutationResponseDTO(productMutation);
     }
 }

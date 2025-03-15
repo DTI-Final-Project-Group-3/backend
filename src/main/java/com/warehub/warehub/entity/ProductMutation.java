@@ -75,6 +75,9 @@ public class ProductMutation {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @Column(name = "product_mutation_code")
+    private String productMutationCode;
+
     @PrePersist
     public void onCreate() {
         if (this.createdAt == null) {

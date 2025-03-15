@@ -41,17 +41,20 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
     WHERE
         pm.deleted_at IS NULL
-        AND (CAST(:startedAt AS DATE) IS NULL OR CAST(:endedAt AS DATE) IS NULL OR (pm.created_at::date BETWEEN CAST(:startedAt AS DATE) AND CAST(:endedAt AS DATE)))
-        AND (CAST(:warehouseId AS BIGINT) IS NULL OR pm.destination_warehouse_id = CAST(:warehouseId AS BIGINT))
-        AND (CAST(:productId AS BIGINT) IS NULL OR pm.product_id = CAST(:productId AS BIGINT))
-        AND (CAST(:productCategoryId AS BIGINT) IS NULL OR p.product_category_id = CAST(:productCategoryId AS BIGINT))
-        AND (CAST(:productMutationTypeId AS BIGINT) IS NULL OR pm.product_mutation_type_id = CAST(:productMutationTypeId AS BIGINT))
-        AND (CAST(:productMutationStatusId AS BIGINT) IS NULL OR pm.product_mutation_status_id = CAST(:productMutationStatusId AS BIGINT))
+        AND (CAST(:startDate AS timestamptz) IS NULL OR CAST(:endDate AS timestamptz) IS NULL
+            OR (pm.created_at BETWEEN CAST(:startDate AS timestamptz) AND CAST(:endDate AS timestamptz)))
+        AND (:warehouseId IS NULL
+            OR (pm.product_mutation_type_id IN (1, 2, 3, 4, 5) AND pm.destination_warehouse_id = :warehouseId)
+            OR (pm.product_mutation_type_id IN (6, 7) AND pm.origin_warehouse_id = :warehouseId))
+        AND (:productId IS NULL OR pm.product_id = :productId)
+        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+        AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
+        AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
     ORDER BY pm.created_at DESC
     """, nativeQuery = true)
     Page<ProductMutationHistoryResponseDTO> findProductMutationDetailsByDateRange(
-            @Param("startedAt") LocalDate startedAt,
-            @Param("endedAt") LocalDate endedAt,
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate,
             @Param("productId") Long productId,
             @Param("productCategoryId") Long productCategoryId,
             @Param("productMutationTypeId") Long productMutationTypeId,
@@ -61,11 +64,12 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     );
 
 
+
     @Query(nativeQuery = true, value = """
         WITH date_series AS (
           SELECT generate_series(
-            :startedAt,
-            :endedAt,
+            :startDate,
+            :endDate,
             '1 day'::interval
           )::date AS date
         )
@@ -78,7 +82,10 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
         LEFT JOIN
           product_mutations pm 
           ON ds.date = pm.created_at::date
-          AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId)
+          AND (:warehouseId IS NULL
+                OR (pm.product_mutation_type_id IN (1, 2, 3, 4, 5) AND pm.destination_warehouse_id = :warehouseId)
+                OR (pm.product_mutation_type_id IN (6, 7) AND pm.origin_warehouse_id = :warehouseId)
+          )
           AND (:productId IS NULL OR pm.product_id = :productId)
           AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
           AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
@@ -92,8 +99,8 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
           ds.date ASC
     """)
     List<ProductMutationDailySummaryResponseDTO> findDailyMutationSummary(
-            @Param("startedAt") LocalDate startedAt,
-            @Param("endedAt") LocalDate endedAt,
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate,
             @Param("productId") Long productId,
             @Param("productCategoryId") Long productCategoryId,
             @Param("productMutationTypeId") Long productMutationTypeId,
@@ -102,25 +109,28 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
 
     @Query(value = """
     SELECT
-        SUM(CASE WHEN pm.created_at::date < :startedAt THEN pm.quantity ELSE 0 END) AS starting_quantity,
-        SUM(CASE WHEN pm.created_at::date BETWEEN :startedAt AND :endedAt
+        SUM(CASE WHEN pm.created_at < :startDate THEN pm.quantity ELSE 0 END) AS starting_quantity,
+        SUM(CASE WHEN pm.created_at BETWEEN :startDate AND :endDate
             AND pm.quantity > 0 THEN pm.quantity ELSE 0 END) AS total_added,
-        ABS(SUM(CASE WHEN pm.created_at::date BETWEEN :startedAt AND :endedAt 
+        ABS(SUM(CASE WHEN pm.created_at BETWEEN :startDate AND :endDate 
             AND pm.quantity < 0 THEN pm.quantity ELSE 0 END)) AS total_reduced,
-        SUM(CASE WHEN pm.created_at::date BETWEEN :startedAt AND :endedAt THEN pm.quantity ELSE 0 END) AS net_change,
-        SUM(CASE WHEN pm.created_at::date <= :endedAt THEN pm.quantity ELSE 0 END) AS ending_quantity
+        SUM(CASE WHEN pm.created_at BETWEEN :startDate AND :endDate THEN pm.quantity ELSE 0 END) AS net_change,
+        SUM(CASE WHEN pm.created_at <= :endDate THEN pm.quantity ELSE 0 END) AS ending_quantity
     FROM product_mutations pm
     JOIN products p ON pm.product_id = p.id
     WHERE
         pm.deleted_at IS NULL
-        AND (:warehouseId IS NULL OR pm.destination_warehouse_id = :warehouseId)
+        AND (:warehouseId IS NULL
+            OR (pm.product_mutation_type_id IN (1, 2, 3, 4, 5) AND pm.destination_warehouse_id = :warehouseId)
+            OR (pm.product_mutation_type_id IN (6, 7) AND pm.origin_warehouse_id = :warehouseId)
+        )
         AND (:productId IS NULL OR pm.product_id = :productId)
         AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
         AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id = :productMutationTypeId)
         AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
             """, nativeQuery = true)
-    ProductMutationTotalResponseDTO calculateProductQuantityMetricsByDateRange( @Param("startedAt") LocalDate startedAt,
-                                                            @Param("endedAt") LocalDate endedAt,
+    ProductMutationTotalResponseDTO calculateProductQuantityMetricsByDateRange( @Param("startDate") OffsetDateTime startDate,
+                                                            @Param("endDate") OffsetDateTime endDate,
                                                             @Param("productId") Long productId,
                                                             @Param("productCategoryId") Long productCategoryId,
                                                             @Param("productMutationTypeId") Long productMutationTypeId,
@@ -133,59 +143,74 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
     WHERE
         pm.deleted_at IS NULL
         AND pm.product_mutation_status_id = 1
-        AND pm.product_mutation_type_id = 1
-        AND pm.created_at + CAST(:expiryInterval AS INTERVAL) < :now
+        AND pm.product_mutation_type_id IN (1, 6)
+        AND pm.created_at + INTERVAL '1 minute' < CURRENT_TIMESTAMP
     """, nativeQuery = true)
-    List<ProductMutation> findPendingExpired(@Param("now") OffsetDateTime now, @Param("expiryInterval") String expiryInterval);
+    List<ProductMutation> findPendingExpired();
 
-
+    // ... existing code ...
     @Query(value = """
-                SELECT 
-                    pm.id AS productMutationId,
-                    p.id AS productId,
-                    p.name AS productName,
-                    pi.url AS productThumbnail,
-                    pm.quantity AS quantity,
-                    u1.id AS requesterId,
-                    u1.fullname AS requesterName,
-                    pm.requester_notes AS requesterNotes,
-                    u2.id AS reviewerId,
-                    u2.fullname AS reviewerName,
-                    pm.reviewer_notes AS reviewerNotes,
-                    w1.id AS originWarehouseId,
-                    w1.name AS originWarehouseName,
-                    w2.id AS destinationWarehouseId,
-                    w2.name AS destinationWarehouseName,
-                    pmt.id AS productMutationTypeId,
-                    pmt.name AS productMutationTypeName,
-                    pms.id AS productMutationStatusId,
-                    pms.name AS productMutationStatusName,
-                    pm.invoice_code AS invoiceCode,
-                    pm.created_at AS createdAt,
-                    pm.reviewed_at AS reviewedAt
-                FROM product_mutations pm
-                JOIN products p ON pm.product_id = p.id
-                LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.position = 1
-                LEFT JOIN users u1 ON pm.requester_id = u1.id
-                LEFT JOIN users u2 ON pm.reviewer_id = u2.id
-                LEFT JOIN warehouses w1 ON pm.origin_warehouse_id = w1.id
-                LEFT JOIN warehouses w2 ON pm.destination_warehouse_id = w2.id
-                JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
-                JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
-                WHERE pm.deleted_at IS NULL 
-                  AND pm.product_mutation_type_id IN :productMutationTypeId
-                  AND (:originWarehouseId IS NULL OR pm.origin_warehouse_id = :originWarehouseId)
-                  AND (:destinationWarehouseId IS NULL OR pm.destination_warehouse_id = :destinationWarehouseId)
-                ORDER BY pm.created_at DESC
-            """, nativeQuery = true)
-    Page<ProductMutationDetailResponseDTO> findByWarehouseIdDTO(@Param("originWarehouseId") Long originWarehouseId,
-                                                                @Param("destinationWarehouseId") Long destinationWarehouseId,
-                                                                @Param("productMutationTypeId") List<Long> productMutationTypeId,
-                                                                Pageable pageable);
+    SELECT
+        pm.id AS productMutationId,
+        p.id AS productId,
+        p.name AS productName,
+        pi.url AS productThumbnail,
+        pm.quantity AS quantity,
+        u1.id AS requesterId,
+        u1.fullname AS requesterName,
+        pm.requester_notes AS requesterNotes,
+        u2.id AS reviewerId,
+        u2.fullname AS reviewerName,
+        pm.reviewer_notes AS reviewerNotes,
+        w1.id AS originWarehouseId,
+        w1.name AS originWarehouseName,
+        w2.id AS destinationWarehouseId,
+        w2.name AS destinationWarehouseName,
+        pmt.id AS productMutationTypeId,
+        pmt.name AS productMutationTypeName,
+        pms.id AS productMutationStatusId,
+        pms.name AS productMutationStatusName,
+        pm.invoice_code AS invoiceCode,
+        pm.product_mutation_code AS mutationCode,
+        pm.created_at AS createdAt,
+        pm.reviewed_at AS reviewedAt
+    FROM product_mutations pm
+    JOIN products p ON pm.product_id = p.id
+    LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.position = 1
+    LEFT JOIN users u1 ON pm.requester_id = u1.id
+    LEFT JOIN users u2 ON pm.reviewer_id = u2.id
+    LEFT JOIN warehouses w1 ON pm.origin_warehouse_id = w1.id
+    LEFT JOIN warehouses w2 ON pm.destination_warehouse_id = w2.id
+    JOIN product_mutation_types pmt ON pm.product_mutation_type_id = pmt.id
+    JOIN product_mutation_statuses pms ON pm.product_mutation_status_id = pms.id
+    WHERE pm.deleted_at IS NULL
+            AND (CAST(:startDate AS timestamptz) IS NULL OR CAST(:endDate AS timestamptz) IS NULL
+                OR (pm.created_at BETWEEN CAST(:startDate AS timestamptz) AND CAST(:endDate AS timestamptz))
+            )
+      AND (:productMutationTypeId IS NULL OR pm.product_mutation_type_id IN :productMutationTypeId)
+      AND (:originWarehouseId IS NULL OR pm.origin_warehouse_id = :originWarehouseId)
+      AND (:destinationWarehouseId IS NULL OR pm.destination_warehouse_id = :destinationWarehouseId)
+      AND (:productId IS NULL OR pm.product_id = :productId)
+      AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+      AND (:productMutationStatusId IS NULL OR pm.product_mutation_status_id = :productMutationStatusId)
+    ORDER BY pm.created_at DESC
+    """, nativeQuery = true)
+    Page<ProductMutationDetailResponseDTO> findByWarehouseIdDTO(
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate,
+            @Param("productId") Long productId,
+            @Param("productCategoryId") Long productCategoryId,
+            @Param("originWarehouseId") Long originWarehouseId,
+            @Param("destinationWarehouseId") Long destinationWarehouseId,
+            @Param("productMutationTypeId") List<Long> productMutationTypeId,
+            @Param("productMutationStatusId") Long productMutationStatusId,
+            Pageable pageable);
+
 
     List<ProductMutation> findByInvoiceCodeAndProductId(String invoiceCode, Long productId);
 
     List<ProductMutation> findByInvoiceCode(String invoiceCode);
+
 
     @Query(value = """
         SELECT CASE
@@ -213,6 +238,9 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
         """, nativeQuery = true)
     boolean existPendingMutationByProductId(@Param("productMutationStatusId")Long productMutationStatusId,
                                                     @Param("productId") Long productId);
+
+
+    List<ProductMutation> findByProductMutationCodeAndDeletedAtIsNull(String productMutationCode);
 
 
 }
