@@ -59,8 +59,21 @@ public class UserDetailUsecaseImpl implements UserDetailUsecase {
         User user = getUser(authToken);
         if (req.getFullname() != null)
             user.setFullname(req.getFullname());
-        if (req.getGender() != null)
-            user.setGender(req.getGender());
+        if (req.getGender() != null) {
+            String gender = req.getGender().trim();
+            char firstChar = gender.isEmpty() ? 'X' : gender.charAt(0);
+            switch (firstChar) {
+                case 'M':
+                    user.setGender("M");
+                    break;
+                case 'F':
+                    user.setGender("F");
+                    break;
+                default:
+                    user.setGender("X");
+                    break;
+            }
+        }
         if (req.getBirthdate() != null)
             user.setBirthdate(req.getBirthdate());
 
