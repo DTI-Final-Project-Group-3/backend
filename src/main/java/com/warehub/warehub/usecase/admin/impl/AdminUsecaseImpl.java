@@ -7,6 +7,7 @@ import com.warehub.warehub.infrastructure.admin.dto.AssignWarehouseResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.UserAdminDetailResponseDTO;
 import com.warehub.warehub.infrastructure.admin.dto.UserAdminUpdateRequestDTO;
 import com.warehub.warehub.infrastructure.login.dto.UserAuth;
+import com.warehub.warehub.infrastructure.login.repository.Oauth2UserInfoRepository;
 import com.warehub.warehub.infrastructure.security.Claims;
 import com.warehub.warehub.infrastructure.signup.repository.EmailVerificationTokenRepository;
 import com.warehub.warehub.infrastructure.users.dto.*;
@@ -49,6 +50,9 @@ public class AdminUsecaseImpl implements AdminUsecase {
 
     @Autowired
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
+
+    @Autowired
+    private Oauth2UserInfoRepository oauth2UserInfoRepository;
 
     public List<UserAdminDetailResponseDTO> getAllAdminWarehouseBase(boolean selectNotAssigned) {
         roleCheckUsecase.enforceAdminSuper();
@@ -213,6 +217,11 @@ public class AdminUsecaseImpl implements AdminUsecase {
         Optional<EmailVerificationToken> emailVerificationToken = emailVerificationTokenRepository.findByUserId(user.get().getId());
         if (emailVerificationToken.isPresent()) {
             emailVerificationTokenRepository.delete(emailVerificationToken.get());
+        }
+
+        Optional<Oauth2UserInfo> oauth2info = oauth2UserInfoRepository.findByUserId(user.get().getId());
+        if (oauth2info.isPresent()) {
+            oauth2UserInfoRepository.delete(oauth2info.get());
         }
 
         usersRepository.delete(user.get());
