@@ -21,6 +21,7 @@ public class ProductSummaryResponseDTO {
     private String categoryName;
     private String thumbnail;
     private Long totalStock;
+    private String nearestWarehouseName;
 
     // use in query
     public ProductSummaryResponseDTO(Long id, String name, BigDecimal price,

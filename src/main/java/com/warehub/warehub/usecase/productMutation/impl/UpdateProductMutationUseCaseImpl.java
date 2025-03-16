@@ -49,6 +49,7 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
         List<ProductMutation> prevLogs = productMutationRepository.findByProductMutationCodeAndDeletedAtIsNull(productMutation.getProductMutationCode());
         for (ProductMutation mutation : prevLogs){
             mutation.setReviewer(reviewer);
+            mutation.setReviewerNotes(req.getNotes());
             mutation.setReviewedAt(OffsetDateTime.now());
             mutation.setProductMutationStatus(statusAccept);
             productMutationRepository.save(mutation);
@@ -79,6 +80,7 @@ public class UpdateProductMutationUseCaseImpl implements UpdateProductMutationUs
         List<ProductMutation> prevLogs = productMutationRepository.findByProductMutationCodeAndDeletedAtIsNull(productMutation.getProductMutationCode());
         for (ProductMutation mutation : prevLogs){
             mutation.setReviewer(reviewer);
+            mutation.setReviewerNotes(req.getNotes());
             mutation.setReviewedAt(OffsetDateTime.now());
             mutation.setProductMutationStatus(statusDecline);
             productMutationRepository.save(mutation);
