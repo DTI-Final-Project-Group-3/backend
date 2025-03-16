@@ -1,11 +1,13 @@
 package com.warehub.warehub.usecase.email.impl;
 
 import com.warehub.warehub.entity.EmailVerificationToken;
+import com.warehub.warehub.entity.Oauth2UserInfo;
 import com.warehub.warehub.entity.User;
 import com.warehub.warehub.infrastructure.email.dto.ChangeEmailGenerateRequestDTO;
 import com.warehub.warehub.infrastructure.email.dto.ChangeEmailGenerateResponseDTO;
 import com.warehub.warehub.infrastructure.email.dto.ChangeEmailVerifyRequestDTO;
 import com.warehub.warehub.infrastructure.email.dto.ChangeEmailVerifyResponseDTO;
+import com.warehub.warehub.infrastructure.login.repository.Oauth2UserInfoRepository;
 import com.warehub.warehub.infrastructure.security.Claims;
 import com.warehub.warehub.infrastructure.service.EmailService;
 import com.warehub.warehub.infrastructure.signup.dto.*;
@@ -37,6 +39,9 @@ public class ChangeEmailUsecaseImpl implements ChangeEmailUsecase {
     @Autowired
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
+    @Autowired
+    private Oauth2UserInfoRepository oauth2UserInfoRepository;
+
     @Override
     @Transactional
     public ChangeEmailGenerateResponseDTO generateTokenForEmailChange(ChangeEmailGenerateRequestDTO requestDTO) {
@@ -50,6 +55,11 @@ public class ChangeEmailUsecaseImpl implements ChangeEmailUsecase {
         Optional<User> userOptional = usersRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found");
+        }
+
+        Optional<Oauth2UserInfo> oauth2info = oauth2UserInfoRepository.findByUserId(userId);
+        if (oauth2info.isPresent()) {
+            throw new RuntimeException("Cannot change email if have used social media login");
         }
 
         User user = userOptional.get();
