@@ -66,37 +66,56 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
 
     @Query(value = """
-    SELECT 
-        p.id AS "id",
-        p.name AS "name",
-        p.price AS "price",
-        p.weight AS "weight",
-        p.height AS "height",
-        p.width AS "width",
-        p.length AS "length",
-        pc.name AS "category_name",
-        pi.url AS "thumbnail",
-        SUM(wi.quantity) AS "total_quantity"
-    FROM products p
-    JOIN product_categories pc ON p.product_category_id = pc.id
-    LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.position = 1
-    JOIN warehouse_inventories wi ON p.id = wi.product_id
-    JOIN warehouses w ON wi.warehouse_id = w.id
-    WHERE
-        p.deleted_at IS NULL
-        AND wi.deleted_at IS NULL
-        AND (:radius IS NULL
-             OR ST_DWithin(w.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius))
-        AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
-        AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
-    GROUP BY p.id, p.name, p.price, pc.name, pi.url
-    ORDER BY
-        CASE 
-            WHEN SUM(wi.quantity) > 0 THEN 1
-            ELSE 2
-        END,
-        MIN(ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)))
-    """, nativeQuery = true)
+        SELECT
+            p.id AS "id",
+            p.name AS "name",
+            p.price AS "price",
+            p.weight AS "weight",
+            p.height AS "height",
+            p.width AS "width",
+            p.length AS "length",
+            pc.name AS "category_name",
+            pi.url AS "thumbnail",
+            SUM(wi.quantity) AS "total_quantity",
+            (
+                SELECT w_inner.name
+                FROM warehouses w_inner
+                JOIN warehouse_inventories wi_inner ON wi_inner.warehouse_id = w_inner.id
+                WHERE
+                    w_inner.deleted_at IS NULL
+                    AND wi_inner.deleted_at IS NULL
+                    AND wi_inner.product_id = p.id
+                    AND wi_inner.quantity > 0
+                    AND (:radius IS NULL OR ST_DWithin(
+                        w_inner.location::geography, 
+                        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, 
+                        :radius))
+                ORDER BY ST_Distance(
+                    w_inner.location::geography, 
+                    ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography
+                ) ASC
+                LIMIT 1
+            ) AS "nearest_warehouse_name"
+        FROM products p
+        JOIN product_categories pc ON p.product_category_id = pc.id
+        LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.position = 1
+        JOIN warehouse_inventories wi ON p.id = wi.product_id
+        JOIN warehouses w ON wi.warehouse_id = w.id
+        WHERE
+            p.deleted_at IS NULL
+            AND wi.deleted_at IS NULL
+            AND (:radius IS NULL
+                OR ST_DWithin(w.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius))
+            AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+            AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
+        GROUP BY p.id, p.name, p.price, pc.name, pi.url
+        ORDER BY
+            CASE
+                WHEN SUM(wi.quantity) > 0 THEN 1
+                ELSE 2
+            END,
+            MIN(ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)))
+        """, nativeQuery = true)
     Page<ProductSummaryResponseDTO> findPaginatedProductsByUserLocationAndFilter(
             @Param("longitude") Double longitude,
             @Param("latitude") Double latitude,

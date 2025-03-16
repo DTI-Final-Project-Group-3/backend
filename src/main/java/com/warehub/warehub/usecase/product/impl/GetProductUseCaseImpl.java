@@ -1,5 +1,6 @@
 package com.warehub.warehub.usecase.product.impl;
 
+import com.warehub.warehub.common.enums.LocationConstants;
 import com.warehub.warehub.common.utils.Location;
 import com.warehub.warehub.common.utils.LocationService;
 import com.warehub.warehub.common.utils.PaginationInfo;
@@ -50,15 +51,16 @@ public class GetProductUseCaseImpl implements GetProductUseCase {
         Product product = validationService.validateProductId(req.getProductId());
         Location location = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
 
-        Integer totalStock = warehouseInventoryRepository.findTotalStockNearby(location.getLongitude(), location.getLatitude(), req.getRadius(), req.getProductId());
-
-        WarehouseResponseDTO nearestWarehouse = warehouseRepository.findNearestWarehouseByProductId(location.getLongitude(), location.getLatitude(), req.getRadius(), req.getProductId())
-                .orElse(new WarehouseResponseDTO());
-
         List<ProductImageResponseDTO> productImages = productImageRepository.findByProductIdAndDeletedAtIsNullDTO(req.getProductId());
 
         ProductDetailResponseDTO productDetailResponseDTO = new ProductDetailResponseDTO(product, productImages);
+        Integer totalStock = warehouseInventoryRepository.findTotalStockNearby(location.getLongitude(), location.getLatitude(), req.getRadius(), req.getProductId());
         productDetailResponseDTO.setTotalStock(totalStock);
+
+        Location validatedLocation = LocationService.validateLocation(req.getLongitude(), req.getLatitude());
+
+        WarehouseResponseDTO nearestWarehouse = warehouseRepository.findNearestWarehouseByProductId(validatedLocation.getLongitude(), validatedLocation.getLatitude(), req.getRadius(), req.getProductId())
+                .orElse(new WarehouseResponseDTO());
         productDetailResponseDTO.setNearestWarehouse(nearestWarehouse);
 
         return productDetailResponseDTO;
