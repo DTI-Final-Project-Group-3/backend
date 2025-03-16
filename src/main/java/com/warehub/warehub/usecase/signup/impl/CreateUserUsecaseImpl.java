@@ -45,13 +45,12 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
     }
 
     @Transactional
-    @Override
-    public UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role) {
+    public UserDetailResponseDTO createUserBase(CreateUserRequestDTO req, String role, boolean devMode) {
         RoleType roleType = roleEnumFromString(role, RoleType.NOT_VERIFIED);
 
-        //if (roleType != RoleType.NOT_VERIFIED) {
-        //    roleCheckUsecase.enforceAdminSuper();
-        //}
+        if ((roleType != RoleType.NOT_VERIFIED) && (!devMode)) {
+            roleCheckUsecase.enforceAdminSuper();
+        }
 
         //if ((roleType != RoleType.NOT_VERIFIED) && (req.getPassword().length() < 8)) {
         //    throw new RuntimeException("Password minimum length is 8");
@@ -99,5 +98,15 @@ public class CreateUserUsecaseImpl implements CreateUserUsecase {
             emailVerificationUsecase.sendEmailVerificationLink(savedUser.getId());
 
         return new UserDetailResponseDTO().copyFromUser(savedUser);
+    }
+
+    @Override
+    public UserDetailResponseDTO createUser(CreateUserRequestDTO req, String role) {
+        return createUserBase(req, role, false);
+    }
+
+    @Override
+    public UserDetailResponseDTO createUserDevMode(CreateUserRequestDTO req, String role) {
+        return createUserBase(req, role, true);
     }
 }

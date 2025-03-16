@@ -18,9 +18,11 @@ public interface AdminUsecase {
     AssignWarehouseResponseDTO removeWarehouseAssignment(AssignWarehouseRequestDTO request);
     CurrentWarehouseResponseDTO getCurrentWarehouseDTO();
 
+
     List<UserDetailResponseDTO> getAllCustomerVerified();
 
     UserDetailResponseDTO updateAdminDetail(Long id, UserAdminUpdateRequestDTO req);
     UserDetailResponseDTO getAdminDetail(Long id);
     String deleteAdmin(Long userId);
+    String deleteUserByEmail(String email);
 }

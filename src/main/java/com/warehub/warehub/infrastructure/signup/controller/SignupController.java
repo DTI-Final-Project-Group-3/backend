@@ -26,7 +26,7 @@ public class SignupController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUserCustomer(@Valid @RequestBody CreateUserRequestDTO req,
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequestDTO req,
                                                 @RequestParam(defaultValue = "NOT_VERIFIED") String role) {
         UserDetailResponseDTO result = null;
         String errorMessage = "";
@@ -41,6 +41,25 @@ public class SignupController {
             return ApiResponse.failedResponse("Failed to create user or this email already exists : " + errorMessage);
         return ApiResponse.successfulResponse("User created successfully. Please check your email to verify your account.", result);
     }
+
+    @PostMapping("/dev")
+    public ResponseEntity<?> createUserDevMode(@Valid @RequestBody CreateUserRequestDTO req,
+                                        @RequestParam(defaultValue = "NOT_VERIFIED") String role) {
+        UserDetailResponseDTO result = null;
+        String errorMessage = "";
+        try {
+            result = createUserUsecase.createUserDevMode(req, role);
+            //emailVerificationUsecase.send(result.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+        }
+        if (result == null)
+            return ApiResponse.failedResponse("Failed to create user or this email already exists : " + errorMessage);
+        return ApiResponse.successfulResponse("User created successfully. Please check your email to verify your account.", result);
+    }
+
+
 
     @Autowired
     private RolesRepository rolesRepository;
