@@ -61,9 +61,6 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         /*
          * Find nearby warehouse from shipping address
          * */
-        System.out.println("Manual transaction latitude " + request.getLatitude());
-        System.out.println("Manual transaction longitude " + request.getLongitude());
-
         Location location = LocationService.validateLocation(request.getLongitude(), request.getLatitude());
         List<WarehouseResponseDTO> nearbyWarehouses = warehouseRepository.findNearestWarehouses(
                 location.getLongitude(),
@@ -73,8 +70,6 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
                 ((Number) obj[0]).longValue(),  // ID
                 (String) obj[1]               // Name
         )).toList();
-
-        System.out.println("Manual transaction nearest warehouse "+nearbyWarehouses);
 
         if (nearbyWarehouses.isEmpty()) throw new DataNotFoundException("No warehouses found nearby");
 
@@ -159,7 +154,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         }
 
         // Product auto mutation type
-        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(2L)
+        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(7L)
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
         // Product status type
