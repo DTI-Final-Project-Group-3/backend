@@ -64,7 +64,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             """, nativeQuery = true)
     List<ProductBasicResponseDTO> findProductsExcludeFilter(@Param("warehouseId") Long warehouseId);
 
-
     @Query(value = """
         SELECT
             p.id AS "id",
@@ -81,10 +80,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                 SELECT w_inner.name
                 FROM warehouses w_inner
                 JOIN warehouse_inventories wi_inner ON wi_inner.warehouse_id = w_inner.id
+                JOIN products p_inner ON wi_inner.product_id = p_inner.id
                 WHERE
                     w_inner.deleted_at IS NULL
                     AND wi_inner.deleted_at IS NULL
-                    AND wi_inner.product_id = p.id
+                    AND (:productCategoryId IS NULL OR p_inner.product_category_id = :productCategoryId)
+                    AND (:searchQuery IS NULL OR p_inner.name ILIKE CONCAT('%', :searchQuery, '%'))
                     AND wi_inner.quantity > 0
                     AND (:radius IS NULL OR ST_DWithin(
                         w_inner.location::geography, 
@@ -108,14 +109,14 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                 OR ST_DWithin(w.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius))
             AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
             AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
-        GROUP BY p.id, p.name, p.price, pc.name, pi.url
+        GROUP BY p.id, p.name, p.price, p.weight, p.height, p.width, p.length, pc.name, pi.url
         ORDER BY
             CASE
                 WHEN SUM(wi.quantity) > 0 THEN 1
                 ELSE 2
             END,
             MIN(ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)))
-        """, nativeQuery = true)
+    """, nativeQuery = true)
     Page<ProductSummaryResponseDTO> findPaginatedProductsByUserLocationAndFilter(
             @Param("longitude") Double longitude,
             @Param("latitude") Double latitude,
