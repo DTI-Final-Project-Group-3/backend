@@ -159,7 +159,7 @@ public class ManualTransactionUsecaseImpl implements ManualTransactionUsecase {
         }
 
         // Product auto mutation type
-        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(2L)
+        ProductMutationType productMutationTypeAuto = productMutationTypeRepository.findByIdAndDeletedAtIsNull(7L)
                 .orElseThrow(()-> new ProductMutationTypeNotFoundException("Product mutation type with ID not found !"));
 
         // Product status type

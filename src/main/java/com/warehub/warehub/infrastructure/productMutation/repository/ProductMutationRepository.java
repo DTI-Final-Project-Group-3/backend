@@ -211,7 +211,6 @@ public interface ProductMutationRepository extends JpaRepository<ProductMutation
 
     List<ProductMutation> findByInvoiceCode(String invoiceCode);
 
-
     @Query(value = """
         SELECT CASE
                    WHEN COUNT(pm) > 0 THEN TRUE
