@@ -84,8 +84,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                 WHERE
                     w_inner.deleted_at IS NULL
                     AND wi_inner.deleted_at IS NULL
-                    AND (:productCategoryId IS NULL OR p_inner.product_category_id = :productCategoryId)
-                    AND (:searchQuery IS NULL OR p_inner.name ILIKE CONCAT('%', :searchQuery, '%'))
+                    AND wi_inner.product_id = p.id
                     AND wi_inner.quantity > 0
                     AND (:radius IS NULL OR ST_DWithin(
                         w_inner.location::geography, 
@@ -104,19 +103,44 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         JOIN warehouses w ON wi.warehouse_id = w.id
         WHERE
             p.deleted_at IS NULL
+            AND pc.deleted_at IS NULL
+            AND pi.deleted_at IS NULL
             AND wi.deleted_at IS NULL
+            AND w.deleted_at IS NULL
             AND (:radius IS NULL
                 OR ST_DWithin(w.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius))
             AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
             AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
         GROUP BY p.id, p.name, p.price, p.weight, p.height, p.width, p.length, pc.name, pi.url
         ORDER BY
+            MIN(ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326))),
             CASE
                 WHEN SUM(wi.quantity) > 0 THEN 1
                 ELSE 2
-            END,
-            MIN(ST_DistanceSphere(w.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)))
-    """, nativeQuery = true)
+            END
+    """, countQuery = """
+        SELECT COUNT(DISTINCT p.id)
+        FROM products p
+        JOIN product_categories pc ON p.product_category_id = pc.id
+        LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.position = 1
+        JOIN warehouse_inventories wi ON p.id = wi.product_id
+        JOIN warehouses w ON wi.warehouse_id = w.id
+        WHERE
+          p.deleted_at IS NULL
+          AND pc.deleted_at IS NULL
+          AND pi.deleted_at IS NULL
+          AND wi.deleted_at IS NULL
+          AND w.deleted_at IS NULL
+          AND (:radius IS NULL OR ST_DWithin(
+              w.location::geography,
+              ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+              :radius
+          ))
+          AND (:productCategoryId IS NULL OR p.product_category_id = :productCategoryId)
+          AND (:searchQuery IS NULL OR p.name ILIKE CONCAT('%', :searchQuery, '%'))
+      """,
+
+            nativeQuery = true)
     Page<ProductSummaryResponseDTO> findPaginatedProductsByUserLocationAndFilter(
             @Param("longitude") Double longitude,
             @Param("latitude") Double latitude,
